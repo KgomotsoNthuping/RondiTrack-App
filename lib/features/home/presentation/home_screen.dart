@@ -5,6 +5,7 @@ import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
+import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const new({super.key});
@@ -45,7 +46,24 @@ class HomeScreen extends ConsumerWidget {
         ),
       ],
       ScreenData<List<HomeEntry>>(:final value) => [
-        for (final entry in value) HomeStokvelCard(entry: entry),
+        for (final entry in value)
+          HomeStokvelCard(
+            entry: entry,
+            onTap: () async {
+              final stokvelNames = {
+                for (final item in value) item.membership.stokvelId: item.name,
+              };
+
+              await Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => StokvelDetailScreen(
+                    initialStokvelId: entry.membership.stokvelId,
+                    stokvelNames: stokvelNames,
+                  ),
+                ),
+              );
+            },
+          ),
       ],
     };
 
@@ -65,9 +83,12 @@ class HomeScreen extends ConsumerWidget {
             onSelected: (profile) {
               ref.read(demoSessionProvider.notifier).select(profile);
             },
-            itemBuilder: (context) => [
+            itemBuilder: (_) => [
               for (final profile in DemoPersona.values)
-                PopupMenuItem(value: profile, child: Text(profile.displayName)),
+                PopupMenuItem(
+                  value: profile,
+                  child: Text(profile.displayName),
+                ),
             ],
           ),
         ],
