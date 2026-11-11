@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
 import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
+import 'package:ronditrack/features/home/data/fake_home_repository.dart';
 
 void main() {
   testWidgets('uses the RondiTrack web colours in both themes', (tester) async {
@@ -10,11 +13,19 @@ void main() {
       configuredFlavor: 'dev',
       apiBaseUrl: 'http://10.0.2.2:5227',
     );
-
-    await tester.pumpWidget(RondiTrackApp(config: config));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          homeRepositoryProvider.overrideWithValue(
+            const FakeHomeRepository(delay: Duration.zero),
+          ),
+        ],
+        child: RondiTrackApp(config: config),
+      ),
+    );
+    await tester.pumpAndSettle();
 
     expect(find.text('RondiTrack'), findsOneWidget);
-
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     final light = app.theme!;
     final dark = app.darkTheme!;

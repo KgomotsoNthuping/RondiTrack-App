@@ -27,11 +27,7 @@ void main() {
       ('Pending', ContributionStatus.pending, 'Pending'),
       ('Paid', ContributionStatus.paid, 'Paid'),
       ('Confirmed', ContributionStatus.confirmed, 'Confirmed'),
-      (
-        'PartPaid',
-        ContributionStatus.unknown,
-        'Unknown contribution status',
-      ),
+      ('PartPaid', ContributionStatus.unknown, 'Unknown contribution status'),
     ];
 
     for (final (wire, expected, label) in examples) {
@@ -95,10 +91,7 @@ void main() {
         family.cycleStatus,
         ContributionStatus.confirmed,
       )),
-      unorderedEquals([
-        StokvelAction.uploadProof,
-        StokvelAction.closeCycle,
-      ]),
+      unorderedEquals([StokvelAction.uploadProof, StokvelAction.closeCycle]),
     );
     expect(
       availableActions((

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/theme/ronditrack_theme.dart';
+import 'package:ronditrack/features/home/presentation/home_screen.dart';
 
 class RondiTrackApp extends StatelessWidget {
   const new({required this.config, super.key});
@@ -14,7 +15,7 @@ class RondiTrackApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: RondiTrackTheme.light,
       darkTheme: RondiTrackTheme.dark,
-      home: Scaffold(appBar: AppBar(title: const Text('RondiTrack'))),
+      home: const HomeScreen(),
     );
   }
 }
