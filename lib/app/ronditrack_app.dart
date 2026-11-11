@@ -11,9 +11,7 @@ class RondiTrackApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: RondiTrackTheme.light,
       darkTheme: RondiTrackTheme.dark,
-      home: Scaffold(
-        appBar: AppBar(title: const Text('RondiTrack')),
-      ),
+      home: Scaffold(appBar: AppBar(title: const Text('RondiTrack'))),
     );
   }
 }

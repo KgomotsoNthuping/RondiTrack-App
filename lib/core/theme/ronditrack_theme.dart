@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Light and dark Material themes 
+/// Light and dark Material themes
 abstract final class RondiTrackTheme {
   static const _buttonText = Color(0xFF182014);
   static const _header = Color(0xFF9AE600);
