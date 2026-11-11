@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
+import 'package:ronditrack/core/config/app_config.dart';
 
 void main() {
   testWidgets('uses the RondiTrack web colours in both themes', (tester) async {
-    await tester.pumpWidget(const RondiTrackApp());
+    final config = AppConfig.parse(
+      nativeFlavor: 'dev',
+      configuredFlavor: 'dev',
+      apiBaseUrl: 'http://10.0.2.2:5227',
+    );
+
+    await tester.pumpWidget(RondiTrackApp(config: config));
 
     expect(find.text('RondiTrack'), findsOneWidget);
 
@@ -12,6 +19,7 @@ void main() {
     final light = app.theme!;
     final dark = app.darkTheme!;
 
+    expect(app.title, 'RondiTrack Dev');
     expect(light.scaffoldBackgroundColor, const Color(0xFFF7FEE7));
     expect(dark.scaffoldBackgroundColor, const Color(0xFF101A0C));
     expect(light.appBarTheme.backgroundColor, const Color(0xFF9AE600));

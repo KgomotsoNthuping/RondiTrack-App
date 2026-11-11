@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
+import 'package:ronditrack/core/config/app_config.dart';
 
 void main() {
-  runApp(const RondiTrackApp());
+  final config = AppConfig.fromEnvironment();
+  runApp(RondiTrackApp(config: config));
 }

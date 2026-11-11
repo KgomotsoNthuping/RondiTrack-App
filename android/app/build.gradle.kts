@@ -29,6 +29,27 @@ android {
         versionName = flutter.versionName
     }
 
+        flavorDimensions += "environment"
+
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            manifestPlaceholders["appLabel"] = "RondiTrack Dev"
+        }
+
+        create("staging") {
+            dimension = "environment"
+            applicationIdSuffix = ".staging"
+            manifestPlaceholders["appLabel"] = "RondiTrack Staging"
+        }
+
+        create("prod") {
+            dimension = "environment"
+            manifestPlaceholders["appLabel"] = "RondiTrack"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
