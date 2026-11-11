@@ -16,9 +16,6 @@ typedef StokvelDetail = ({Stokvel stokvel, Set<StokvelAction> actions});
 @riverpod
 StokvelRepository stokvelRepository(Ref ref) => const FakeStokvelRepository(
   workDelay: Duration(seconds: 2),
-  failRequests:
-      String.fromEnvironment('APP_FLAVOR') == 'dev' &&
-      bool.fromEnvironment('DEMO_DETAIL_FAILURE'),
 );
 
 /// Loads detail and computes the active member's available actions.

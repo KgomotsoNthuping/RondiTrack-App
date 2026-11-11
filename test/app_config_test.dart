@@ -43,11 +43,11 @@ void main() {
       final file = File('config/${flavor.name}.json');
       final json =
           jsonDecode(await file.readAsString()) as Map<String, Object?>;
-      final url = json['API_BASE_URL'] as String;
+      final url = json['API_BASE_URL']! as String;
 
       final config = AppConfig.parse(
         nativeFlavor: flavor.name,
-        configuredFlavor: json['APP_FLAVOR'] as String,
+        configuredFlavor: json['APP_FLAVOR']! as String,
         apiBaseUrl: url,
       );
 

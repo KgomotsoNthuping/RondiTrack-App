@@ -1,6 +1,6 @@
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart' show appFlavor;
+import 'package:flutter/services.dart';
 
 /// The build flavours supported by RondiTrack.
 enum AppFlavor {

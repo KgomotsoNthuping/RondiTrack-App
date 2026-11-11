@@ -23,7 +23,7 @@ class HomeScreen extends ConsumerWidget {
       }
     }
 
-    final List<Widget> content = switch (homeViewState(snapshot)) {
+    final content = switch (homeViewState(snapshot)) {
       ScreenLoading<List<HomeEntry>>() => const [
         Center(
           child: CircularProgressIndicator(semanticsLabel: 'Loading stokvels'),

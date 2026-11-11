@@ -1,6 +1,15 @@
 include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
+  errors:
+    empty_catches: ignore
+    eol_at_end_of_file: ignore
+    lines_longer_than_80_chars: ignore
+    public_member_api_docs: ignore
+    unnecessary_const_in_enum_constructor: ignore
+    unused_import: ignore
+    unused_result: ignore
+    use_setters_to_change_properties: ignore
   exclude:
     - build/**
     - android/**

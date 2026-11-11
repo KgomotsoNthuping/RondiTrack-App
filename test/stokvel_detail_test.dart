@@ -174,7 +174,7 @@ void main() {
       if (calls == 1) {
         throw StateError('Offline');
       }
-      return _fixtures.fetchDetail(userId, id);
+      return await _fixtures.fetchDetail(userId, id);
     });
 
     await tester.pumpWidget(

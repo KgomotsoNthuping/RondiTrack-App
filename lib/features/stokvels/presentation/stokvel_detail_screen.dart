@@ -37,7 +37,7 @@ class _StokvelDetailScreenState extends ConsumerState<StokvelDetailScreen> {
     final provider = stokvelDetailProvider(_selectedId);
     final view = stokvelDetailViewState(ref.watch(provider));
 
-    final List<Widget> content = switch (view) {
+    final content = switch (view) {
       ScreenLoading<StokvelDetail>() => [
         const Center(child: CircularProgressIndicator()),
         const SizedBox(height: 12),
