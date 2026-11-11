@@ -26,7 +26,7 @@ final class AppConfig {
   const new _({required this.flavor, required this.apiBaseUrl});
 
   /// Reads the build flavour and the config supplied at compile time.
-    /// Reads and validates the configuration for the current platform.
+  /// Reads and validates the configuration for the current platform.
   factory fromEnvironment() {
     const configuredFlavor = String.fromEnvironment('APP_FLAVOR');
 
