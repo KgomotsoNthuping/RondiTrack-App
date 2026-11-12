@@ -5,6 +5,7 @@ import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
+import 'package:ronditrack/core/theme/ronditrack_tokens.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
@@ -12,7 +13,7 @@ import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
-import 'package:ronditrack/core/theme/ronditrack_tokens.dart';
+import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
 class StokvelDetailScreen extends ConsumerWidget {
   const new({required this.stokvelId, super.key});
@@ -21,13 +22,15 @@ class StokvelDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-        final persona = ref.watch(demoSessionProvider);
+    final persona = ref.watch(demoSessionProvider);
     if (persona == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
-    final userId = persona.name;
-    final entries = ref.watch(homeProvider(userId)).value ?? const <HomeEntry>[];
+    final entries =
+        ref.watch(homeProvider(persona.name)).value ?? const <HomeEntry>[];
     final names = {
       for (final entry in entries) entry.membership.stokvelId: entry.name,
     };
@@ -37,6 +40,11 @@ class StokvelDetailScreen extends ConsumerWidget {
     final name = view is ScreenData<StokvelDetail>
         ? view.value.stokvel.name
         : names[stokvelId] ?? 'Stokvel details';
+
+    final theme = Theme.of(context);
+    final titleSize = theme.appBarTheme.titleTextStyle?.fontSize ?? 20;
+    final titleInBody =
+        MediaQuery.textScalerOf(context).scale(titleSize) > titleSize * 1.5;
 
     final children = switch (view) {
       ScreenLoading<StokvelDetail>() => _loading('Loading $name'),
@@ -54,7 +62,7 @@ class StokvelDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(name),
+        title: Text(titleInBody ? 'Stokvel' : name),
         actions: [
           if (names.length > 1)
             PopupMenuButton<String>(
@@ -74,7 +82,20 @@ class StokvelDetailScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: _DetailBody(children: children),
+      body: StokvelLayout(
+        selectedStokvelId: stokvelId,
+        detail: _DetailBody(
+          children: [
+            if (titleInBody &&
+                (view is ScreenData<StokvelDetail> ||
+                    view is ScreenEmpty<StokvelDetail>)) ...[
+              Text(name, style: theme.textTheme.headlineSmall),
+              const SizedBox(height: 12),
+            ],
+            ...children,
+          ],
+        ),
+      ),
     );
   }
 }
@@ -114,7 +135,10 @@ class StokvelCycleScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Cycle details')),
-      body: _DetailBody(children: children),
+      body: StokvelLayout(
+        selectedStokvelId: stokvelId,
+        detail: _DetailBody(children: children),
+      ),
     );
   }
 }
@@ -315,6 +339,7 @@ class _DetailBody extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
           child: ListView(
+            primary: false,
             padding: const EdgeInsets.all(20),
             children: children,
           ),

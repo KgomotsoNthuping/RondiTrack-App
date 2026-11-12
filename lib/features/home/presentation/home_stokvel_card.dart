@@ -6,24 +6,21 @@ import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
 
-
 class HomeStokvelCard extends StatelessWidget {
   const new({required this.entry, required this.onTap, super.key});
 
   final HomeEntry entry;
-
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final tokens = RondiTrackTokens.of(context);
     final ink = tokens[RondiTrackToken.cardText].foreground;
     final muted = tokens[RondiTrackToken.cardMuted].foreground;
-    final border = theme.colorScheme.outlineVariant;
     final wallet = tokens[RondiTrackToken.wallet];
-    final paidColors = tokens[RondiTrackToken.paidAmount];
-    final owedColors = tokens[RondiTrackToken.owedAmount];
+    final paidAmount = tokens[RondiTrackToken.paidAmount];
+    final owedAmount = tokens[RondiTrackToken.owedAmount];
+    final border = Theme.of(context).colorScheme.outlineVariant;
 
     final cycle = entry.currentCycleNumber;
     final status = entry.cycleStatus ?? CycleStatus.unknown;
@@ -111,21 +108,29 @@ class HomeStokvelCard extends StatelessWidget {
                 ],
                 if (isOpen && paid != null && owed != null)
                   LayoutBuilder(
-                    builder: (_, constraints) {
+                    builder: (context, constraints) {
+                      const double gap = 12;
+                      final textScaler = MediaQuery.textScalerOf(context);
+                      final scale =
+                          textScaler.scale(_AmountTile.amountFontSize) /
+                          _AmountTile.amountFontSize;
+                      final minimumTileWidth = 134 * scale;
                       final width = constraints.maxWidth;
-                      final tileWidth = width >= 280 ? (width - 12) / 2 : width;
+                      final tileWidth = width >= 2 * minimumTileWidth + gap
+                          ? (width - gap) / 2
+                          : width;
 
                       return Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
+                        spacing: gap,
+                        runSpacing: gap,
                         children: [
                           SizedBox(
                             width: tileWidth,
                             child: _AmountTile(
                               label: 'Paid this cycle',
                               amount: paid.formatRand(),
-                              fill: paidColors.background,
-                              ink: paidColors.foreground,
+                              fill: paidAmount.background,
+                              ink: paidAmount.foreground,
                             ),
                           ),
                           SizedBox(
@@ -133,8 +138,8 @@ class HomeStokvelCard extends StatelessWidget {
                             child: _AmountTile(
                               label: 'Still owed',
                               amount: owed.formatRand(),
-                              fill: owedColors.background,
-                              ink: owedColors.foreground,
+                              fill: owedAmount.background,
+                              ink: owedAmount.foreground,
                             ),
                           ),
                         ],
@@ -185,6 +190,8 @@ class _AmountTile extends StatelessWidget {
     required this.ink,
   });
 
+  static const double amountFontSize = 20;
+
   final String label;
   final String amount;
   final Color fill;
@@ -208,7 +215,7 @@ class _AmountTile extends StatelessWidget {
               amount,
               style: TextStyle(
                 color: ink,
-                fontSize: 20,
+                fontSize: amountFontSize,
                 fontWeight: FontWeight.w700,
               ),
             ),

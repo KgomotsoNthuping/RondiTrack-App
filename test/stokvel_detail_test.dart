@@ -55,7 +55,6 @@ void main() {
 
     final familyDetail = first.read().requireValue!;
     final workDetail = other.read().requireValue!;
-
     expect(familyDetail.stokvel.name, 'Family Savers');
     expect(second.read().requireValue, familyDetail);
     expect(workDetail.stokvel.name, 'Work Savers');
@@ -90,11 +89,7 @@ void main() {
   testWidgets('switches to Work Savers loading on the next frame', (
     tester,
   ) async {
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(800, 1100);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    addTearDown(tester.view.resetPhysicalSize);
-
+    _setViewport(tester, const Size(800, 1100));
     _setInitialLocation(
       tester,
       const StokvelDetailRoute(id: 'family-savers').location,
@@ -121,7 +116,6 @@ void main() {
     await tester.pumpAndSettle();
 
     final router = GoRouter.of(tester.element(find.byType(StokvelDetailScreen)));
-
     expect(find.text('Treasurer'), findsOneWidget);
     expect(find.text('Close cycle'), findsOneWidget);
     expect(find.text('Nandi'), findsOneWidget);
@@ -133,10 +127,7 @@ void main() {
     await tester.tap(find.text('Work Savers'));
     await tester.pump();
 
-    expect(
-      router.routeInformationProvider.value.uri.path,
-      '/stokvels/work-savers',
-    );
+    expect(router.routeInformationProvider.value.uri.path, '/stokvels/work-savers');
     expect(find.text('Loading Work Savers'), findsOneWidget);
     expect(find.text('Nandi'), findsNothing);
     expect(find.text('Close cycle'), findsNothing);
@@ -154,6 +145,7 @@ void main() {
   testWidgets('a direct cycle link keeps its stack when switching tabs', (
     tester,
   ) async {
+    _setViewport(tester, const Size(550, 1100));
     const route = StokvelCycleRoute(
       id: 'family-savers',
       cycleId: 'family-cycle-1',
@@ -174,7 +166,6 @@ void main() {
     await tester.pumpAndSettle();
 
     final router = GoRouter.of(tester.element(find.byType(StokvelCycleScreen)));
-
     expect(find.text('Cycle details'), findsOneWidget);
     expect(router.routeInformationProvider.value.uri.path, route.location);
 
@@ -190,10 +181,7 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.byType(StokvelDetailScreen), findsOneWidget);
-    expect(
-      router.routeInformationProvider.value.uri.path,
-      '/stokvels/family-savers',
-    );
+    expect(router.routeInformationProvider.value.uri.path, '/stokvels/family-savers');
 
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -315,6 +303,14 @@ void main() {
     expect(find.text('Could not load this stokvel.'), findsNothing);
     expect(find.text('Treasurer'), findsOneWidget);
   });
+}
+
+void _setViewport(WidgetTester tester, Size size) {
+  tester.view
+    ..devicePixelRatio = 1
+    ..physicalSize = size;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
 }
 
 void _setInitialLocation(WidgetTester tester, String location) {
