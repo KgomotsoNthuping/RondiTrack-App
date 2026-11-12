@@ -57,7 +57,7 @@ ScreenState<StokvelDetail> stokvelDetailViewState(
         const ScreenFailure<StokvelDetail>('Could not load this stokvel.'),
     data: (detail) {
       if (detail == null) {
-        return const ScreenFailure<StokvelDetail>('Stokvel not found.');
+        return const ScreenFailure<StokvelDetail>('Not found');
       }
 
       final stokvel = detail.stokvel;

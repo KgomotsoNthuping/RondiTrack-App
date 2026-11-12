@@ -1,65 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/money/cents.dart';
+import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
+import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
 
-/// Shows the selected stokvel and lets the member switch stokvels.
-class StokvelDetailScreen extends ConsumerStatefulWidget {
-  /// Opens detail at [initialStokvelId].
-  const new({
-    required this.initialStokvelId,
-    required this.stokvelNames,
-    super.key,
-  });
+class StokvelDetailScreen extends ConsumerWidget {
+  const new({required this.stokvelId, super.key});
 
-  /// The stokvel selected from Home.
-  final String initialStokvelId;
-
-  /// The IDs and names of this member's stokvels.
-  final Map<String, String> stokvelNames;
+  final String stokvelId;
 
   @override
-  ConsumerState<StokvelDetailScreen> createState() =>
-      _StokvelDetailScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(demoSessionProvider).name;
+    final entries = ref.watch(homeProvider(userId)).value ?? const <HomeEntry>[];
+    final names = {
+      for (final entry in entries) entry.membership.stokvelId: entry.name,
+    };
 
-class _StokvelDetailScreenState extends ConsumerState<StokvelDetailScreen> {
-  late String _selectedId = widget.initialStokvelId;
-
-  @override
-  Widget build(BuildContext context) {
-    final name = widget.stokvelNames[_selectedId] ?? 'Stokvel details';
-    final provider = stokvelDetailProvider(_selectedId);
+    final provider = stokvelDetailProvider(stokvelId);
     final view = stokvelDetailViewState(ref.watch(provider));
+    final name = view is ScreenData<StokvelDetail>
+        ? view.value.stokvel.name
+        : names[stokvelId] ?? 'Stokvel details';
 
-    final content = switch (view) {
-      ScreenLoading<StokvelDetail>() => [
-        const Center(child: CircularProgressIndicator()),
-        const SizedBox(height: 12),
-        Text('Loading $name', textAlign: TextAlign.center),
-      ],
-      ScreenEmpty<StokvelDetail>() => const [
+    final children = switch (view) {
+      ScreenLoading<StokvelDetail>() => _loading('Loading $name'),
+      ScreenEmpty<StokvelDetail>() => const <Widget>[
         Text('No cycle or contributions yet.'),
         SizedBox(height: 8),
         Text('Check again after your treasurer opens a cycle.'),
       ],
-      ScreenFailure<StokvelDetail>(:final message) => [
-        Text(message),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton(
-            onPressed: () => ref.invalidate(provider),
-            child: const Text('Retry'),
-          ),
-        ),
-      ],
+      ScreenFailure<StokvelDetail>(:final message) => _failure(
+        message,
+        () => ref.invalidate(provider),
+      ),
       ScreenData<StokvelDetail>(:final value) => _detailContent(context, value),
     };
 
@@ -67,44 +50,87 @@ class _StokvelDetailScreenState extends ConsumerState<StokvelDetailScreen> {
       appBar: AppBar(
         title: Text(name),
         actions: [
-          if (widget.stokvelNames.length > 1)
+          if (names.length > 1)
             PopupMenuButton<String>(
               tooltip: 'Switch stokvel',
-              initialValue: _selectedId,
+              initialValue: stokvelId,
               icon: const Icon(Icons.swap_horiz),
               onSelected: (id) {
-                setState(() {
-                  _selectedId = id;
-                });
+                StokvelDetailRoute(id: id).go(context);
               },
-              itemBuilder: (context) => [
-                for (final stokvel in widget.stokvelNames.entries)
-                  PopupMenuItem(value: stokvel.key, child: Text(stokvel.value)),
+              itemBuilder: (_) => [
+                for (final entry in names.entries)
+                  PopupMenuItem(
+                    value: entry.key,
+                    child: Text(entry.value),
+                  ),
               ],
             ),
         ],
       ),
-      body: SafeArea(
-        top: false,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 640),
-            child: ListView(
-              key: ValueKey(_selectedId),
-              padding: const EdgeInsets.all(20),
-              children: content,
-            ),
-          ),
-        ),
-      ),
+      body: _DetailBody(children: children),
     );
   }
 }
 
+class StokvelCycleScreen extends ConsumerWidget {
+  const new({required this.stokvelId, required this.cycleId, super.key});
+
+  final String stokvelId;
+  final String cycleId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = stokvelDetailProvider(stokvelId);
+
+    void retry() => ref.invalidate(provider);
+
+    final children = ref.watch(provider).when<List<Widget>>(
+      skipLoadingOnRefresh: false,
+      loading: () => _loading('Loading cycle'),
+      error: (_, _) => _failure('Could not load this cycle.', retry),
+      data: (detail) {
+        final cycle = detail?.stokvel.currentCycle;
+        if (detail == null || cycle == null || cycle.id != cycleId) {
+          return _failure('Not found', retry);
+        }
+
+        final contributions = detail.stokvel.contributions.where(
+          (contribution) => contribution.cycleId == cycle.id,
+        );
+
+        return [
+          _DetailCard(child: _CycleSummary(cycle: cycle)),
+          ..._contributions(context, contributions),
+        ];
+      },
+    );
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Cycle details')),
+      body: _DetailBody(children: children),
+    );
+  }
+}
+
+List<Widget> _loading(String label) => [
+  const Center(child: CircularProgressIndicator()),
+  const SizedBox(height: 12),
+  Text(label, textAlign: TextAlign.center),
+];
+
+List<Widget> _failure(String message, VoidCallback retry) => [
+  Text(message),
+  const SizedBox(height: 12),
+  Align(
+    alignment: Alignment.centerLeft,
+    child: FilledButton(onPressed: retry, child: const Text('Retry')),
+  ),
+];
+
 List<Widget> _detailContent(BuildContext context, StokvelDetail detail) {
   final stokvel = detail.stokvel;
   final cycle = stokvel.currentCycle;
-  final due = cycle?.dueDate;
   final rules = stokvel.rules;
   final colors = Theme.of(context).colorScheme;
 
@@ -124,24 +150,17 @@ List<Widget> _detailContent(BuildContext context, StokvelDetail detail) {
           ),
           const Divider(height: 24),
           if (cycle != null) ...[
-            Wrap(
-              spacing: 12,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text('Cycle ${cycle.number}'),
-                CycleStatusBadge(status: cycle.status),
-              ],
-            ),
+            _CycleSummary(cycle: cycle),
             const SizedBox(height: 8),
-            Text(
-              due == null
-                  ? 'No due date set'
-                  : 'Due ${formatCalendarDate(due)}',
+            FilledButton(
+              onPressed: () {
+                StokvelCycleRoute(
+                  id: stokvel.membership.stokvelId,
+                  cycleId: cycle.id,
+                ).go(context);
+              },
+              child: const Text('View cycle'),
             ),
-            Text('Target ${cycle.targetAmount.formatRand()}'),
-            Text('Collected ${cycle.totalCollected.formatRand()}'),
-            Text('Outstanding ${cycle.amountOutstanding.formatRand()}'),
           ] else
             const Text('No current cycle'),
           if (detail.actions.isNotEmpty) ...[
@@ -169,12 +188,50 @@ List<Widget> _detailContent(BuildContext context, StokvelDetail detail) {
         ],
       ),
     ),
-    Text('Contributions', style: Theme.of(context).textTheme.titleLarge),
-    const SizedBox(height: 8),
-    if (stokvel.contributions.isEmpty) const Text('No contributions yet.'),
-    for (final contribution in stokvel.contributions)
-      _ContributionCard(contribution: contribution),
+    ..._contributions(context, stokvel.contributions),
   ];
+}
+
+List<Widget> _contributions(
+  BuildContext context,
+  Iterable<Contribution> contributions,
+) => [
+  Text('Contributions', style: Theme.of(context).textTheme.titleLarge),
+  const SizedBox(height: 8),
+  if (contributions.isEmpty) const Text('No contributions yet.'),
+  for (final contribution in contributions)
+    _ContributionCard(contribution: contribution),
+];
+
+class _CycleSummary extends StatelessWidget {
+  const new({required this.cycle});
+
+  final ContributionCycle cycle;
+
+  @override
+  Widget build(BuildContext context) {
+    final due = cycle.dueDate;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text('Cycle ${cycle.number}'),
+            CycleStatusBadge(status: cycle.status),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(due == null ? 'No due date set' : 'Due ${formatCalendarDate(due)}'),
+        Text('Target ${cycle.targetAmount.formatRand()}'),
+        Text('Collected ${cycle.totalCollected.formatRand()}'),
+        Text('Outstanding ${cycle.amountOutstanding.formatRand()}'),
+      ],
+    );
+  }
 }
 
 class _ContributionCard extends StatelessWidget {
@@ -185,6 +242,7 @@ class _ContributionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final paidAt = contribution.paidAtUtc;
+
     return _DetailCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,10 +259,7 @@ class _ContributionCard extends StatelessWidget {
             children: [
               Text(
                 contribution.amount.formatRand(),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
               ),
               ContributionStatusBadge(status: contribution.status),
             ],
@@ -227,15 +282,36 @@ class _DetailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: DefaultTextStyle.merge(
-          style: TextStyle(
-            color: dark ? Colors.white : const Color(0xFF020618),
-          ),
+          style: TextStyle(color: dark ? Colors.white : const Color(0xFF020618)),
           child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class _DetailBody extends StatelessWidget {
+  const new({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: children,
+          ),
         ),
       ),
     );

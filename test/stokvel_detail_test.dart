@@ -3,15 +3,28 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:ronditrack/app/navigation/app_router.dart';
+import 'package:ronditrack/app/ronditrack_app.dart';
+import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
+import 'package:ronditrack/features/home/data/fake_home_repository.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/data/fake_stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
+import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
 const _fixtures = FakeStokvelRepository(delay: Duration.zero);
-const _names = {'family-savers': 'Family Savers', 'work-savers': 'Work Savers'};
+const _homeFixtures = FakeHomeRepository(delay: Duration.zero);
+
+final _config = AppConfig.parse(
+  nativeFlavor: 'dev',
+  configuredFlavor: 'dev',
+  apiBaseUrl: 'http://10.0.2.2:5227',
+);
 
 void main() {
   test('separates IDs, shares fetches and disposes detail', () async {
@@ -38,7 +51,7 @@ void main() {
     final familyDetail = first.read().requireValue!;
     final workDetail = other.read().requireValue!;
     expect(familyDetail.stokvel.name, 'Family Savers');
-    expect(second.read().requireValue, same(familyDetail));
+    expect(second.read().requireValue, familyDetail);
     expect(workDetail.stokvel.name, 'Work Savers');
     expect(familyDetail.actions, contains(StokvelAction.closeCycle));
     expect(workDetail.actions, isNot(contains(StokvelAction.closeCycle)));
@@ -68,11 +81,13 @@ void main() {
     expect(await _fixtures.fetchDetail('naledi', 'family-savers'), isNull);
   });
 
-  testWidgets('switches to Work Savers loading on the next frame', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(800, 1000);
+  testWidgets('switches to Work Savers loading on the next frame', (tester) async {
+    tester.view.physicalSize = const Size(800, 1100);
     addTearDown(tester.view.resetPhysicalSize);
+    _setInitialLocation(
+      tester,
+      const StokvelDetailRoute(id: 'family-savers').location,
+    );
 
     final pending = Completer<Stokvel?>();
     final repository = _StubRepository((userId, id) {
@@ -84,17 +99,16 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         retry: (_, _) => null,
-        overrides: [stokvelRepositoryProvider.overrideWithValue(repository)],
-        child: const MaterialApp(
-          home: StokvelDetailScreen(
-            initialStokvelId: 'family-savers',
-            stokvelNames: _names,
-          ),
-        ),
+        overrides: [
+          homeRepositoryProvider.overrideWithValue(_homeFixtures),
+          stokvelRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: RondiTrackApp(config: _config),
       ),
     );
     await tester.pumpAndSettle();
 
+    final router = GoRouter.of(tester.element(find.byType(StokvelDetailScreen)));
     expect(find.text('Treasurer'), findsOneWidget);
     expect(find.text('Close cycle'), findsOneWidget);
     expect(find.text('Nandi'), findsOneWidget);
@@ -106,6 +120,7 @@ void main() {
     await tester.tap(find.text('Work Savers'));
     await tester.pump();
 
+    expect(router.routeInformationProvider.value.uri.path, '/stokvels/work-savers');
     expect(find.text('Loading Work Savers'), findsOneWidget);
     expect(find.text('Nandi'), findsNothing);
     expect(find.text('Close cycle'), findsNothing);
@@ -120,9 +135,75 @@ void main() {
     expect(find.text('R\u00A0300,00'), findsOneWidget);
   });
 
-  testWidgets('shows empty detail when the stokvel has no activity', (
-    tester,
-  ) async {
+  testWidgets('a direct cycle link keeps its stack when switching tabs', (tester) async {
+    const route = StokvelCycleRoute(
+      id: 'family-savers',
+      cycleId: 'family-cycle-1',
+    );
+    _setInitialLocation(tester, route.location);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        retry: (_, _) => null,
+        overrides: [
+          homeRepositoryProvider.overrideWithValue(_homeFixtures),
+          stokvelRepositoryProvider.overrideWithValue(_fixtures),
+        ],
+        child: RondiTrackApp(config: _config),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final router = GoRouter.of(tester.element(find.byType(StokvelCycleScreen)));
+    expect(find.text('Cycle details'), findsOneWidget);
+    expect(router.routeInformationProvider.value.uri.path, route.location);
+
+    await tester.tap(find.widgetWithText(NavigationDestination, 'Activity'));
+    await tester.pumpAndSettle();
+    expect(router.routeInformationProvider.value.uri.path, '/activity');
+
+    await tester.tap(find.widgetWithText(NavigationDestination, 'Stokvels'));
+    await tester.pumpAndSettle();
+    expect(find.text('Cycle details'), findsOneWidget);
+    expect(router.routeInformationProvider.value.uri.path, route.location);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(StokvelDetailScreen), findsOneWidget);
+    expect(router.routeInformationProvider.value.uri.path, '/stokvels/family-savers');
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(StokvelsScreen), findsOneWidget);
+    expect(router.routeInformationProvider.value.uri.path, '/stokvels');
+  });
+
+  testWidgets('shows not found for a cycle from another stokvel', (tester) async {
+    _setInitialLocation(
+      tester,
+      const StokvelCycleRoute(
+        id: 'family-savers',
+        cycleId: 'work-cycle-1',
+      ).location,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        retry: (_, _) => null,
+        overrides: [
+          homeRepositoryProvider.overrideWithValue(_homeFixtures),
+          stokvelRepositoryProvider.overrideWithValue(_fixtures),
+        ],
+        child: RondiTrackApp(config: _config),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Not found'), findsOneWidget);
+    expect(find.text('Contributions'), findsNothing);
+  });
+
+  testWidgets('shows empty detail when the stokvel has no activity', (tester) async {
     final repository = _StubRepository((userId, id) async {
       final stokvel = await _fixtures.fetchDetail(userId, id);
       return stokvel?.copyWith(currentCycle: null, contributions: const []);
@@ -131,12 +212,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         retry: (_, _) => null,
-        overrides: [stokvelRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          homeRepositoryProvider.overrideWithValue(_homeFixtures),
+          stokvelRepositoryProvider.overrideWithValue(repository),
+        ],
         child: const MaterialApp(
-          home: StokvelDetailScreen(
-            initialStokvelId: 'family-savers',
-            stokvelNames: _names,
-          ),
+          home: StokvelDetailScreen(stokvelId: 'family-savers'),
         ),
       ),
     );
@@ -149,24 +230,22 @@ void main() {
     );
   });
 
-  testWidgets('shows the same not-found state for an unavailable ID', (
-    tester,
-  ) async {
+  testWidgets('shows not found for an unavailable stokvel ID', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         retry: (_, _) => null,
-        overrides: [stokvelRepositoryProvider.overrideWithValue(_fixtures)],
+        overrides: [
+          homeRepositoryProvider.overrideWithValue(_homeFixtures),
+          stokvelRepositoryProvider.overrideWithValue(_fixtures),
+        ],
         child: const MaterialApp(
-          home: StokvelDetailScreen(
-            initialStokvelId: 'missing',
-            stokvelNames: {},
-          ),
+          home: StokvelDetailScreen(stokvelId: 'missing'),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Stokvel not found.'), findsOneWidget);
+    expect(find.text('Not found'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Retry'), findsOneWidget);
   });
 
@@ -177,18 +256,18 @@ void main() {
       if (calls == 1) {
         throw StateError('Offline');
       }
-      return await _fixtures.fetchDetail(userId, id);
+      return _fixtures.fetchDetail(userId, id);
     });
 
     await tester.pumpWidget(
       ProviderScope(
         retry: (_, _) => null,
-        overrides: [stokvelRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          homeRepositoryProvider.overrideWithValue(_homeFixtures),
+          stokvelRepositoryProvider.overrideWithValue(repository),
+        ],
         child: const MaterialApp(
-          home: StokvelDetailScreen(
-            initialStokvelId: 'family-savers',
-            stokvelNames: _names,
-          ),
+          home: StokvelDetailScreen(stokvelId: 'family-savers'),
         ),
       ),
     );
@@ -202,6 +281,12 @@ void main() {
     expect(find.text('Could not load this stokvel.'), findsNothing);
     expect(find.text('Treasurer'), findsOneWidget);
   });
+}
+
+void _setInitialLocation(WidgetTester tester, String location) {
+  final dispatcher = tester.binding.platformDispatcher;
+  dispatcher.defaultRouteNameTestValue = location;
+  addTearDown(dispatcher.clearDefaultRouteNameTestValue);
 }
 
 class _StubRepository implements StokvelRepository {

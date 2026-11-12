@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
+
 
 class HomeScreen extends ConsumerWidget {
   const new({super.key});
@@ -48,19 +50,8 @@ class HomeScreen extends ConsumerWidget {
         for (final entry in value)
           HomeStokvelCard(
             entry: entry,
-            onTap: () async {
-              final stokvelNames = {
-                for (final item in value) item.membership.stokvelId: item.name,
-              };
-
-              await Navigator.of(context).push<void>(
-                MaterialPageRoute<void>(
-                  builder: (_) => StokvelDetailScreen(
-                    initialStokvelId: entry.membership.stokvelId,
-                    stokvelNames: stokvelNames,
-                  ),
-                ),
-              );
+            onTap: () {
+              StokvelDetailRoute(id: entry.membership.stokvelId).go(context);
             },
           ),
       ],
