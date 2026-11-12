@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/money/cents.dart';
+import 'package:ronditrack/core/theme/ronditrack_tokens.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
+
 
 class HomeStokvelCard extends StatelessWidget {
   const new({required this.entry, required this.onTap, super.key});
@@ -14,12 +16,14 @@ class HomeStokvelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final ink = dark ? Colors.white : const Color(0xFF020618);
-    final muted = dark ? const Color(0xFFCAD5E2) : const Color(0xFF45556C);
-    final border = dark ? const Color(0xFF314158) : const Color(0xFFE2E8F0);
-    final walletFill = dark ? const Color(0xFFBBF451) : const Color(0xFFECFCCA);
-    final walletInk = dark ? const Color(0xFF192E03) : const Color(0xFF35530E);
+    final theme = Theme.of(context);
+    final tokens = RondiTrackTokens.of(context);
+    final ink = tokens[RondiTrackToken.cardText].foreground;
+    final muted = tokens[RondiTrackToken.cardMuted].foreground;
+    final border = theme.colorScheme.outlineVariant;
+    final wallet = tokens[RondiTrackToken.wallet];
+    final paidColors = tokens[RondiTrackToken.paidAmount];
+    final owedColors = tokens[RondiTrackToken.owedAmount];
 
     final cycle = entry.currentCycleNumber;
     final status = entry.cycleStatus ?? CycleStatus.unknown;
@@ -50,12 +54,12 @@ class HomeStokvelCard extends StatelessWidget {
                       height: 44,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: walletFill,
+                        color: wallet.background,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         Icons.account_balance_wallet_outlined,
-                        color: walletInk,
+                        color: wallet.foreground,
                         size: 20,
                       ),
                     ),
@@ -120,12 +124,8 @@ class HomeStokvelCard extends StatelessWidget {
                             child: _AmountTile(
                               label: 'Paid this cycle',
                               amount: paid.formatRand(),
-                              fill: dark
-                                  ? const Color(0x66192E03)
-                                  : const Color(0xFFF7FEE7),
-                              ink: dark
-                                  ? const Color(0xFFD8F999)
-                                  : const Color(0xFF35530E),
+                              fill: paidColors.background,
+                              ink: paidColors.foreground,
                             ),
                           ),
                           SizedBox(
@@ -133,10 +133,8 @@ class HomeStokvelCard extends StatelessWidget {
                             child: _AmountTile(
                               label: 'Still owed',
                               amount: owed.formatRand(),
-                              fill: dark
-                                  ? const Color(0xFF1D293D)
-                                  : const Color(0xFFF8FAFC),
-                              ink: ink,
+                              fill: owedColors.background,
+                              ink: owedColors.foreground,
                             ),
                           ),
                         ],
@@ -149,19 +147,14 @@ class HomeStokvelCard extends StatelessWidget {
                   ),
                 if (isOpen && owed?.value == 0) ...[
                   const SizedBox(height: 12),
-                  _badge(
-                    'All paid up for this cycle',
-                    walletFill,
-                    const Color(0xFF192E03),
+                  const StokvelBadge(
+                    label: 'All paid up for this cycle',
+                    token: RondiTrackToken.paidUp,
                   ),
                 ],
                 const SizedBox(height: 12),
                 if (entry.arrears.value > 0)
-                  _badge(
-                    arrears,
-                    dark ? const Color(0xFFFFA2A2) : const Color(0xFFFFE2E2),
-                    const Color(0xFF460809),
-                  )
+                  StokvelBadge(label: arrears, token: RondiTrackToken.arrears)
                 else
                   Text(arrears),
                 Divider(height: 32, color: border),
@@ -224,20 +217,4 @@ class _AmountTile extends StatelessWidget {
       ),
     );
   }
-}
-
-Widget _badge(String label, Color fill, Color ink) {
-  return DecoratedBox(
-    decoration: BoxDecoration(
-      color: fill,
-      borderRadius: BorderRadius.circular(24),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: Text(
-        label,
-        style: TextStyle(color: ink, fontSize: 12, fontWeight: FontWeight.w600),
-      ),
-    ),
-  );
 }

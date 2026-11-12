@@ -12,6 +12,7 @@ import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
+import 'package:ronditrack/core/theme/ronditrack_tokens.dart';
 
 class StokvelDetailScreen extends ConsumerWidget {
   const new({required this.stokvelId, super.key});
@@ -286,14 +287,14 @@ class _DetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
+    final ink = RondiTrackTokens.of(context)[RondiTrackToken.cardText].foreground;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: DefaultTextStyle.merge(
-          style: TextStyle(color: dark ? Colors.white : const Color(0xFF020618)),
+          style: TextStyle(color: ink),
           child: child,
         ),
       ),
