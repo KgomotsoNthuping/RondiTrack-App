@@ -20,7 +20,12 @@ class StokvelDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userId = ref.watch(demoSessionProvider).name;
+        final persona = ref.watch(demoSessionProvider);
+    if (persona == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final userId = persona.name;
     final entries = ref.watch(homeProvider(userId)).value ?? const <HomeEntry>[];
     final names = {
       for (final entry in entries) entry.membership.stokvelId: entry.name,

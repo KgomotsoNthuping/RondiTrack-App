@@ -16,6 +16,7 @@ import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
+import 'package:ronditrack/core/session/demo_session.dart';
 
 const _fixtures = FakeStokvelRepository(delay: Duration.zero);
 const _homeFixtures = FakeHomeRepository(delay: Duration.zero);

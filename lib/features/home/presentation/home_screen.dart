@@ -15,6 +15,9 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final persona = ref.watch(demoSessionProvider);
+    if (persona == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final provider = homeProvider(persona.name);
     final snapshot = ref.watch(provider);
 

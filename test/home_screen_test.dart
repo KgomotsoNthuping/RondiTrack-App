@@ -11,6 +11,7 @@ import 'package:ronditrack/features/home/domain/home_repository.dart';
 import 'package:ronditrack/features/home/presentation/home_screen.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
+import 'package:ronditrack/core/session/demo_session.dart';
 
 void main() {
   test('maps AsyncValue to the four Home states', () {

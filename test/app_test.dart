@@ -5,6 +5,7 @@ import 'package:ronditrack/app/ronditrack_app.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/data/fake_home_repository.dart';
+import 'package:ronditrack/core/session/demo_session.dart';
 
 void main() {
   testWidgets('uses the RondiTrack web colours in both themes', (tester) async {

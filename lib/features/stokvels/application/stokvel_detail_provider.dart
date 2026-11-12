@@ -20,7 +20,10 @@ StokvelRepository stokvelRepository(Ref ref) =>
 /// Loads detail and computes the active member's available actions.
 @riverpod
 Future<StokvelDetail?> stokvelDetail(Ref ref, String stokvelId) async {
-  final userId = ref.watch(demoSessionProvider).name;
+  final userId = ref.watch(demoSessionProvider)?.name;
+  if (userId == null) {
+    return null;
+  }
   final repository = ref.watch(stokvelRepositoryProvider);
   final stokvel = await repository.fetchDetail(userId, stokvelId);
   if (stokvel == null) {

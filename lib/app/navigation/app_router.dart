@@ -5,13 +5,40 @@ import 'package:ronditrack/app/navigation/ronditrack_shell.dart';
 import 'package:ronditrack/features/home/presentation/home_screen.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
+import 'package:ronditrack/app/navigation/auth_redirect.dart';
+import 'package:ronditrack/core/session/demo_session.dart';
+import 'package:ronditrack/features/activity/presentation/activity_screen.dart';
+import 'package:ronditrack/features/auth/presentation/sign_in_screen.dart';
+import 'package:ronditrack/features/profile/presentation/profile_screen.dart';
 
 part 'app_router.g.dart';
 
 @riverpod
 GoRouter appRouter(Ref ref) {
-  final router = GoRouter(routes: $appRoutes);
-  ref.onDispose(router.dispose);
+  final session = ValueNotifier<DemoPersona?>(ref.read(demoSessionProvider));
+
+  final router = GoRouter(
+    routes: $appRoutes,
+    refreshListenable: session,
+    redirect: (_, state) => authRedirect(
+      location: state.uri,
+      signedIn: session.value != null,
+    ),
+    errorBuilder: (_, _) => Scaffold(
+      appBar: AppBar(title: const Text('RondiTrack')),
+      body: const Center(child: Text('Not found')),
+    ),
+  );
+
+  ref.listen(demoSessionProvider, (_, next) {
+    session.value = next;
+  });
+
+  ref.onDispose(() {
+    router.dispose();
+    session.dispose();
+  });
+
   return router;
 }
 
@@ -122,7 +149,7 @@ class ActivityRoute extends GoRouteData with $ActivityRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const _TabRoot('Activity');
+    return const ActivityScreen();
   }
 }
 
@@ -131,17 +158,18 @@ class ProfileRoute extends GoRouteData with $ProfileRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const _TabRoot('Profile');
+    return const ProfileScreen();
   }
 }
 
-class _TabRoot extends StatelessWidget {
-  const new(this.title);
+@TypedGoRoute<SignInRoute>(path: signInPath)
+class SignInRoute extends GoRouteData with $SignInRoute {
+  const new({this.from});
 
-  final String title;
+  final String? from;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: Text(title)));
+  Widget build(BuildContext context, GoRouterState state) {
+    return const SignInScreen();
   }
 }

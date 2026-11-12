@@ -12,7 +12,11 @@ class StokvelsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userId = ref.watch(demoSessionProvider).name;
+    final persona = ref.watch(demoSessionProvider);
+    if (persona == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final userId = persona.name;
     final provider = homeProvider(userId);
     final view = homeViewState(ref.watch(provider));
 
