@@ -5,21 +5,17 @@ import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 
 /// Serves the detail fixtures for the demo memberships.
 final class FakeStokvelRepository implements StokvelRepository {
-  /// Creates the fixture repository with configurable delays.
-  const new({
+    const new({
     this.delay = const Duration(milliseconds: 350),
     this.workDelay,
     this.failRequests = false,
+    this.nalediJoinedFamily = false,
   });
 
-  /// The default fixture response delay.
   final Duration delay;
-
-  /// An optional longer delay for Work Savers.
   final Duration? workDelay;
-
-  /// Simulates a failed request for a valid membership.
   final bool failRequests;
+  final bool nalediJoinedFamily;
 
   static const _familyCycleId = 'family-cycle-1';
   static const _workCycleId = 'work-cycle-1';
@@ -116,14 +112,26 @@ final class FakeStokvelRepository implements StokvelRepository {
       await Future<void>.delayed(wait);
     }
 
+      final family = nalediJoinedFamily
+        ? _family.copyWith(
+            memberCount: _family.memberCount + 1,
+            currentCycle: _family.currentCycle!.copyWith(
+              targetAmount: const Cents(200_000),
+              amountOutstanding: const Cents(149_990),
+            ),
+          )
+        : _family;
+
     final stokvel = switch ((userId, stokvelId)) {
-      ('lerato', 'family-savers') => _family,
-      ('nandi', 'family-savers') => _family.copyWith(
-        membership: const Membership(
-          stokvelId: 'family-savers',
-          role: StokvelRole.member,
+      ('lerato', 'family-savers') => family,
+      ('nandi' || 'naledi', 'family-savers')
+          when userId == 'nandi' || nalediJoinedFamily =>
+        family.copyWith(
+          membership: const Membership(
+            stokvelId: 'family-savers',
+            role: StokvelRole.member,
+          ),
         ),
-      ),
       ('lerato', 'work-savers') => _work,
       _ => null,
     };

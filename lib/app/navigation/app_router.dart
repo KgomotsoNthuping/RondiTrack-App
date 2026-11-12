@@ -10,20 +10,23 @@ import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/features/activity/presentation/activity_screen.dart';
 import 'package:ronditrack/features/auth/presentation/sign_in_screen.dart';
 import 'package:ronditrack/features/profile/presentation/profile_screen.dart';
+import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/features/invites/presentation/invite_preview_screen.dart';
 
 part 'app_router.g.dart';
 
 @riverpod
-GoRouter appRouter(Ref ref) {
+GoRouter appRouter(Ref ref, AppFlavor flavor) {
   final session = ValueNotifier<DemoPersona?>(ref.read(demoSessionProvider));
 
   final router = GoRouter(
     routes: $appRoutes,
     refreshListenable: session,
     redirect: (_, state) => authRedirect(
-      location: state.uri,
-      signedIn: session.value != null,
-    ),
+    location: state.uri,
+    signedIn: session.value != null,
+    appLinkScheme: 'ronditrack-${flavor.name}',
+  ),
     errorBuilder: (_, _) => Scaffold(
       appBar: AppBar(title: const Text('RondiTrack')),
       body: const Center(child: Text('Not found')),
@@ -45,7 +48,12 @@ GoRouter appRouter(Ref ref) {
 @TypedStatefulShellRoute<AppShellRoute>(
   branches: [
     TypedStatefulShellBranch<HomeBranch>(
-      routes: [TypedGoRoute<HomeRoute>(path: '/')],
+      routes: [
+        TypedGoRoute<HomeRoute>(
+          path: '/',
+          routes: [TypedGoRoute<JoinRoute>(path: 'join/:code')],
+        ),
+      ],
     ),
     TypedStatefulShellBranch<StokvelsBranch>(
       routes: [
@@ -105,6 +113,17 @@ class HomeRoute extends GoRouteData with $HomeRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const HomeScreen();
+  }
+}
+
+class JoinRoute extends GoRouteData with $JoinRoute {
+  const new({required this.code});
+
+  final String code;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return InvitePreviewScreen(key: ValueKey(code), code: code);
   }
 }
 

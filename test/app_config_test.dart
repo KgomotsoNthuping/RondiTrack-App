@@ -39,10 +39,11 @@ void main() {
   });
 
   for (final flavor in AppFlavor.values) {
-    test('accepts config/${flavor.name}.json for its build', () async {
-      final file = File('config/${flavor.name}.json');
-      final json =
-          jsonDecode(await file.readAsString()) as Map<String, Object?>;
+    final path = 'lib/core/config/${flavor.name}.json';
+
+    test('accepts $path for its build', () async {
+      final json = jsonDecode(await File(path).readAsString())
+          as Map<String, Object?>;
       final url = json['API_BASE_URL']! as String;
 
       final config = AppConfig.parse(

@@ -3,23 +3,17 @@ const signInPath = '/sign-in';
 String? authRedirect({
   required Uri location,
   required bool signedIn,
+  String? appLinkScheme,
 }) {
+  if (location.hasScheme || location.hasAuthority) {
+    final target = _nativeReturnAddress(location, appLinkScheme);
+    return signedIn ? target ?? '/' : _signInLocation(target);
+  }
+
   final atSignIn = location.path == signInPath;
 
   if (!signedIn) {
-    if (atSignIn) {
-      return null;
-    }
-
-    final target = _returnAddress(location.toString());
-    if (target == null || target == '/') {
-      return signInPath;
-    }
-
-    return Uri(
-      path: signInPath,
-      queryParameters: {'from': target},
-    ).toString();
+    return atSignIn ? null : _signInLocation(_returnAddress(location.toString()));
   }
 
   if (!atSignIn) {
@@ -31,6 +25,36 @@ String? authRedirect({
   } on FormatException {
     return '/';
   }
+}
+
+String _signInLocation(String? target) {
+  if (target == null || target == '/') {
+    return signInPath;
+  }
+
+  return Uri(
+    path: signInPath,
+    queryParameters: {'from': target},
+  ).toString();
+}
+
+String? _nativeReturnAddress(Uri location, String? appLinkScheme) {
+  if (appLinkScheme == null ||
+      location.scheme != appLinkScheme ||
+      location.host != 'app' ||
+      location.userInfo.isNotEmpty ||
+      location.hasPort ||
+      location.hasFragment) {
+    return null;
+  }
+
+  final path = location.path;
+  if (!path.startsWith('/stokvels/') && !path.startsWith('/join/')) {
+    return null;
+  }
+
+  final target = location.hasQuery ? '$path?${location.query}' : path;
+  return _returnAddress(target);
 }
 
 String? _returnAddress(String? value) {

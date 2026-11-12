@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ronditrack/core/money/cents.dart';
+import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
+import 'package:ronditrack/core/theme/ronditrack_theme.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/domain/home_repository.dart';
 import 'package:ronditrack/features/home/presentation/home_screen.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
-import 'package:ronditrack/core/session/demo_session.dart';
 
 void main() {
   test('maps AsyncValue to the four Home states', () {
@@ -42,8 +43,14 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         retry: (_, _) => null,
-        overrides: [homeRepositoryProvider.overrideWithValue(repository)],
-        child: const MaterialApp(home: HomeScreen()),
+        overrides: [
+          demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
+          homeRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          theme: RondiTrackTheme.light,
+          home: const HomeScreen(),
+        ),
       ),
     );
 
@@ -69,11 +76,18 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         retry: (_, _) => null,
-        overrides: [homeRepositoryProvider.overrideWithValue(repository)],
-        child: const MaterialApp(home: HomeScreen()),
+        overrides: [
+          demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
+          homeRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          theme: RondiTrackTheme.light,
+          home: const HomeScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
+
     expect(find.text('Family Savers'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Switch demo profile'));
@@ -103,8 +117,14 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         retry: (_, _) => null,
-        overrides: [homeRepositoryProvider.overrideWithValue(repository)],
-        child: const MaterialApp(home: HomeScreen()),
+        overrides: [
+          demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
+          homeRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          theme: RondiTrackTheme.light,
+          home: const HomeScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -130,8 +150,14 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         retry: (_, _) => null,
-        overrides: [homeRepositoryProvider.overrideWithValue(repository)],
-        child: const MaterialApp(home: HomeScreen()),
+        overrides: [
+          demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
+          homeRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          theme: RondiTrackTheme.light,
+          home: const HomeScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

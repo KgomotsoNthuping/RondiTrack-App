@@ -16,7 +16,7 @@ class RondiTrackApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: RondiTrackTheme.light,
       darkTheme: RondiTrackTheme.dark,
-      routerConfig: ref.watch(appRouterProvider),
+      routerConfig: ref.watch(appRouterProvider(config.flavor)),
     );
   }
 }

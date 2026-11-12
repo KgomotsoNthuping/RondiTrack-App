@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
 import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/core/session/demo_session.dart';
+import 'package:ronditrack/core/theme/ronditrack_theme.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/data/fake_home_repository.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
@@ -16,7 +18,6 @@ import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
-import 'package:ronditrack/core/session/demo_session.dart';
 
 const _fixtures = FakeStokvelRepository(delay: Duration.zero);
 const _homeFixtures = FakeHomeRepository(delay: Duration.zero);
@@ -36,7 +37,10 @@ void main() {
     });
     final container = ProviderContainer.test(
       retry: (_, _) => null,
-      overrides: [stokvelRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
+        stokvelRepositoryProvider.overrideWithValue(repository),
+      ],
     );
 
     const familyId = 'family-savers';
@@ -51,6 +55,7 @@ void main() {
 
     final familyDetail = first.read().requireValue!;
     final workDetail = other.read().requireValue!;
+
     expect(familyDetail.stokvel.name, 'Family Savers');
     expect(second.read().requireValue, familyDetail);
     expect(workDetail.stokvel.name, 'Work Savers');
@@ -82,9 +87,14 @@ void main() {
     expect(await _fixtures.fetchDetail('naledi', 'family-savers'), isNull);
   });
 
-  testWidgets('switches to Work Savers loading on the next frame', (tester) async {
+  testWidgets('switches to Work Savers loading on the next frame', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(800, 1100);
+    addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
+
     _setInitialLocation(
       tester,
       const StokvelDetailRoute(id: 'family-savers').location,
@@ -101,6 +111,7 @@ void main() {
       ProviderScope(
         retry: (_, _) => null,
         overrides: [
+          demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
           homeRepositoryProvider.overrideWithValue(_homeFixtures),
           stokvelRepositoryProvider.overrideWithValue(repository),
         ],
@@ -110,6 +121,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final router = GoRouter.of(tester.element(find.byType(StokvelDetailScreen)));
+
     expect(find.text('Treasurer'), findsOneWidget);
     expect(find.text('Close cycle'), findsOneWidget);
     expect(find.text('Nandi'), findsOneWidget);
@@ -121,7 +133,10 @@ void main() {
     await tester.tap(find.text('Work Savers'));
     await tester.pump();
 
-    expect(router.routeInformationProvider.value.uri.path, '/stokvels/work-savers');
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      '/stokvels/work-savers',
+    );
     expect(find.text('Loading Work Savers'), findsOneWidget);
     expect(find.text('Nandi'), findsNothing);
     expect(find.text('Close cycle'), findsNothing);
@@ -136,7 +151,9 @@ void main() {
     expect(find.text('R\u00A0300,00'), findsOneWidget);
   });
 
-  testWidgets('a direct cycle link keeps its stack when switching tabs', (tester) async {
+  testWidgets('a direct cycle link keeps its stack when switching tabs', (
+    tester,
+  ) async {
     const route = StokvelCycleRoute(
       id: 'family-savers',
       cycleId: 'family-cycle-1',
@@ -147,6 +164,7 @@ void main() {
       ProviderScope(
         retry: (_, _) => null,
         overrides: [
+          demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
           homeRepositoryProvider.overrideWithValue(_homeFixtures),
           stokvelRepositoryProvider.overrideWithValue(_fixtures),
         ],
@@ -156,6 +174,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final router = GoRouter.of(tester.element(find.byType(StokvelCycleScreen)));
+
     expect(find.text('Cycle details'), findsOneWidget);
     expect(router.routeInformationProvider.value.uri.path, route.location);
 
@@ -171,7 +190,10 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.byType(StokvelDetailScreen), findsOneWidget);
-    expect(router.routeInformationProvider.value.uri.path, '/stokvels/family-savers');
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      '/stokvels/family-savers',
+    );
 
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -179,7 +201,9 @@ void main() {
     expect(router.routeInformationProvider.value.uri.path, '/stokvels');
   });
 
-  testWidgets('shows not found for a cycle from another stokvel', (tester) async {
+  testWidgets('shows not found for a cycle from another stokvel', (
+    tester,
+  ) async {
     _setInitialLocation(
       tester,
       const StokvelCycleRoute(
@@ -192,6 +216,7 @@ void main() {
       ProviderScope(
         retry: (_, _) => null,
         overrides: [
+          demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
           homeRepositoryProvider.overrideWithValue(_homeFixtures),
           stokvelRepositoryProvider.overrideWithValue(_fixtures),
         ],
@@ -204,7 +229,9 @@ void main() {
     expect(find.text('Contributions'), findsNothing);
   });
 
-  testWidgets('shows empty detail when the stokvel has no activity', (tester) async {
+  testWidgets('shows empty detail when the stokvel has no activity', (
+    tester,
+  ) async {
     final repository = _StubRepository((userId, id) async {
       final stokvel = await _fixtures.fetchDetail(userId, id);
       return stokvel?.copyWith(currentCycle: null, contributions: const []);
@@ -214,11 +241,13 @@ void main() {
       ProviderScope(
         retry: (_, _) => null,
         overrides: [
+          demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
           homeRepositoryProvider.overrideWithValue(_homeFixtures),
           stokvelRepositoryProvider.overrideWithValue(repository),
         ],
-        child: const MaterialApp(
-          home: StokvelDetailScreen(stokvelId: 'family-savers'),
+        child: MaterialApp(
+          theme: RondiTrackTheme.light,
+          home: const StokvelDetailScreen(stokvelId: 'family-savers'),
         ),
       ),
     );
@@ -236,11 +265,13 @@ void main() {
       ProviderScope(
         retry: (_, _) => null,
         overrides: [
+          demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
           homeRepositoryProvider.overrideWithValue(_homeFixtures),
           stokvelRepositoryProvider.overrideWithValue(_fixtures),
         ],
-        child: const MaterialApp(
-          home: StokvelDetailScreen(stokvelId: 'missing'),
+        child: MaterialApp(
+          theme: RondiTrackTheme.light,
+          home: const StokvelDetailScreen(stokvelId: 'missing'),
         ),
       ),
     );
@@ -264,11 +295,13 @@ void main() {
       ProviderScope(
         retry: (_, _) => null,
         overrides: [
+          demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
           homeRepositoryProvider.overrideWithValue(_homeFixtures),
           stokvelRepositoryProvider.overrideWithValue(repository),
         ],
-        child: const MaterialApp(
-          home: StokvelDetailScreen(stokvelId: 'family-savers'),
+        child: MaterialApp(
+          theme: RondiTrackTheme.light,
+          home: const StokvelDetailScreen(stokvelId: 'family-savers'),
         ),
       ),
     );

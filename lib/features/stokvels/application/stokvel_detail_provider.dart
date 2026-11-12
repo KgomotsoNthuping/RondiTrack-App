@@ -6,16 +6,17 @@ import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
+import 'package:ronditrack/features/invites/application/family_invite.dart';
 
 part 'stokvel_detail_provider.g.dart';
 
-/// The stokvel and the actions available to the active member.
 typedef StokvelDetail = ({Stokvel stokvel, Set<StokvelAction> actions});
 
-/// Selects the repository used by stokvel detail.
 @riverpod
-StokvelRepository stokvelRepository(Ref ref) =>
-    const FakeStokvelRepository(workDelay: Duration(seconds: 2));
+StokvelRepository stokvelRepository(Ref ref) => FakeStokvelRepository(
+  workDelay: const Duration(seconds: 2),
+  nalediJoinedFamily: ref.watch(familyInviteProvider),
+);
 
 /// Loads detail and computes the active member's available actions.
 @riverpod

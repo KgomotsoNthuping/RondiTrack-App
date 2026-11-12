@@ -31,22 +31,25 @@ android {
 
         flavorDimensions += "environment"
 
-    productFlavors {
+        productFlavors {
         create("dev") {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             manifestPlaceholders["appLabel"] = "RondiTrack Dev"
+            manifestPlaceholders["deepLinkScheme"] = "ronditrack-dev"
         }
 
         create("staging") {
             dimension = "environment"
             applicationIdSuffix = ".staging"
             manifestPlaceholders["appLabel"] = "RondiTrack Staging"
+            manifestPlaceholders["deepLinkScheme"] = "ronditrack-staging"
         }
 
         create("prod") {
             dimension = "environment"
             manifestPlaceholders["appLabel"] = "RondiTrack"
+            manifestPlaceholders["deepLinkScheme"] = "ronditrack-prod"
         }
     }
 

@@ -5,9 +5,13 @@ import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 
 final class FakeHomeRepository implements HomeRepository {
-  const new({this.delay = const Duration(milliseconds: 350)});
+    const new({
+    this.delay = const Duration(milliseconds: 350),
+    this.nalediJoinedFamily = false,
+  });
 
   final Duration delay;
+  final bool nalediJoinedFamily;
 
   static final _payout = DateTime.utc(2026, 11, 30);
   static const ({int day, int month, int year}) _familyDue = (
@@ -64,6 +68,13 @@ final class FakeHomeRepository implements HomeRepository {
     ),
   ]);
 
+    static final _naledi = List<HomeEntry>.unmodifiable([
+    _nandi.single.copyWith(
+      paidThisCycle: const Cents(0),
+      stillOwed: const Cents(50_000),
+    ),
+  ]);
+
   @override
   Future<List<HomeEntry>> fetchHome(String userId) async {
     if (delay > Duration.zero) {
@@ -73,7 +84,7 @@ final class FakeHomeRepository implements HomeRepository {
     return switch (userId) {
       'lerato' => _lerato,
       'nandi' => _nandi,
-      'naledi' => const <HomeEntry>[],
+      'naledi' => nalediJoinedFamily ? _naledi : const <HomeEntry>[],
       _ => throw StateError('Unknown demo profile.'),
     };
   }

@@ -3,11 +3,14 @@ import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/features/home/data/fake_home_repository.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/domain/home_repository.dart';
+import 'package:ronditrack/features/invites/application/family_invite.dart';
 
 part 'home_provider.g.dart';
 
 @riverpod
-HomeRepository homeRepository(Ref ref) => const FakeHomeRepository();
+HomeRepository homeRepository(Ref ref) => FakeHomeRepository(
+  nalediJoinedFamily: ref.watch(familyInviteProvider),
+);
 
 @riverpod
 class Home extends _$Home {
