@@ -11,10 +11,7 @@ import 'package:ronditrack/features/stokvels/domain/stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
 
 const _fixtures = FakeStokvelRepository(delay: Duration.zero);
-const _names = {
-  'family-savers': 'Family Savers',
-  'work-savers': 'Work Savers',
-};
+const _names = {'family-savers': 'Family Savers', 'work-savers': 'Work Savers'};
 
 void main() {
   test('separates IDs, shares fetches and disposes detail', () async {
@@ -71,7 +68,9 @@ void main() {
     expect(await _fixtures.fetchDetail('naledi', 'family-savers'), isNull);
   });
 
-  testWidgets('switches to Work Savers loading on the next frame', (tester) async {
+  testWidgets('switches to Work Savers loading on the next frame', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(800, 1000);
     addTearDown(tester.view.resetPhysicalSize);
 
@@ -121,7 +120,9 @@ void main() {
     expect(find.text('R\u00A0300,00'), findsOneWidget);
   });
 
-  testWidgets('shows empty detail when the stokvel has no activity', (tester) async {
+  testWidgets('shows empty detail when the stokvel has no activity', (
+    tester,
+  ) async {
     final repository = _StubRepository((userId, id) async {
       final stokvel = await _fixtures.fetchDetail(userId, id);
       return stokvel?.copyWith(currentCycle: null, contributions: const []);
@@ -142,8 +143,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No cycle or contributions yet.'), findsOneWidget);
-    expect(find.text('Check again after your treasurer opens a cycle.'),
-        findsOneWidget);
+    expect(
+      find.text('Check again after your treasurer opens a cycle.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('shows the same not-found state for an unavailable ID', (

@@ -10,7 +10,11 @@ final class FakeHomeRepository implements HomeRepository {
   final Duration delay;
 
   static final _payout = DateTime.utc(2026, 11, 30);
-  static const ({int day, int month, int year}) _familyDue = (year: 2026, month: 10, day: 31);
+  static const ({int day, int month, int year}) _familyDue = (
+    year: 2026,
+    month: 10,
+    day: 31,
+  );
 
   static final _lerato = List<HomeEntry>.unmodifiable([
     HomeEntry(

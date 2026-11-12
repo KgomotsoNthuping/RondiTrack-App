@@ -3,8 +3,18 @@ typedef CalendarDate = ({int year, int month, int day});
 /// Formats a date without applying a time zone.
 String formatCalendarDate(CalendarDate date) {
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   return '${date.day} ${months[date.month - 1]} ${date.year}';
@@ -13,9 +23,11 @@ String formatCalendarDate(CalendarDate date) {
 /// Displays an instant using Johannesburg's UTC+02 time.
 String formatJohannesburgDate(DateTime instant, {bool includeTime = false}) {
   final local = instant.toUtc().add(const Duration(hours: 2));
-  final date = formatCalendarDate(
-    (year: local.year, month: local.month, day: local.day),
-  );
+  final date = formatCalendarDate((
+    year: local.year,
+    month: local.month,
+    day: local.day,
+  ));
 
   if (!includeTime) {
     return date;

@@ -75,11 +75,7 @@ Widget _badge(String label, Color fill, Color ink) {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Text(
         label,
-        style: TextStyle(
-          color: ink,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(color: ink, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     ),
   );

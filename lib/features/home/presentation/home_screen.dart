@@ -19,8 +19,7 @@ class HomeScreen extends ConsumerWidget {
     Future<void> refresh() async {
       try {
         await ref.refresh(provider.future);
-      } on Object {
-      }
+      } on Object {}
     }
 
     final content = switch (homeViewState(snapshot)) {
@@ -85,10 +84,7 @@ class HomeScreen extends ConsumerWidget {
             },
             itemBuilder: (_) => [
               for (final profile in DemoPersona.values)
-                PopupMenuItem(
-                  value: profile,
-                  child: Text(profile.displayName),
-                ),
+                PopupMenuItem(value: profile, child: Text(profile.displayName)),
             ],
           ),
         ],

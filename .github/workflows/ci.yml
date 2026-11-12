@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - feature/assign-10.1
+      - feature/assign-10.2
 
 permissions:
   contents: read

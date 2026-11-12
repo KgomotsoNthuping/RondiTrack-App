@@ -25,7 +25,8 @@ class StokvelDetailScreen extends ConsumerStatefulWidget {
   final Map<String, String> stokvelNames;
 
   @override
-  ConsumerState<StokvelDetailScreen> createState() => _StokvelDetailScreenState();
+  ConsumerState<StokvelDetailScreen> createState() =>
+      _StokvelDetailScreenState();
 }
 
 class _StokvelDetailScreenState extends ConsumerState<StokvelDetailScreen> {
@@ -78,10 +79,7 @@ class _StokvelDetailScreenState extends ConsumerState<StokvelDetailScreen> {
               },
               itemBuilder: (context) => [
                 for (final stokvel in widget.stokvelNames.entries)
-                  PopupMenuItem(
-                    value: stokvel.key,
-                    child: Text(stokvel.value),
-                  ),
+                  PopupMenuItem(value: stokvel.key, child: Text(stokvel.value)),
               ],
             ),
         ],
@@ -136,7 +134,11 @@ List<Widget> _detailContent(BuildContext context, StokvelDetail detail) {
               ],
             ),
             const SizedBox(height: 8),
-            Text(due == null ? 'No due date set' : 'Due ${formatCalendarDate(due)}'),
+            Text(
+              due == null
+                  ? 'No due date set'
+                  : 'Due ${formatCalendarDate(due)}',
+            ),
             Text('Target ${cycle.targetAmount.formatRand()}'),
             Text('Collected ${cycle.totalCollected.formatRand()}'),
             Text('Outstanding ${cycle.amountOutstanding.formatRand()}'),
@@ -199,7 +201,10 @@ class _ContributionCard extends StatelessWidget {
             children: [
               Text(
                 contribution.amount.formatRand(),
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               ContributionStatusBadge(status: contribution.status),
             ],
@@ -227,7 +232,9 @@ class _DetailCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: DefaultTextStyle.merge(
-          style: TextStyle(color: dark ? Colors.white : const Color(0xFF020618)),
+          style: TextStyle(
+            color: dark ? Colors.white : const Color(0xFF020618),
+          ),
           child: child,
         ),
       ),

@@ -14,9 +14,8 @@ typedef StokvelDetail = ({Stokvel stokvel, Set<StokvelAction> actions});
 
 /// Selects the repository used by stokvel detail.
 @riverpod
-StokvelRepository stokvelRepository(Ref ref) => const FakeStokvelRepository(
-  workDelay: Duration(seconds: 2),
-);
+StokvelRepository stokvelRepository(Ref ref) =>
+    const FakeStokvelRepository(workDelay: Duration(seconds: 2));
 
 /// Loads detail and computes the active member's available actions.
 @riverpod
@@ -39,7 +38,11 @@ Future<StokvelDetail?> stokvelDetail(Ref ref, String stokvelId) async {
 
   return (
     stokvel: stokvel,
-    actions: availableActions((stokvel.membership.role, cycle?.status, ownStatus)),
+    actions: availableActions((
+      stokvel.membership.role,
+      cycle?.status,
+      ownStatus,
+    )),
   );
 }
 
