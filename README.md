@@ -31,3 +31,16 @@ loopback address.
 ```sh
 flutter run --flavor dev --dart-define-from-file=config/dev.json --dart-define=API_BASE_URL=http://127.0.0.1:5227
 ```
+
+## Routes
+
+| Address | Screen and tab | Signed out | Not a member | Back goes to |
+| --- | --- | --- | --- | --- |
+| `/` | Home dashboard, Home tab | Sign in, then open Home | Shows the persona's memberships or the empty state | Leaves the app from the tab root |
+| `/stokvels` | Stokvel list, Stokvels tab | Sign in, then open the list | Shows the persona's memberships or the empty state | Leaves the app from the tab root |
+| `/stokvels/:id` | Stokvel detail, Stokvels tab | Sign in, then open the requested stokvel | **Not found**, also used for an unknown stokvel | Stokvel list, including after a cold start |
+| `/stokvels/:id/cycles/:cycleId` | Cycle detail, Stokvels tab | Sign in, then open the requested cycle | **Not found**, also used when the cycle is missing or belongs to another stokvel | Parent stokvel detail, including after a cold start |
+| `/activity` | Activity feed, Activity tab | Sign in, then open Activity | Shows activity from the persona's memberships | Leaves the app from the tab root |
+| `/profile` | Persona and sign-out, Profile tab | Sign in, then open Profile | Shows the signed-in persona | Leaves the app from the tab root |
+| `/sign-in` | Fake email sign-in, outside the tabs | Shows the sign-in form | Membership is checked at the destination | Leaves the app |
+| `/join/:code` | Invite preview, Home tab | Sign in, then open the same invite | A valid invite can be previewed and accepted. An invalid code shows **Not found**. | Home, including after a cold start |
