@@ -17,7 +17,8 @@ final class ScreenData<T> extends ScreenState<T> {
 }
 
 final class ScreenFailure<T> extends ScreenState<T> {
-  const new(this.message);
+  const new(this.message, {this.canRetry = true});
 
   final String message;
+  final bool canRetry;
 }
