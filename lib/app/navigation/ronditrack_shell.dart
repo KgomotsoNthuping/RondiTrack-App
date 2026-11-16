@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/core/config/app_flavor_scope.dart';
 import 'package:ronditrack/core/layout/window_size.dart';
+import 'package:ronditrack/core/session/demo_session.dart';
 
 const _destinations = [
   (label: 'Home', icon: Icons.home_outlined, selectedIcon: Icons.home),
@@ -17,6 +21,7 @@ class RondiTrackShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final compact = WindowSize.of(context) == WindowSize.compact;
+    final showSwitcher = AppFlavorScope.of(context) == AppFlavor.dev;
 
     void selectDestination(int index) {
       if (index != navigationShell.currentIndex) {
@@ -54,6 +59,7 @@ class RondiTrackShell extends StatelessWidget {
           ),
         ],
       ),
+      persistentFooterButtons: showSwitcher ? const [_DemoPersonaMenu()] : null,
       bottomNavigationBar: compact
           ? NavigationBar(
               selectedIndex: navigationShell.currentIndex,
@@ -68,6 +74,38 @@ class RondiTrackShell extends StatelessWidget {
               ],
             )
           : null,
+    );
+  }
+}
+
+class _DemoPersonaMenu extends ConsumerWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final persona = ref.watch(demoSessionProvider);
+    if (persona == null) {
+      return const SizedBox.shrink();
+    }
+
+    return PopupMenuButton<DemoPersona>(
+      tooltip: 'Switch demo profile',
+      initialValue: persona,
+      onSelected: (selected) {
+        ref.read(demoSessionProvider.notifier).select(selected);
+      },
+      itemBuilder: (_) => [
+        for (final profile in DemoPersona.values)
+          CheckedPopupMenuItem(
+            value: profile,
+            checked: profile == persona,
+            child: Text(profile.displayName),
+          ),
+      ],
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        child: Text('Switch demo profile'),
+      ),
     );
   }
 }

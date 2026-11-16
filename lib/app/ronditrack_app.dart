@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/core/config/app_flavor_scope.dart';
 import 'package:ronditrack/core/theme/ronditrack_theme.dart';
 
 class RondiTrackApp extends ConsumerWidget {
@@ -11,12 +12,15 @@ class RondiTrackApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp.router(
-      title: config.flavor.displayName,
-      debugShowCheckedModeBanner: false,
-      theme: RondiTrackTheme.light,
-      darkTheme: RondiTrackTheme.dark,
-      routerConfig: ref.watch(appRouterProvider(config.flavor)),
+    return AppFlavorScope(
+      flavor: config.flavor,
+      child: MaterialApp.router(
+        title: config.flavor.displayName,
+        debugShowCheckedModeBanner: false,
+        theme: RondiTrackTheme.light,
+        darkTheme: RondiTrackTheme.dark,
+        routerConfig: ref.watch(appRouterProvider(config.flavor)),
+      ),
     );
   }
 }

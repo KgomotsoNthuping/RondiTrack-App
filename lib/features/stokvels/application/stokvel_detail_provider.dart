@@ -1,12 +1,12 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
+import 'package:ronditrack/features/invites/application/family_invite.dart';
 import 'package:ronditrack/features/stokvels/data/fake_stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
-import 'package:ronditrack/features/invites/application/family_invite.dart';
 
 part 'stokvel_detail_provider.g.dart';
 
@@ -18,13 +18,13 @@ StokvelRepository stokvelRepository(Ref ref) => FakeStokvelRepository(
   nalediJoinedFamily: ref.watch(familyInviteProvider),
 );
 
-/// Loads detail and computes the active member's available actions.
 @riverpod
 Future<StokvelDetail?> stokvelDetail(Ref ref, String stokvelId) async {
   final userId = ref.watch(demoSessionProvider)?.name;
   if (userId == null) {
     return null;
   }
+
   final repository = ref.watch(stokvelRepositoryProvider);
   final stokvel = await repository.fetchDetail(userId, stokvelId);
   if (stokvel == null) {
@@ -33,6 +33,7 @@ Future<StokvelDetail?> stokvelDetail(Ref ref, String stokvelId) async {
 
   final cycle = stokvel.currentCycle;
   ContributionStatus? ownStatus;
+
   for (final contribution in stokvel.contributions) {
     if (contribution.cycleId == cycle?.id && contribution.userId == userId) {
       ownStatus = contribution.status;
@@ -50,11 +51,11 @@ Future<StokvelDetail?> stokvelDetail(Ref ref, String stokvelId) async {
   );
 }
 
-/// Converts the detail request into a renderable screen state.
 ScreenState<StokvelDetail> stokvelDetailViewState(
   AsyncValue<StokvelDetail?> state,
 ) {
   return state.when(
+    skipLoadingOnReload: false,
     skipLoadingOnRefresh: false,
     loading: () => const ScreenLoading<StokvelDetail>(),
     error: (_, _) =>
@@ -68,6 +69,7 @@ ScreenState<StokvelDetail> stokvelDetailViewState(
       if (stokvel.currentCycle == null && stokvel.contributions.isEmpty) {
         return const ScreenEmpty<StokvelDetail>();
       }
+
       return ScreenData(detail);
     },
   );

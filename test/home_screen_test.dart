@@ -90,9 +90,11 @@ void main() {
 
     expect(find.text('Family Savers'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Switch demo profile'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Naledi'));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HomeScreen)),
+      listen: false,
+    );
+    container.read(demoSessionProvider.notifier).select(DemoPersona.naledi);
     await tester.pumpAndSettle();
 
     expect(find.text('Signed in as Naledi'), findsOneWidget);
@@ -161,6 +163,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+
+    expect(find.text('Family Savers'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Refresh stokvels'));
     await tester.pump();

@@ -33,7 +33,7 @@ class DemoSession extends _$DemoSession {
 
   void select(DemoPersona persona) {
     if (state != null) {
-      state = persona;
+      signIn(persona.email);
     }
   }
 

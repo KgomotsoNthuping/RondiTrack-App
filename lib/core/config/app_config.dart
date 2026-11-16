@@ -1,19 +1,11 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart' show appFlavor;
-import 'package:flutter/services.dart';
 
-/// The build flavours supported by RondiTrack.
 enum AppFlavor {
-  /// Local development.
   dev,
-
-  /// Testing against staging.
   staging,
-
-  /// Production.
   prod;
 
-  /// The name displayed for this build.
   String get displayName => switch (this) {
     AppFlavor.dev => 'RondiTrack Dev',
     AppFlavor.staging => 'RondiTrack Staging',
@@ -21,12 +13,9 @@ enum AppFlavor {
   };
 }
 
-/// The validated configuration for this run.
 final class AppConfig {
   const new _({required this.flavor, required this.apiBaseUrl});
 
-  /// Reads the build flavour and the config supplied at compile time.
-  /// Reads and validates the configuration for the current platform.
   factory fromEnvironment() {
     const configuredFlavor = String.fromEnvironment('APP_FLAVOR');
 
@@ -37,7 +26,6 @@ final class AppConfig {
     );
   }
 
-  /// Validates the config against the selected build flavour.
   factory parse({
     required String? nativeFlavor,
     required String configuredFlavor,
@@ -45,7 +33,7 @@ final class AppConfig {
   }) {
     if (configuredFlavor.isEmpty || apiBaseUrl.isEmpty) {
       throw const FormatException(
-        'Missing app config. Pass --dart-define-from-file with a config file.',
+        'Missing app config. Set APP_FLAVOR and API_BASE_URL.',
       );
     }
 
@@ -79,9 +67,6 @@ final class AppConfig {
     return AppConfig._(flavor: flavor, apiBaseUrl: uri);
   }
 
-  /// The selected build flavour.
   final AppFlavor flavor;
-
-  /// The API base address for this flavour.
   final Uri apiBaseUrl;
 }

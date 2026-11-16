@@ -6,8 +6,6 @@ import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
-import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
-
 
 class HomeScreen extends ConsumerWidget {
   const new({super.key});
@@ -18,6 +16,7 @@ class HomeScreen extends ConsumerWidget {
     if (persona == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+
     final provider = homeProvider(persona.name);
     final snapshot = ref.watch(provider);
 
@@ -68,18 +67,6 @@ class HomeScreen extends ConsumerWidget {
             tooltip: 'Refresh stokvels',
             onPressed: snapshot.isLoading ? null : refresh,
             icon: const Icon(Icons.refresh),
-          ),
-          PopupMenuButton<DemoPersona>(
-            tooltip: 'Switch demo profile',
-            initialValue: persona,
-            icon: const Icon(Icons.account_circle_outlined),
-            onSelected: (profile) {
-              ref.read(demoSessionProvider.notifier).select(profile);
-            },
-            itemBuilder: (_) => [
-              for (final profile in DemoPersona.values)
-                PopupMenuItem(value: profile, child: Text(profile.displayName)),
-            ],
           ),
         ],
       ),
