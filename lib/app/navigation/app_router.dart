@@ -34,11 +34,11 @@ GoRouter appRouter(Ref ref, AppFlavor flavor) {
     ),
   );
 
-  ref.listen(demoSessionProvider, (_, next) {
+  ref..listen(demoSessionProvider, (_, next) {
     session.value = next;
-  });
+  })
 
-  ref.onDispose(() {
+  ..onDispose(() {
     router.dispose();
     session.dispose();
   });

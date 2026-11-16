@@ -25,9 +25,9 @@ Future<List<ActivityEntry>> activityFeed(Ref ref, String userId) async {
       if (stokvel != null)
         for (final contribution in stokvel.contributions)
           (stokvelName: stokvel.name, contribution: contribution),
-  ];
+  ]
 
-  entries.sort((first, second) {
+  ..sort((first, second) {
     final firstDate = first.contribution.paidAtUtc;
     final secondDate = second.contribution.paidAtUtc;
 

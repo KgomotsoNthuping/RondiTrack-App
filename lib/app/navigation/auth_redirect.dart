@@ -60,7 +60,7 @@ String? _returnAddress(String? value) {
   if (value == null ||
       !value.startsWith('/') ||
       value.startsWith('//') ||
-      value.contains('\\')) {
+      value.contains(r'\')) {
     return null;
   }
 
@@ -81,7 +81,7 @@ String? _returnAddress(String? value) {
           segment == '.' ||
           segment == '..' ||
           segment.contains('/') ||
-          segment.contains('\\'),
+          segment.contains(r'\'),
     )) {
       return null;
     }
