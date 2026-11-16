@@ -28,10 +28,7 @@ abstract final class RondiTrackTheme {
   );
 
   static final ThemeData dark = _buildTheme(
-    ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: Brightness.dark,
-    ).copyWith(
+    ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark).copyWith(
       primary: const Color(0xFFBEF264),
       onPrimary: _buttonText,
       primaryContainer: const Color(0xFF344829),

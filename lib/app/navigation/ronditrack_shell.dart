@@ -9,7 +9,11 @@ import 'package:ronditrack/core/session/demo_session.dart';
 const _destinations = [
   (label: 'Home', icon: Icons.home_outlined, selectedIcon: Icons.home),
   (label: 'Stokvels', icon: Icons.groups_outlined, selectedIcon: Icons.groups),
-  (label: 'Activity', icon: Icons.history_outlined, selectedIcon: Icons.history),
+  (
+    label: 'Activity',
+    icon: Icons.history_outlined,
+    selectedIcon: Icons.history,
+  ),
   (label: 'Profile', icon: Icons.person_outline, selectedIcon: Icons.person),
 ];
 
@@ -56,10 +60,7 @@ class RondiTrackShell extends StatelessWidget {
             ),
             const VerticalDivider(width: 1),
           ],
-          Expanded(
-            key: const ValueKey('tab-content'),
-            child: navigationShell,
-          ),
+          Expanded(key: const ValueKey('tab-content'), child: navigationShell),
         ],
       ),
       persistentFooterButtons: showSwitcher ? const [_DemoPersonaMenu()] : null,

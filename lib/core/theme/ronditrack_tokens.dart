@@ -31,10 +31,7 @@ final class RondiTrackTokens extends ThemeExtension<RondiTrackTokens> {
   static const _lime300 = Color(0xFFBBF451);
 
   static const light = RondiTrackTokens._({
-    RondiTrackToken.cardText: (
-      foreground: _slate950,
-      background: Colors.white,
-    ),
+    RondiTrackToken.cardText: (foreground: _slate950, background: Colors.white),
     RondiTrackToken.cardMuted: (
       foreground: Color(0xFF45556C),
       background: Colors.white,
@@ -59,10 +56,7 @@ final class RondiTrackTokens extends ThemeExtension<RondiTrackTokens> {
       foreground: Color(0xFF460809),
       background: Color(0xFFFFE2E2),
     ),
-    RondiTrackToken.open: (
-      foreground: _lime950,
-      background: Color(0xFFD8F999),
-    ),
+    RondiTrackToken.open: (foreground: _lime950, background: Color(0xFFD8F999)),
     RondiTrackToken.closed: (
       foreground: _slate900,
       background: Color(0xFFE2E8F0),
@@ -86,18 +80,12 @@ final class RondiTrackTokens extends ThemeExtension<RondiTrackTokens> {
   });
 
   static const dark = RondiTrackTokens._({
-    RondiTrackToken.cardText: (
-      foreground: Colors.white,
-      background: _slate900,
-    ),
+    RondiTrackToken.cardText: (foreground: Colors.white, background: _slate900),
     RondiTrackToken.cardMuted: (
       foreground: Color(0xFFCAD5E2),
       background: _slate900,
     ),
-    RondiTrackToken.wallet: (
-      foreground: _lime950,
-      background: _lime300,
-    ),
+    RondiTrackToken.wallet: (foreground: _lime950, background: _lime300),
     RondiTrackToken.paidAmount: (
       foreground: Color(0xFFD8F999),
       background: Color(0x66192E03),
@@ -106,30 +94,18 @@ final class RondiTrackTokens extends ThemeExtension<RondiTrackTokens> {
       foreground: Colors.white,
       background: Color(0xFF1D293D),
     ),
-    RondiTrackToken.paidUp: (
-      foreground: _lime950,
-      background: _lime300,
-    ),
+    RondiTrackToken.paidUp: (foreground: _lime950, background: _lime300),
     RondiTrackToken.arrears: (
       foreground: Color(0xFF460809),
       background: Color(0xFFFFA2A2),
     ),
-    RondiTrackToken.open: (
-      foreground: _lime950,
-      background: _lime300,
-    ),
-    RondiTrackToken.closed: (
-      foreground: Colors.white,
-      background: _slate700,
-    ),
+    RondiTrackToken.open: (foreground: _lime950, background: _lime300),
+    RondiTrackToken.closed: (foreground: Colors.white, background: _slate700),
     RondiTrackToken.paidOut: (
       foreground: Color(0xFF162456),
       background: Color(0xFF8EC5FF),
     ),
-    RondiTrackToken.unknown: (
-      foreground: Colors.white,
-      background: _slate700,
-    ),
+    RondiTrackToken.unknown: (foreground: Colors.white, background: _slate700),
     RondiTrackToken.pending: (
       foreground: Color(0xFF461901),
       background: Color(0xFFFFD230),

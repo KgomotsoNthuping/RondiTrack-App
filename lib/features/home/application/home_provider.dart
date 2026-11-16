@@ -8,9 +8,8 @@ import 'package:ronditrack/features/invites/application/family_invite.dart';
 part 'home_provider.g.dart';
 
 @riverpod
-HomeRepository homeRepository(Ref ref) => FakeHomeRepository(
-  nalediJoinedFamily: ref.watch(familyInviteProvider),
-);
+HomeRepository homeRepository(Ref ref) =>
+    FakeHomeRepository(nalediJoinedFamily: ref.watch(familyInviteProvider));
 
 @riverpod
 class Home extends _$Home {

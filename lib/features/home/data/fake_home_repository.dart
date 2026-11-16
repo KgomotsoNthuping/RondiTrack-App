@@ -5,7 +5,7 @@ import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 
 final class FakeHomeRepository implements HomeRepository {
-    const new({
+  const new({
     this.delay = const Duration(milliseconds: 350),
     this.nalediJoinedFamily = false,
   });
@@ -68,7 +68,7 @@ final class FakeHomeRepository implements HomeRepository {
     ),
   ]);
 
-    static final _naledi = List<HomeEntry>.unmodifiable([
+  static final _naledi = List<HomeEntry>.unmodifiable([
     _nandi.single.copyWith(
       paidThisCycle: const Cents(0),
       stillOwed: const Cents(50_000),

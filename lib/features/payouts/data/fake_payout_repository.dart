@@ -23,7 +23,10 @@ final class FakePayoutRepository implements PayoutRepository {
 
   @override
   Future<PayoutOrder> fetchOrder(String userId, PayoutCycleKey cycle) async {
-    final stokvel = await _stokvelRepository.fetchDetail(userId, cycle.stokvelId);
+    final stokvel = await _stokvelRepository.fetchDetail(
+      userId,
+      cycle.stokvelId,
+    );
 
     if (stokvel?.currentCycle?.id != cycle.cycleId) {
       throw const PayoutOrderNotFound();

@@ -52,34 +52,39 @@ void main() {
     expect(order.entries, isEmpty);
   });
 
-  test('non-members, missing stokvels and mismatched cycles get not found',
-      () async {
-    for (final (userId, cycle) in const [
-      ('naledi', _family),
-      ('nandi', _work),
-      ('lerato', (stokvelId: 'missing', cycleId: 'missing')),
-      ('lerato', (stokvelId: 'family-savers', cycleId: 'work-cycle-1')),
-    ]) {
-      await expectLater(
-        _repository.fetchOrder(userId, cycle),
-        throwsA(isA<PayoutOrderNotFound>()),
-      );
-    }
-  });
+  test(
+    'non-members, missing stokvels and mismatched cycles get not found',
+    () async {
+      for (final (userId, cycle) in const [
+        ('naledi', _family),
+        ('nandi', _work),
+        ('lerato', (stokvelId: 'missing', cycleId: 'missing')),
+        ('lerato', (stokvelId: 'family-savers', cycleId: 'work-cycle-1')),
+      ]) {
+        await expectLater(
+          _repository.fetchOrder(userId, cycle),
+          throwsA(isA<PayoutOrderNotFound>()),
+        );
+      }
+    },
+  );
 
-  test('Naledi can read the updated order after joining Family Savers', () async {
-    const repository = FakePayoutRepository(
-      stokvelRepository: FakeStokvelRepository(
-        delay: Duration.zero,
+  test(
+    'Naledi can read the updated order after joining Family Savers',
+    () async {
+      const repository = FakePayoutRepository(
+        stokvelRepository: FakeStokvelRepository(
+          delay: Duration.zero,
+          nalediJoinedFamily: true,
+        ),
         nalediJoinedFamily: true,
-      ),
-      nalediJoinedFamily: true,
-    );
+      );
 
-    final order = await repository.fetchOrder('naledi', _family);
+      final order = await repository.fetchOrder('naledi', _family);
 
-    expect(order.entries.last.userId, 'naledi');
-    expect(order.entries.last.amount, const Cents(200_000));
-    expect(order.entries.last.status, PayoutStatus.waiting);
-  });
+      expect(order.entries.last.userId, 'naledi');
+      expect(order.entries.last.amount, const Cents(200_000));
+      expect(order.entries.last.status, PayoutStatus.waiting);
+    },
+  );
 }

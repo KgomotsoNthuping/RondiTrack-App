@@ -115,7 +115,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final router = GoRouter.of(tester.element(find.byType(StokvelDetailScreen)));
+    final router = GoRouter.of(
+      tester.element(find.byType(StokvelDetailScreen)),
+    );
     expect(find.text('Treasurer'), findsOneWidget);
     expect(find.text('Close cycle'), findsOneWidget);
     expect(find.text('Nandi'), findsOneWidget);
@@ -127,7 +129,10 @@ void main() {
     await tester.tap(find.text('Work Savers'));
     await tester.pump();
 
-    expect(router.routeInformationProvider.value.uri.path, '/stokvels/work-savers');
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      '/stokvels/work-savers',
+    );
     expect(find.text('Loading Work Savers'), findsOneWidget);
     expect(find.text('Nandi'), findsNothing);
     expect(find.text('Close cycle'), findsNothing);
@@ -181,7 +186,10 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.byType(StokvelDetailScreen), findsOneWidget);
-    expect(router.routeInformationProvider.value.uri.path, '/stokvels/family-savers');
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      '/stokvels/family-savers',
+    );
 
     await tester.pageBack();
     await tester.pumpAndSettle();

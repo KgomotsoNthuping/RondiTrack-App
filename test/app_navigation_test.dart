@@ -117,14 +117,20 @@ void main() {
       await tester.pumpAndSettle();
 
       final signedOutRouter = GoRouter.of(tester.element(signIn));
-      expect(signedOutRouter.routeInformationProvider.value.uri.path, '/sign-in');
+      expect(
+        signedOutRouter.routeInformationProvider.value.uri.path,
+        '/sign-in',
+      );
       expect(signedOutRouter.canPop(), isFalse);
       expect(detail, findsNothing);
 
       signedOutRouter.go(location);
       await tester.pumpAndSettle();
 
-      expect(signedOutRouter.routeInformationProvider.value.uri.path, '/sign-in');
+      expect(
+        signedOutRouter.routeInformationProvider.value.uri.path,
+        '/sign-in',
+      );
       expect(signIn, findsOneWidget);
       expect(detail, findsNothing);
     },
@@ -161,10 +167,7 @@ void main() {
       of: card,
       matching: find.text('Paid this cycle'),
     );
-    final owed = find.descendant(
-      of: card,
-      matching: find.text('Still owed'),
-    );
+    final owed = find.descendant(of: card, matching: find.text('Still owed'));
     expect(tester.getTopLeft(owed).dy, greaterThan(tester.getTopLeft(paid).dy));
 
     await tester.scrollUntilVisible(
@@ -208,7 +211,8 @@ void main() {
     tester,
   ) async {
     _setViewport(tester, const Size(1100, 800));
-    final familyLocation = const StokvelDetailRoute(id: 'family-savers').location;
+    final familyLocation = const StokvelDetailRoute(id: 'family-savers')
+        .location;
     final workLocation = const StokvelDetailRoute(id: 'work-savers').location;
     _setInitialLocation(tester, familyLocation);
 

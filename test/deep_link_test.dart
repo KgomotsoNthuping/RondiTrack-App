@@ -33,11 +33,7 @@ void main() {
       expect(signIn.path, signInPath);
       expect(signIn.queryParameters['from'], '/join/family-invite');
       expect(
-        authRedirect(
-          location: signIn,
-          signedIn: true,
-          appLinkScheme: scheme,
-        ),
+        authRedirect(location: signIn, signedIn: true, appLinkScheme: scheme),
         '/join/family-invite',
       );
     }
@@ -80,20 +76,23 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Join stokvel'));
     await tester.pumpAndSettle();
 
-    expect(router.routeInformationProvider.value.uri.path, '/stokvels/family-savers');
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      '/stokvels/family-savers',
+    );
     expect(find.text('Member'), findsOneWidget);
     expect(find.text('Close cycle'), findsNothing);
 
-    const HomeRoute().go(
-      tester.element(find.byType(StokvelDetailScreen)),
-    );
+    const HomeRoute().go(tester.element(find.byType(StokvelDetailScreen)));
     await tester.pumpAndSettle();
 
     expect(find.text('Signed in as Naledi'), findsOneWidget);
     expect(find.text('Family Savers'), findsOneWidget);
   });
 
-  testWidgets('opens a warm link with the role for that stokvel', (tester) async {
+  testWidgets('opens a warm link with the role for that stokvel', (
+    tester,
+  ) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(800, 1100);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -110,7 +109,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final router = GoRouter.of(tester.element(find.byType(StokvelDetailScreen)));
+    final router = GoRouter.of(
+      tester.element(find.byType(StokvelDetailScreen)),
+    );
     expect(find.text('Close cycle'), findsOneWidget);
 
     await router.routeInformationProvider.didPushRouteInformation(
@@ -120,7 +121,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(router.routeInformationProvider.value.uri.path, '/stokvels/work-savers');
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      '/stokvels/work-savers',
+    );
     expect(find.text('Member'), findsOneWidget);
     expect(find.text('Close cycle'), findsNothing);
   });

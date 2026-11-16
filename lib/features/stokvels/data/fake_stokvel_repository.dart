@@ -5,7 +5,7 @@ import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 
 /// Serves the detail fixtures for the demo memberships.
 final class FakeStokvelRepository implements StokvelRepository {
-    const new({
+  const new({
     this.delay = const Duration(milliseconds: 350),
     this.workDelay,
     this.failRequests = false,
@@ -112,7 +112,7 @@ final class FakeStokvelRepository implements StokvelRepository {
       await Future<void>.delayed(wait);
     }
 
-      final family = nalediJoinedFamily
+    final family = nalediJoinedFamily
         ? _family.copyWith(
             memberCount: _family.memberCount + 1,
             currentCycle: _family.currentCycle!.copyWith(

@@ -23,10 +23,13 @@ final _nonNewline = RegExp(r'[^\r\n]');
 
 void main() {
   final sources = {
-    for (final file
-        in Directory('lib/features').listSync(recursive: true).whereType<File>())
+    for (final file in Directory(
+      'lib/features',
+    ).listSync(recursive: true).whereType<File>())
       if (file.path.endsWith('.dart'))
-        file.path.replaceAll('\\', '/'): _removeComments(file.readAsStringSync()),
+        file.path.replaceAll('\\', '/'): _removeComments(
+          file.readAsStringSync(),
+        ),
   };
 
   test('feature files take colours from the theme', () {

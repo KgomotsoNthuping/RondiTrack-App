@@ -3,10 +3,7 @@ import 'package:ronditrack/app/navigation/auth_redirect.dart';
 
 void main() {
   test('opens sign-in for a signed-out user at Home', () {
-    expect(
-      authRedirect(location: Uri.parse('/'), signedIn: false),
-      signInPath,
-    );
+    expect(authRedirect(location: Uri.parse('/'), signedIn: false), signInPath);
     expect(
       authRedirect(location: Uri.parse(signInPath), signedIn: false),
       isNull,
@@ -33,10 +30,7 @@ void main() {
   });
 
   test('opens Home when a signed-in user opens sign-in directly', () {
-    expect(
-      authRedirect(location: Uri.parse(signInPath), signedIn: true),
-      '/',
-    );
+    expect(authRedirect(location: Uri.parse(signInPath), signedIn: true), '/');
   });
 
   test('drops external and unrecognised return addresses', () {
@@ -47,10 +41,7 @@ void main() {
       '/unknown',
       '/sign-in',
     ]) {
-      final location = Uri(
-        path: signInPath,
-        queryParameters: {'from': target},
-      );
+      final location = Uri(path: signInPath, queryParameters: {'from': target});
 
       expect(authRedirect(location: location, signedIn: true), '/');
     }

@@ -185,7 +185,9 @@ void main() {
     await tester.tap(find.byTooltip(_switcherLabel));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(CheckedPopupMenuItem<DemoPersona>, 'Nandi'));
+    await tester.tap(
+      find.widgetWithText(CheckedPopupMenuItem<DemoPersona>, 'Nandi'),
+    );
     await tester.pump();
 
     final container = ProviderScope.containerOf(
@@ -198,7 +200,10 @@ void main() {
     expect(find.text('Close cycle'), findsNothing);
     expect(leratoContribution, findsNothing);
     expect(
-      find.descendant(of: detail, matching: find.byType(CircularProgressIndicator)),
+      find.descendant(
+        of: detail,
+        matching: find.byType(CircularProgressIndicator),
+      ),
       findsOneWidget,
     );
 
@@ -227,7 +232,9 @@ void main() {
     expect(detail, findsNothing);
   });
 
-  testWidgets('opens every address from the README route table', (tester) async {
+  testWidgets('opens every address from the README route table', (
+    tester,
+  ) async {
     _setViewport(tester);
 
     await tester.pumpWidget(

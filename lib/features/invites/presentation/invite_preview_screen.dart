@@ -56,9 +56,8 @@ class InvitePreviewScreen extends ConsumerWidget {
                           .accept(code);
 
                       if (accepted) {
-                        const StokvelDetailRoute(
-                          id: familyInviteStokvelId,
-                        ).go(context);
+                        const StokvelDetailRoute(id: familyInviteStokvelId)
+                            .go(context);
                       }
                     },
                     child: Text(
