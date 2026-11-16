@@ -21,7 +21,10 @@ class RondiTrackShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final compact = WindowSize.of(context) == WindowSize.compact;
-    final showSwitcher = AppFlavorScope.of(context) == AppFlavor.dev;
+    final showSwitcher = switch (AppFlavorScope.of(context)) {
+      AppFlavor.dev => true,
+      AppFlavor.staging || AppFlavor.prod => false,
+    };
 
     void selectDestination(int index) {
       if (index != navigationShell.currentIndex) {
