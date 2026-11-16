@@ -13,7 +13,9 @@ String? authRedirect({
   final atSignIn = location.path == signInPath;
 
   if (!signedIn) {
-    return atSignIn ? null : _signInLocation(_returnAddress(location.toString()));
+    return atSignIn
+        ? null
+        : _signInLocation(_returnAddress(location.toString()));
   }
 
   if (!atSignIn) {
@@ -32,10 +34,7 @@ String _signInLocation(String? target) {
     return signInPath;
   }
 
-  return Uri(
-    path: signInPath,
-    queryParameters: {'from': target},
-  ).toString();
+  return Uri(path: signInPath, queryParameters: {'from': target}).toString();
 }
 
 String? _nativeReturnAddress(Uri location, String? appLinkScheme) {
@@ -93,6 +92,7 @@ String? _returnAddress(String? value) {
       ['profile'] ||
       ['stokvels', _] ||
       ['stokvels', _, 'cycles', _] ||
+      ['stokvels', _, 'cycles', _, 'payouts'] ||
       ['join', _] => uri.toString(),
       _ => null,
     };

@@ -24,9 +24,7 @@ class StokvelDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final persona = ref.watch(demoSessionProvider);
     if (persona == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final entries =
@@ -74,10 +72,7 @@ class StokvelDetailScreen extends ConsumerWidget {
               },
               itemBuilder: (_) => [
                 for (final entry in names.entries)
-                  PopupMenuItem(
-                    value: entry.key,
-                    child: Text(entry.value),
-                  ),
+                  PopupMenuItem(value: entry.key, child: Text(entry.value)),
               ],
             ),
         ],
@@ -112,26 +107,41 @@ class StokvelCycleScreen extends ConsumerWidget {
 
     void retry() => ref.invalidate(provider);
 
-    final children = ref.watch(provider).when<List<Widget>>(
-      skipLoadingOnRefresh: false,
-      loading: () => _loading('Loading cycle'),
-      error: (_, _) => _failure('Could not load this cycle.', retry),
-      data: (detail) {
-        final cycle = detail?.stokvel.currentCycle;
-        if (detail == null || cycle == null || cycle.id != cycleId) {
-          return _failure('Not found', retry);
-        }
+    final children = ref
+        .watch(provider)
+        .when<List<Widget>>(
+          skipLoadingOnRefresh: false,
+          loading: () => _loading('Loading cycle'),
+          error: (_, _) => _failure('Could not load this cycle.', retry),
+          data: (detail) {
+            final cycle = detail?.stokvel.currentCycle;
+            if (detail == null || cycle == null || cycle.id != cycleId) {
+              return _failure('Not found', retry);
+            }
 
-        final contributions = detail.stokvel.contributions.where(
-          (contribution) => contribution.cycleId == cycle.id,
+            final contributions = detail.stokvel.contributions.where(
+              (contribution) => contribution.cycleId == cycle.id,
+            );
+
+            return [
+              _DetailCard(child: _CycleSummary(cycle: cycle)),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton(
+                  onPressed: () {
+                    StokvelPayoutsRoute(
+                      id: stokvelId,
+                      cycleId: cycleId,
+                    ).go(context);
+                  },
+                  child: const Text('View payouts'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ..._contributions(context, contributions),
+            ];
+          },
         );
-
-        return [
-          _DetailCard(child: _CycleSummary(cycle: cycle)),
-          ..._contributions(context, contributions),
-        ];
-      },
-    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Cycle details')),
@@ -255,7 +265,9 @@ class _CycleSummary extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        Text(due == null ? 'No due date set' : 'Due ${formatCalendarDate(due)}'),
+        Text(
+          due == null ? 'No due date set' : 'Due ${formatCalendarDate(due)}',
+        ),
         Text('Target ${cycle.targetAmount.formatRand()}'),
         Text('Collected ${cycle.totalCollected.formatRand()}'),
         Text('Outstanding ${cycle.amountOutstanding.formatRand()}'),
@@ -289,7 +301,10 @@ class _ContributionCard extends StatelessWidget {
             children: [
               Text(
                 contribution.amount.formatRand(),
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               ContributionStatusBadge(status: contribution.status),
             ],
@@ -311,7 +326,9 @@ class _DetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ink = RondiTrackTokens.of(context)[RondiTrackToken.cardText].foreground;
+    final ink = RondiTrackTokens.of(
+      context,
+    )[RondiTrackToken.cardText].foreground;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),

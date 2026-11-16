@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:ronditrack/app/navigation/ronditrack_shell.dart';
-import 'package:ronditrack/features/home/presentation/home_screen.dart';
-import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
-import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 import 'package:ronditrack/app/navigation/auth_redirect.dart';
+import 'package:ronditrack/app/navigation/ronditrack_shell.dart';
+import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/features/activity/presentation/activity_screen.dart';
 import 'package:ronditrack/features/auth/presentation/sign_in_screen.dart';
-import 'package:ronditrack/features/profile/presentation/profile_screen.dart';
-import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/features/home/presentation/home_screen.dart';
 import 'package:ronditrack/features/invites/presentation/invite_preview_screen.dart';
+import 'package:ronditrack/features/payouts/presentation/payouts_screen.dart';
+import 'package:ronditrack/features/profile/presentation/profile_screen.dart';
+import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
+import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -23,10 +24,10 @@ GoRouter appRouter(Ref ref, AppFlavor flavor) {
     routes: $appRoutes,
     refreshListenable: session,
     redirect: (_, state) => authRedirect(
-    location: state.uri,
-    signedIn: session.value != null,
-    appLinkScheme: 'ronditrack-${flavor.name}',
-  ),
+      location: state.uri,
+      signedIn: session.value != null,
+      appLinkScheme: 'ronditrack-${flavor.name}',
+    ),
     errorBuilder: (_, _) => Scaffold(
       appBar: AppBar(title: const Text('RondiTrack')),
       body: const Center(child: Text('Not found')),
@@ -63,7 +64,10 @@ GoRouter appRouter(Ref ref, AppFlavor flavor) {
             TypedGoRoute<StokvelDetailRoute>(
               path: ':id',
               routes: [
-                TypedGoRoute<StokvelCycleRoute>(path: 'cycles/:cycleId'),
+                TypedGoRoute<StokvelCycleRoute>(
+                  path: 'cycles/:cycleId',
+                  routes: [TypedGoRoute<StokvelPayoutsRoute>(path: 'payouts')],
+                ),
               ],
             ),
           ],
@@ -156,6 +160,22 @@ class StokvelCycleRoute extends GoRouteData with $StokvelCycleRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return StokvelCycleScreen(
+      key: ValueKey((id, cycleId)),
+      stokvelId: id,
+      cycleId: cycleId,
+    );
+  }
+}
+
+class StokvelPayoutsRoute extends GoRouteData with $StokvelPayoutsRoute {
+  const new({required this.id, required this.cycleId});
+
+  final String id;
+  final String cycleId;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return PayoutsScreen(
       key: ValueKey((id, cycleId)),
       stokvelId: id,
       cycleId: cycleId,
