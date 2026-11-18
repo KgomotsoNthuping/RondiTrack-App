@@ -27,7 +27,7 @@ void main() {
       'lib/features',
     ).listSync(recursive: true).whereType<File>())
       if (file.path.endsWith('.dart'))
-        file.path.replaceAll('\\', '/'): _removeComments(
+        file.path.replaceAll(r'\', '/'): _removeComments(
           file.readAsStringSync(),
         ),
   };

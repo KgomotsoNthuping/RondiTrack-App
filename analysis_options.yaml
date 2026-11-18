@@ -9,8 +9,10 @@ analyzer:
     lines_longer_than_80_chars: ignore
     prefer_initializing_formals: ignore
     public_member_api_docs: ignore
+    simplify_variable_pattern: ignore
     specify_nonobvious_property_types: ignore
     unnecessary_const_in_enum_constructor: ignore
+    unnecessary_raw_strings: ignore
     unused_import: ignore
     unused_result: ignore
     use_setters_to_change_properties: ignore

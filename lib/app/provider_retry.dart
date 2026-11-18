@@ -1,10 +1,10 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ronditrack/features/payouts/domain/payout_repository.dart';
+import 'package:ronditrack/core/errors/failure.dart';
 
 Duration? appProviderRetry(int retryCount, Object error) {
-  if (error is PayoutOrderNotFound) {
-    return null;
-  }
-
-  return ProviderContainer.defaultRetry(retryCount, error);
+  return switch (error) {
+    OfflineFailure(isRead: true) when retryCount < 2 => Duration(
+      milliseconds: 300 * (1 << retryCount),
+    ),
+    _ => null,
+  };
 }
