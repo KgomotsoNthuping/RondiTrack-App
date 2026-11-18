@@ -61,7 +61,7 @@ void main() {
 
     final rawStokvel = _object(_fixture('stokvel.json'));
     final rawCycle = _object(
-      (_fixture('cycles.json') as List<Object?>).first,
+      (_fixture('cycles.json')! as List<Object?>).first,
     );
 
     expect(stokvel.membership.role, StokvelRole.treasurer);
@@ -204,7 +204,7 @@ Object? _fixture(String name) {
 }
 
 Map<String, Object?> _object(Object? value) {
-  return value as Map<String, Object?>;
+  return value! as Map<String, Object?>;
 }
 
 String _familyId() {
@@ -316,9 +316,7 @@ final class _FixtureAdapter implements HttpClientAdapter {
         status,
         headers: {
           Headers.contentTypeHeader: [
-            status >= 400
-                ? 'application/problem+json'
-                : Headers.jsonContentType,
+            if (status >= 400) 'application/problem+json' else Headers.jsonContentType,
           ],
         },
       ),

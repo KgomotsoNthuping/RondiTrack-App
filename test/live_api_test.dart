@@ -1,3 +1,7 @@
+@Tags(['live'])
+@Timeout(Duration(minutes: 3))
+library;
+
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,190 +29,164 @@ const _missingCycleId = '00000000-0000-0000-0000-000000000000';
 void main() {
   final sessions = <DemoPersona, Result<AccessToken>>{};
 
-  group(
-    'live API providers',
-    () {
-      setUpAll(() async {
-        expect(
-          _apiBaseUrl,
-          isNotEmpty,
-          reason: 'Pass API_BASE_URL for the running development API.',
-        );
-        expect(
-          _password,
-          isNotEmpty,
-          reason: 'Pass DEV_SEED_PASSWORD for the fresh seed.',
-        );
+  group('live API providers', () {
+    setUpAll(() async {
+      expect(
+        _apiBaseUrl,
+        isNotEmpty,
+        reason: 'Pass API_BASE_URL for the running development API.',
+      );
+      expect(
+        _password,
+        isNotEmpty,
+        reason: 'Pass DEV_SEED_PASSWORD for the fresh seed.',
+      );
 
-        final container = _container(_apiBaseUrl);
+      final container = _container(_apiBaseUrl);
 
-        try {
-          for (final persona in DemoPersona.values) {
-            final accepted = await container
-                .read(devSignInProvider.notifier)
-                .signIn(persona.email);
+      try {
+        for (final persona in DemoPersona.values) {
+          final accepted = await container
+              .read(devSignInProvider.notifier)
+              .signIn(persona.email);
 
-            final token = container.read(accessTokenStoreProvider);
+          final token = container.read(accessTokenStoreProvider);
 
-            if (accepted && token != null) {
-              sessions[persona] = Ok(token);
-            } else {
-              final error = container.read(devSignInProvider).error;
+          if (accepted && token != null) {
+            sessions[persona] = Ok(token);
+          } else {
+            final error = container.read(devSignInProvider).error;
 
-              sessions[persona] = Err(
-                error is Failure ? error : const ServerFailure(),
-              );
-            }
+            sessions[persona] = Err(
+              error is Failure ? error : const ServerFailure(),
+            );
           }
-        } finally {
-          container.dispose();
+        }
+      } finally {
+        container.dispose();
+      }
+    });
+
+    for (final persona in DemoPersona.values) {
+      test('${persona.displayName} Home comes from the API', () async {
+        final container = _signedIn(persona, sessions);
+        addTearDown(container.dispose);
+
+        final entries = await container.read(homeProvider(persona.name).future);
+
+        switch (persona) {
+          case DemoPersona.lerato:
+            expect(entries, hasLength(2));
+            expect(
+              entries
+                  .singleWhere((entry) => entry.name == 'Family Savers')
+                  .membership
+                  .role,
+              StokvelRole.treasurer,
+            );
+            expect(
+              entries
+                  .singleWhere((entry) => entry.name == 'Work Savers')
+                  .membership
+                  .role,
+              StokvelRole.member,
+            );
+
+          case DemoPersona.nandi:
+            expect(entries, hasLength(1));
+            expect(entries.single.name, 'Family Savers');
+            expect(entries.single.membership.role, StokvelRole.member);
+
+          case DemoPersona.naledi:
+            expect(entries, isEmpty);
+        }
+      });
+    }
+
+    test('a non-member receives NotFound', () async {
+      final lerato = _signedIn(DemoPersona.lerato, sessions);
+      final nandi = _signedIn(DemoPersona.nandi, sessions);
+
+      addTearDown(lerato.dispose);
+      addTearDown(nandi.dispose);
+
+      final entries = await lerato.read(
+        homeProvider(DemoPersona.lerato.name).future,
+      );
+
+      final work = entries.singleWhere((entry) => entry.name == 'Work Savers');
+
+      final provider = stokvelDetailProvider(work.membership.stokvelId);
+
+      await expectLater(
+        nandi.read(provider.future),
+        throwsA(isA<NotFoundFailure>()),
+      );
+
+      expect(nandi.read(provider).error, isA<NotFoundFailure>());
+    });
+
+    test('a member receives Forbidden and stays signed in', () async {
+      final container = _signedIn(DemoPersona.nandi, sessions);
+      addTearDown(container.dispose);
+
+      final entries = await container.read(
+        homeProvider(DemoPersona.nandi.name).future,
+      );
+
+      final familyId = entries.single.membership.stokvelId;
+
+      final probe = FutureProvider<void>((ref) async {
+        final result = await apiResult(
+          () => ref
+              .read(apiDioProvider)
+              .post<Object?>(
+                '/api/v1/stokvels/$familyId/'
+                'cycles/$_missingCycleId/payout',
+              ),
+          isRead: false,
+        );
+
+        switch (result) {
+          case Err(:final failure):
+            throw failure;
+          case Ok():
+            fail('The forbidden probe unexpectedly succeeded.');
         }
       });
 
-      for (final persona in DemoPersona.values) {
-        test('${persona.displayName} Home comes from the API', () async {
-          final container = _signedIn(persona, sessions);
-          addTearDown(container.dispose);
+      await expectLater(
+        container.read(probe.future),
+        throwsA(isA<ForbiddenFailure>()),
+      );
 
-          final entries = await container.read(
-            homeProvider(persona.name).future,
-          );
+      expect(container.read(demoSessionProvider), DemoPersona.nandi);
+      expect(container.read(accessTokenStoreProvider), isNotNull);
+    });
 
-          switch (persona) {
-            case DemoPersona.lerato:
-              expect(entries, hasLength(2));
-              expect(
-                entries.singleWhere(
-                  (entry) => entry.name == 'Family Savers',
-                ).membership.role,
-                StokvelRole.treasurer,
-              );
-              expect(
-                entries.singleWhere(
-                  (entry) => entry.name == 'Work Savers',
-                ).membership.role,
-                StokvelRole.member,
-              );
+    test('an unavailable address becomes OfflineFailure', () async {
+      final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
 
-            case DemoPersona.nandi:
-              expect(entries, hasLength(1));
-              expect(entries.single.name, 'Family Savers');
-              expect(
-                entries.single.membership.role,
-                StokvelRole.member,
-              );
+      final unavailable = 'http://127.0.0.1:${socket.port}';
+      await socket.close();
 
-            case DemoPersona.naledi:
-              expect(entries, isEmpty);
-          }
-        });
-      }
+      final container = _signedIn(
+        DemoPersona.lerato,
+        sessions,
+        baseUrl: unavailable,
+      );
+      addTearDown(container.dispose);
 
-      test('a non-member receives NotFound', () async {
-        final lerato = _signedIn(DemoPersona.lerato, sessions);
-        final nandi = _signedIn(DemoPersona.nandi, sessions);
+      final provider = homeProvider(DemoPersona.lerato.name);
 
-        addTearDown(lerato.dispose);
-        addTearDown(nandi.dispose);
+      await expectLater(
+        container.read(provider.future),
+        throwsA(isA<OfflineFailure>()),
+      );
 
-        final entries = await lerato.read(
-          homeProvider(DemoPersona.lerato.name).future,
-        );
-
-        final work = entries.singleWhere(
-          (entry) => entry.name == 'Work Savers',
-        );
-
-        final provider = stokvelDetailProvider(
-          work.membership.stokvelId,
-        );
-
-        await expectLater(
-          nandi.read(provider.future),
-          throwsA(isA<NotFoundFailure>()),
-        );
-
-        expect(
-          nandi.read(provider).error,
-          isA<NotFoundFailure>(),
-        );
-      });
-
-      test('a member receives Forbidden and stays signed in', () async {
-        final container = _signedIn(DemoPersona.nandi, sessions);
-        addTearDown(container.dispose);
-
-        final entries = await container.read(
-          homeProvider(DemoPersona.nandi.name).future,
-        );
-
-        final familyId = entries.single.membership.stokvelId;
-
-        final probe = FutureProvider<void>((ref) async {
-          final result = await apiResult(
-            () => ref.read(apiDioProvider).post<Object?>(
-              '/api/v1/stokvels/$familyId/'
-              'cycles/$_missingCycleId/payout',
-            ),
-            isRead: false,
-          );
-
-          switch (result) {
-            case Err(:final failure):
-              throw failure;
-            case Ok():
-              fail('The forbidden probe unexpectedly succeeded.');
-          }
-        });
-
-        await expectLater(
-          container.read(probe.future),
-          throwsA(isA<ForbiddenFailure>()),
-        );
-
-        expect(
-          container.read(demoSessionProvider),
-          DemoPersona.nandi,
-        );
-        expect(
-          container.read(accessTokenStoreProvider),
-          isNotNull,
-        );
-      });
-
-      test('an unavailable address becomes OfflineFailure', () async {
-        final socket = await ServerSocket.bind(
-          InternetAddress.loopbackIPv4,
-          0,
-        );
-
-        final unavailable = 'http://127.0.0.1:${socket.port}';
-        await socket.close();
-
-        final container = _signedIn(
-          DemoPersona.lerato,
-          sessions,
-          baseUrl: unavailable,
-        );
-        addTearDown(container.dispose);
-
-        final provider = homeProvider(DemoPersona.lerato.name);
-
-        await expectLater(
-          container.read(provider.future),
-          throwsA(isA<OfflineFailure>()),
-        );
-
-        expect(
-          container.read(provider).error,
-          isA<OfflineFailure>(),
-        );
-      });
-    },
-    tags: ['live'],
-    skip: !_enabled,
-    timeout: const Timeout(Duration(minutes: 3)),
-  );
+      expect(container.read(provider).error, isA<OfflineFailure>());
+    });
+  }, skip: !_enabled);
 }
 
 ProviderContainer _container(String baseUrl) {
@@ -244,11 +222,13 @@ ProviderContainer _signedIn(
   final container = _container(baseUrl ?? _apiBaseUrl);
 
   container.read(demoSessionProvider.notifier).signIn(persona.email);
-  container.read(accessTokenStoreProvider.notifier).save(
-    value: token.value,
-    expiresAtUtc: token.expiresAtUtc,
-    userId: token.userId,
-  );
+  container
+      .read(accessTokenStoreProvider.notifier)
+      .save(
+        value: token.value,
+        expiresAtUtc: token.expiresAtUtc,
+        userId: token.userId,
+      );
 
   return container;
 }

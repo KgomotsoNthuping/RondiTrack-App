@@ -41,7 +41,7 @@ void main() {
       if (file.path.endsWith('.dart') &&
           !file.path.endsWith('.g.dart') &&
           !file.path.endsWith('.freezed.dart') &&
-          !file.path.replaceAll('\\', '/').contains('/generated/'))
+          !file.path.replaceAll(r'\', '/').contains('/generated/'))
         file.absolute.uri: _removeComments(file.readAsStringSync()),
   };
 
