@@ -20,26 +20,25 @@ Future<List<ActivityEntry>> activityFeed(Ref ref, String userId) async {
     ),
   );
 
-  final entries = <ActivityEntry>[
-    for (final stokvel in stokvels)
-      if (stokvel != null)
-        for (final contribution in stokvel.contributions)
-          (stokvelName: stokvel.name, contribution: contribution),
-  ]
+  final entries =
+      <ActivityEntry>[
+        for (final stokvel in stokvels)
+          if (stokvel != null)
+            for (final contribution in stokvel.contributions)
+              (stokvelName: stokvel.name, contribution: contribution),
+      ]..sort((first, second) {
+        final firstDate = first.contribution.paidAtUtc;
+        final secondDate = second.contribution.paidAtUtc;
 
-  ..sort((first, second) {
-    final firstDate = first.contribution.paidAtUtc;
-    final secondDate = second.contribution.paidAtUtc;
+        if (firstDate == null) {
+          return secondDate == null ? 0 : 1;
+        }
+        if (secondDate == null) {
+          return -1;
+        }
 
-    if (firstDate == null) {
-      return secondDate == null ? 0 : 1;
-    }
-    if (secondDate == null) {
-      return -1;
-    }
-
-    return secondDate.compareTo(firstDate);
-  });
+        return secondDate.compareTo(firstDate);
+      });
 
   return entries;
 }

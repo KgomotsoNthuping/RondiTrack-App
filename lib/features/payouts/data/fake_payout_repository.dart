@@ -12,8 +12,10 @@ final class FakePayoutRepository implements PayoutRepository {
   final StokvelRepository _stokvelRepository;
   final bool nalediJoinedFamily;
 
-  static final _family = _familyOrder(includeNaledi: false);
-  static final _familyAfterInvite = _familyOrder(includeNaledi: true);
+  static final PayoutOrder _family = _familyOrder(includeNaledi: false);
+  static final PayoutOrder _familyAfterInvite = _familyOrder(
+    includeNaledi: true,
+  );
 
   static const _work = PayoutOrder(
     stokvelId: 'work-savers',

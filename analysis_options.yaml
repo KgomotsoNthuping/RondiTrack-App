@@ -2,10 +2,14 @@ include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
   errors:
+    async_return_with_no_await: ignore
+    cascade_invocations: ignore
     empty_catches: ignore
     eol_at_end_of_file: ignore
     lines_longer_than_80_chars: ignore
+    prefer_initializing_formals: ignore
     public_member_api_docs: ignore
+    specify_nonobvious_property_types: ignore
     unnecessary_const_in_enum_constructor: ignore
     unused_import: ignore
     unused_result: ignore

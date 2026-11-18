@@ -169,6 +169,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.14"
+  dio:
+    dependency: "direct main"
+    description:
+      name: dio
+      sha256: "852ec3b48cc431ac04fff978413c541502b67ffc3e26921e74e3d994694192c1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.11.1"
+  dio_web_adapter:
+    dependency: transitive
+    description:
+      name: dio_web_adapter
+      sha256: "3a1b2cd7be71086f38504956e3ebcd2837288d231ff454bafa78021244102bfc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.2"
   fake_async:
     dependency: transitive
     description:
@@ -302,13 +318,21 @@ packages:
     source: hosted
     version: "1.1.0"
   json_annotation:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: json_annotation
       sha256: "2a743920d81b7910627f68ee2c9ac1fc0bfee32b9fc3403587d7c6791ca12f80"
       url: "https://pub.dev"
     source: hosted
     version: "4.12.0"
+  json_serializable:
+    dependency: "direct dev"
+    description:
+      name: json_serializable
+      sha256: cc7822761b40be9237bcaae62b755ffe5453ceff96a0001f1f5f2439251c66f1
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.15.2"
   leak_tracker:
     dependency: transitive
     description:
@@ -421,6 +445,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.3"
+  protobuf:
+    dependency: transitive
+    description:
+      name: protobuf
+      sha256: "13b6717366aa7ec3792dd62c19c7d33a785708224365f2db23c5ca01f1c1a0f2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.1.0"
   pub_semver:
     dependency: transitive
     description:
@@ -437,6 +469,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.7.0"
+  retrofit:
+    dependency: "direct main"
+    description:
+      name: retrofit
+      sha256: d700c1e7599bc6327cbe19ec7a2c87b595f6063ce888e8015f30cab655972331
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.10.0"
+  retrofit_generator:
+    dependency: "direct dev"
+    description:
+      name: retrofit_generator
+      sha256: "756d252a6089e18209e5cf515f18784b80819b1a09abcc2ba3dcdafeb0246004"
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.3.3"
   riverpod:
     dependency: transitive
     description:
@@ -554,6 +602,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  swagger_parser:
+    dependency: "direct dev"
+    description:
+      name: swagger_parser
+      sha256: "63cfd702a20a21fdef86d431c18353fb3e8de0781a816ffbbedd8b5caa93a0b7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.45.1"
   term_glyph:
     dependency: transitive
     description:

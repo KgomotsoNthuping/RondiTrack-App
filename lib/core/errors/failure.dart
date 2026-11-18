@@ -13,7 +13,7 @@ sealed class Failure implements Exception {
 }
 
 final class ValidationFailure extends Failure {
-  ValidationFailure({
+  new({
     required Map<String, List<String>> errors,
     super.detail,
     super.correlationId,
@@ -65,11 +65,7 @@ final class RuleFailure extends Failure {
 }
 
 final class RateLimitedFailure extends Failure {
-  const new({
-    this.retryAfterSeconds,
-    super.detail,
-    super.correlationId,
-  });
+  const new({this.retryAfterSeconds, super.detail, super.correlationId});
 
   final int? retryAfterSeconds;
 

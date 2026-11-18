@@ -5,15 +5,9 @@ import 'package:ronditrack/core/result/result.dart';
 void main() {
   test('failures provide their own messages', () {
     final cases = <(Failure, String)>[
-      (
-        ValidationFailure(errors: const {}),
-        'Check the highlighted fields.',
-      ),
+      (ValidationFailure(errors: const {}), 'Check the highlighted fields.'),
       (const UnauthorizedFailure(), 'Please sign in again.'),
-      (
-        const ForbiddenFailure(),
-        'You do not have permission to do that.',
-      ),
+      (const ForbiddenFailure(), 'You do not have permission to do that.'),
       (const NotFoundFailure(), 'Not found'),
       (
         const ConflictFailure(),

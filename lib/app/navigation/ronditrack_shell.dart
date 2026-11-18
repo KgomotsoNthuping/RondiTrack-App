@@ -6,7 +6,8 @@ import 'package:ronditrack/core/config/app_flavor_scope.dart';
 import 'package:ronditrack/core/layout/window_size.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 
-const List<({IconData icon, String label, IconData selectedIcon})> _destinations = [
+const List<({IconData icon, String label, IconData selectedIcon})>
+_destinations = [
   (label: 'Home', icon: Icons.home_outlined, selectedIcon: Icons.home),
   (label: 'Stokvels', icon: Icons.groups_outlined, selectedIcon: Icons.groups),
   (

@@ -8,6 +8,14 @@ on:
       - feature/assign-10.1
       - feature/assign-10.2
       - feature/assign-10.3
+      - feature/assign-11.1
+  workflow_dispatch:
+    inputs:
+      api_ref:
+        description: API branch or commit for contract comparison
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -16,7 +24,7 @@ jobs:
   checks:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout
+      - name: Checkout app
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
@@ -32,13 +40,50 @@ jobs:
         run: flutter pub get --enforce-lockfile
 
       - name: Check formatting
-        run: dart format --output=none --set-exit-if-changed lib test
+        run: dart format --output=none --set-exit-if-changed lib test tool
 
-      - name: Generate Dart code
-        run: dart run build_runner build
+      - name: Check generated client drift
+        run: dart run tool/check_api_drift.dart
 
-      - name: Analyze with Riverpod lints
+      - name: Analyze
         run: dart analyze --fatal-infos
 
       - name: Run Flutter tests
-        run: flutter test --no-pub
+        run: flutter test --no-pub --exclude-tags live
+
+  contract-copy:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout app
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+
+      - name: Read API contract source
+        id: source
+        env:
+          API_REF_OVERRIDE: ${{ inputs.api_ref }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          source = json.loads(Path("contract/source.json").read_text(encoding="utf-8-sig"))
+          ref = os.environ.get("API_REF_OVERRIDE", "").strip() or source["ref"]
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"repository={source['repository']}\n")
+              output.write(f"ref={ref}\n")
+          PY
+
+      - name: Checkout API contract source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: ${{ steps.source.outputs.repository }}
+          ref: ${{ steps.source.outputs.ref }}
+          path: api-contract-source
+          persist-credentials: false
+
+      - name: Compare the contract copies
+        run: python tool/check_api_contract.py api-contract-source

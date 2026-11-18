@@ -140,8 +140,8 @@ void main() {
     tester,
   ) async {
     _setViewport(tester, const Size(360, 640));
-    final dispatcher = tester.binding.platformDispatcher;
-    dispatcher.textScaleFactorTestValue = 2;
+    final dispatcher = tester.binding.platformDispatcher
+      ..textScaleFactorTestValue = 2;
     addTearDown(dispatcher.clearTextScaleFactorTestValue);
 
     await tester.pumpWidget(

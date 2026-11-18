@@ -44,3 +44,34 @@ flutter run --flavor dev --dart-define-from-file=config/dev.json --dart-define=A
 | `/profile` | Persona and sign-out, Profile tab | Sign in, then open Profile | Shows the signed-in persona | Leaves the app from the tab root |
 | `/sign-in` | Fake email sign-in, outside the tabs | Shows the sign-in form | Membership is checked at the destination | Leaves the app |
 | `/join/:code` | Invite preview, Home tab | Sign in, then open the same invite | A valid invite can be previewed and accepted. An invalid code shows **Not found**. | Home, including after a cold start |
+
+## The API client
+
+The app generates Retrofit clients and JSON models from
+`contract/openapi/v1.json` using pinned `swagger_parser 1.45.1`.
+
+`swagger_parser.yaml` selects the endpoint paths. Generated files live under
+`lib/core/network/data/generated` and are committed, including their `.g.dart`
+files. Feature mappers will convert these models into domain types.
+
+Regenerate from the app root.
+
+```powershell
+dart run tool/generate_api.dart
+```
+
+The command deletes the generated API directory first, runs Swagger Parser
+and build_runner, then formats the output.
+
+After committing the generated files, check reproducibility.
+
+```powershell
+dart run tool/check_api_drift.dart
+```
+
+CI also checks out the API source specified in `contract/source.json` and
+compares its schema with the app copy. JSON property ordering and whitespace
+are normalised. Schema changes produce a failing diff.
+
+The workflow's optional `api_ref` input selects a different API branch or
+commit for that comparison.

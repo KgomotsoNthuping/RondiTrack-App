@@ -1,0 +1,22 @@
+swagger_parser:
+  schema_path: contract/openapi/v1.json
+  output_directory: lib/core/network/data/generated
+  name: ronditrack
+  json_serializer: json_serializable
+  root_client: true
+  root_client_name: RondiTrackApi
+  put_clients_in_folder: true
+  path_method_name: true
+  original_http_response: true
+  unknown_enum_value: true
+  include_paths:
+    - /api/v1/auth/login
+    - /api/v1/auth/logout
+    - /api/v1/me/home
+    - /api/v1/stokvels/{id}
+    - /api/v1/stokvels/{stokvelId}/cycles
+    - /api/v1/stokvels/{stokvelId}/cycles/{cycleId}
+    - /api/v1/stokvels/{stokvelId}/contributions
+    - /api/v1/stokvels/{stokvelId}/cycles/{cycleId}/contributions
+    - /api/v1/stokvels/{stokvelId}/members
+    - /api/v1/users/{id}
