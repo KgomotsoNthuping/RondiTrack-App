@@ -51,6 +51,9 @@ jobs:
       - name: Run Flutter tests
         run: flutter test --no-pub --exclude-tags live
 
+      - name: Build web app
+        run: flutter build web --release --dart-define-from-file=config/dev.json
+
   contract-copy:
     runs-on: ubuntu-24.04
     steps:
