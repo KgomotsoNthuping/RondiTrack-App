@@ -102,7 +102,6 @@ final class ApiStokvelRepository {
         final page =
             (await _api.contributions.getApiV1StokvelsStokvelIdContributions(
               stokvelId: stokvelId,
-              pageSize: 20,
               pageToken: token,
             )).data;
 

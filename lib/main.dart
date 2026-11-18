@@ -5,6 +5,7 @@ import 'package:ronditrack/app/provider_retry.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/config/app_config_provider.dart';
+import 'package:ronditrack/core/config/repository_mode_provider.dart';
 
 void main() {
   usePathUrlStrategy();
@@ -13,7 +14,10 @@ void main() {
   runApp(
     ProviderScope(
       retry: appProviderRetry,
-      overrides: [appConfigProvider.overrideWithValue(config)],
+      overrides: [
+        appConfigProvider.overrideWithValue(config),
+        useApiRepositoriesProvider.overrideWithValue(true),
+      ],
       child: RondiTrackApp(config: config),
     ),
   );
