@@ -4,6 +4,7 @@ import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/core/theme/ronditrack_tokens.dart';
+import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/payouts/domain/payout_order.dart';
 import 'package:ronditrack/features/payouts/presentation/payout_status_badge.dart';
@@ -23,9 +24,11 @@ class PayoutsScreen extends ConsumerWidget {
       stokvelId: stokvelId,
       cycleId: cycleId,
     ));
+
     final view = payoutOrderViewState(ref.watch(provider));
     final detail = ref.watch(stokvelDetailProvider(stokvelId));
     final stokvel = detail.isLoading ? null : detail.asData?.value?.stokvel;
+
     final canReview =
         stokvel?.currentCycle?.id == cycleId &&
         stokvel?.membership.role == StokvelRole.treasurer;
@@ -41,18 +44,8 @@ class PayoutsScreen extends ConsumerWidget {
       ScreenEmpty<PayoutOrder>() => const <Widget>[
         Text('No payout order yet.'),
       ],
-      ScreenFailure<PayoutOrder>(:final message, :final canRetry) => <Widget>[
-        Text(message),
-        if (canRetry) ...[
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: FilledButton(
-              onPressed: () => ref.invalidate(provider),
-              child: const Text('Retry'),
-            ),
-          ),
-        ],
+      final ScreenFailure<PayoutOrder> failure => <Widget>[
+        FailureNotice(state: failure, onRetry: () => ref.invalidate(provider)),
       ],
       ScreenData<PayoutOrder>(:final value) => <Widget>[
         for (final entry in value.entries)
@@ -95,6 +88,7 @@ class _PayoutEntryCard extends StatelessWidget {
     final ink = RondiTrackTokens.of(
       context,
     )[RondiTrackToken.cardText].foreground;
+
     final paidAt = entry.paidAtUtc;
     final amount = entry.amount.formatRand();
 
@@ -135,7 +129,9 @@ class _PayoutEntryCard extends StatelessWidget {
                         content: Text('${entry.memberName}\n$amount'),
                         actions: [
                           TextButton(
-                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            onPressed: () {
+                              Navigator.of(dialogContext).pop();
+                            },
                             child: const Text('Done'),
                           ),
                         ],

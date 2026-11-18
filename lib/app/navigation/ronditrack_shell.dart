@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,9 @@ import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/config/app_flavor_scope.dart';
 import 'package:ronditrack/core/layout/window_size.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
+import 'package:ronditrack/core/state/screen_state.dart';
+import 'package:ronditrack/core/widgets/failure_notice.dart';
+import 'package:ronditrack/features/auth/application/dev_sign_in_provider.dart';
 
 const List<({IconData icon, String label, IconData selectedIcon})>
 _destinations = [
@@ -89,28 +94,50 @@ class _DemoPersonaMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final persona = ref.watch(demoSessionProvider);
+
     if (persona == null) {
       return const SizedBox.shrink();
     }
 
-    return PopupMenuButton<DemoPersona>(
-      tooltip: 'Switch demo profile',
-      initialValue: persona,
-      onSelected: (selected) {
-        ref.read(demoSessionProvider.notifier).select(selected);
-      },
-      itemBuilder: (_) => [
-        for (final profile in DemoPersona.values)
-          CheckedPopupMenuItem(
-            value: profile,
-            checked: profile == persona,
-            child: Text(profile.displayName),
+    final request = ref.watch(devSignInProvider);
+    final error = request.error;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        PopupMenuButton<DemoPersona>(
+          tooltip: 'Switch demo profile',
+          initialValue: persona,
+          enabled: !request.isLoading,
+          onSelected: (selected) {
+            unawaited(
+              ref.read(devSignInProvider.notifier).signIn(selected.email),
+            );
+          },
+          itemBuilder: (_) => [
+            for (final profile in DemoPersona.values)
+              CheckedPopupMenuItem(
+                value: profile,
+                checked: profile == persona,
+                child: Text(profile.displayName),
+              ),
+          ],
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            child: Text('Switch demo profile'),
+          ),
+        ),
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: FailureNotice(
+              state: screenFailure<Object?>(
+                error,
+                fallback: 'Could not switch profile.',
+              ),
+            ),
           ),
       ],
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-        child: Text('Switch demo profile'),
-      ),
     );
   }
 }

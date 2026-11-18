@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
+import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
@@ -13,6 +14,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final persona = ref.watch(demoSessionProvider);
+
     if (persona == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -27,28 +29,20 @@ class HomeScreen extends ConsumerWidget {
     }
 
     final content = switch (homeViewState(snapshot)) {
-      ScreenLoading<List<HomeEntry>>() => const [
+      ScreenLoading<List<HomeEntry>>() => const <Widget>[
         Center(
           child: CircularProgressIndicator(semanticsLabel: 'Loading stokvels'),
         ),
       ],
-      ScreenEmpty<List<HomeEntry>>() => const [
+      ScreenEmpty<List<HomeEntry>>() => const <Widget>[
         Text('You have no stokvels yet.'),
         SizedBox(height: 8),
         Text('Ask a stokvel administrator to send you an invite.'),
       ],
-      ScreenFailure<List<HomeEntry>>(:final message) => [
-        Text(message),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton(
-            onPressed: () => ref.invalidate(provider),
-            child: const Text('Retry'),
-          ),
-        ),
+      final ScreenFailure<List<HomeEntry>> failure => <Widget>[
+        FailureNotice(state: failure, onRetry: () => ref.invalidate(provider)),
       ],
-      ScreenData<List<HomeEntry>>(:final value) => [
+      ScreenData<List<HomeEntry>>(:final value) => <Widget>[
         for (final entry in value)
           HomeStokvelCard(
             entry: entry,

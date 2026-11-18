@@ -4,6 +4,7 @@ import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
+import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/activity/application/activity_provider.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
 
@@ -13,6 +14,7 @@ class ActivityScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final persona = ref.watch(demoSessionProvider);
+
     if (persona == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -29,16 +31,8 @@ class ActivityScreen extends ConsumerWidget {
       ScreenEmpty<List<ActivityEntry>>() => const <Widget>[
         Text('No activity yet.'),
       ],
-      ScreenFailure<List<ActivityEntry>>(:final message) => <Widget>[
-        Text(message),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton(
-            onPressed: () => ref.invalidate(provider),
-            child: const Text('Retry'),
-          ),
-        ),
+      final ScreenFailure<List<ActivityEntry>> failure => <Widget>[
+        FailureNotice(state: failure, onRetry: () => ref.invalidate(provider)),
       ],
       ScreenData<List<ActivityEntry>>(:final value) => <Widget>[
         for (final entry in value) _ActivityCard(entry: entry),
@@ -87,7 +81,8 @@ class _ActivityCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${contribution.memberName} · ${contribution.amount.formatRand()}',
+              '${contribution.memberName} · '
+              '${contribution.amount.formatRand()}',
             ),
             if (paidAt != null)
               Text(formatJohannesburgDate(paidAt, includeTime: true)),

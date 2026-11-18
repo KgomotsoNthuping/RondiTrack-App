@@ -4,10 +4,11 @@ import 'package:ronditrack/core/session/demo_session.dart';
 part 'access_token_store.g.dart';
 
 final class AccessToken {
-  const new({required this.value, required this.expiresAtUtc});
+  const new({required this.value, required this.expiresAtUtc, this.userId});
 
   final String value;
   final DateTime expiresAtUtc;
+  final String? userId;
 }
 
 @Riverpod(keepAlive: true)
@@ -23,8 +24,16 @@ class AccessTokenStore extends _$AccessTokenStore {
     return null;
   }
 
-  void save({required String value, required DateTime expiresAtUtc}) {
-    state = AccessToken(value: value, expiresAtUtc: expiresAtUtc.toUtc());
+  void save({
+    required String value,
+    required DateTime expiresAtUtc,
+    String? userId,
+  }) {
+    state = AccessToken(
+      value: value,
+      expiresAtUtc: expiresAtUtc.toUtc(),
+      userId: userId,
+    );
   }
 
   void clear() {

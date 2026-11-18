@@ -6,6 +6,7 @@ import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/core/theme/ronditrack_tokens.dart';
+import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
@@ -23,18 +24,21 @@ class StokvelDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final persona = ref.watch(demoSessionProvider);
+
     if (persona == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final entries =
         ref.watch(homeProvider(persona.name)).value ?? const <HomeEntry>[];
+
     final names = {
       for (final entry in entries) entry.membership.stokvelId: entry.name,
     };
 
     final provider = stokvelDetailProvider(stokvelId);
     final view = stokvelDetailViewState(ref.watch(provider));
+
     final name = view is ScreenData<StokvelDetail>
         ? view.value.stokvel.name
         : names[stokvelId] ?? 'Stokvel details';
@@ -51,10 +55,9 @@ class StokvelDetailScreen extends ConsumerWidget {
         SizedBox(height: 8),
         Text('Check again after your treasurer opens a cycle.'),
       ],
-      ScreenFailure<StokvelDetail>(:final message) => _failure(
-        message,
-        () => ref.invalidate(provider),
-      ),
+      final ScreenFailure<StokvelDetail> failure => <Widget>[
+        FailureNotice(state: failure, onRetry: () => ref.invalidate(provider)),
+      ],
       ScreenData<StokvelDetail>(:final value) => _detailContent(context, value),
     };
 
@@ -103,7 +106,7 @@ class StokvelCycleScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = stokvelDetailProvider(stokvelId);
+    final provider = stokvelDetailProvider(stokvelId, cycleId: cycleId);
 
     void retry() => ref.invalidate(provider);
 
@@ -111,12 +114,27 @@ class StokvelCycleScreen extends ConsumerWidget {
         .watch(provider)
         .when<List<Widget>>(
           skipLoadingOnRefresh: false,
+          skipLoadingOnReload: false,
           loading: () => _loading('Loading cycle'),
-          error: (_, _) => _failure('Could not load this cycle.', retry),
+          error: (error, _) => [
+            FailureNotice(
+              state: screenFailure<Object?>(
+                error,
+                fallback: 'Could not load this cycle.',
+              ),
+              onRetry: retry,
+            ),
+          ],
           data: (detail) {
             final cycle = detail?.stokvel.currentCycle;
+
             if (detail == null || cycle == null || cycle.id != cycleId) {
-              return _failure('Not found', retry);
+              return [
+                FailureNotice(
+                  state: const ScreenFailure<Object?>('Not found'),
+                  onRetry: retry,
+                ),
+              ];
             }
 
             final contributions = detail.stokvel.contributions.where(
@@ -157,15 +175,6 @@ List<Widget> _loading(String label) => [
   const Center(child: CircularProgressIndicator()),
   const SizedBox(height: 12),
   Text(label, textAlign: TextAlign.center),
-];
-
-List<Widget> _failure(String message, VoidCallback retry) => [
-  Text(message),
-  const SizedBox(height: 12),
-  Align(
-    alignment: Alignment.centerLeft,
-    child: FilledButton(onPressed: retry, child: const Text('Retry')),
-  ),
 ];
 
 List<Widget> _detailContent(BuildContext context, StokvelDetail detail) {

@@ -4,6 +4,7 @@ import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/layout/window_size.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
+import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
@@ -64,12 +65,12 @@ class StokvelListPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final persona = ref.watch(demoSessionProvider);
+
     if (persona == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final userId = persona.name;
-    final provider = homeProvider(userId);
+    final provider = homeProvider(persona.name);
     final view = homeViewState(ref.watch(provider));
     final colors = Theme.of(context).colorScheme;
 
@@ -82,16 +83,8 @@ class StokvelListPane extends ConsumerWidget {
       ScreenEmpty<List<HomeEntry>>() => const <Widget>[
         Text('You have no stokvels yet.'),
       ],
-      ScreenFailure<List<HomeEntry>>(:final message) => <Widget>[
-        Text(message),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton(
-            onPressed: () => ref.invalidate(provider),
-            child: const Text('Retry'),
-          ),
-        ),
+      final ScreenFailure<List<HomeEntry>> failure => <Widget>[
+        FailureNotice(state: failure, onRetry: () => ref.invalidate(provider)),
       ],
       ScreenData<List<HomeEntry>>(:final value) => <Widget>[
         for (final entry in value)
@@ -118,7 +111,7 @@ class StokvelListPane extends ConsumerWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
           child: ListView(
-            key: ValueKey(userId),
+            key: ValueKey(persona.name),
             primary: false,
             padding: const EdgeInsets.all(20),
             children: children,

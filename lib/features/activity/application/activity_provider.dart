@@ -33,6 +33,7 @@ Future<List<ActivityEntry>> activityFeed(Ref ref, String userId) async {
         if (firstDate == null) {
           return secondDate == null ? 0 : 1;
         }
+
         if (secondDate == null) {
           return -1;
         }
@@ -52,8 +53,7 @@ ScreenState<List<ActivityEntry>> activityViewState(
     data: (entries) => entries.isEmpty
         ? const ScreenEmpty<List<ActivityEntry>>()
         : ScreenData(entries),
-    error: (_, _) => const ScreenFailure<List<ActivityEntry>>(
-      'Could not load your activity.',
-    ),
+    error: (error, _) =>
+        screenFailure(error, fallback: 'Could not load your activity.'),
   );
 }

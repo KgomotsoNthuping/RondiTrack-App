@@ -75,3 +75,60 @@ are normalised. Schema changes produce a failing diff.
 
 The workflow's optional `api_ref` input selects a different API branch or
 commit for that comparison.
+
+## Repository integration
+
+API repositories return the sealed Result type. Application adapters unwrap
+Ok values and throw Err failures into Riverpod's AsyncError. The adapters
+preserve the repository interfaces used by the Week 10 fakes and tests.
+
+The useApiRepositoriesProvider switch selects the implementation.
+Its default remains false during preparation. The application entry point
+will enable the API in the separate swap commit.
+
+Home maps membership roles from /api/v1/me/home. Stokvel details use that
+stokvel's membership role rather than a platform-wide role.
+
+Amounts already expressed in cents remain integers. Rand-valued fields are
+converted to Cents. Calendar dates retain their year, month and day.
+Instants are normalized to UTC. Stokvel and cycle version values are
+preserved without modification.
+
+Contribution history uses the signed-in member's contribution endpoint.
+Pagination is consumed until the normalized nextPageToken is null.
+A repeated token is rejected to prevent an endless pagination loop.
+
+The copied schema generates non-nullable page-token strings. A data-layer
+response adapter canonicalizes terminal null or missing tokens to an empty
+string before generated decoding. Feature mappers convert that empty
+string to the domain's null end marker. The copied contract is preserved.
+
+## Development sign-in
+
+API mode signs in the three existing seed personas through the generated
+login client. Pass their shared seed password using the
+DEV_SEED_PASSWORD dart define. The password has no source-code default.
+
+Access tokens remain in memory. Their subject identifies the signed-in
+API user. Reading the subject supports UI identity; the API validates the
+token and enforces authorization.
+
+The persona switcher remains visible only in the dev flavour. A failed
+switch preserves the previous session.
+
+## Failure presentation
+
+Screens display messages from Failure. Validation fields are shown when
+provided. Error references remain selectable and copyable until dismissed.
+
+HTTP failures are not automatically retried. An unanswered read offers
+Try again. Existing fake failures retain their Week 10 retry behavior.
+
+## Current contract limitation
+
+The contract contains a POST for processing a payout, but no GET for reading
+a payout order. The API payout repository checks the cycle and membership,
+then reports that payout-order data is unavailable.
+
+It does not manufacture a rotation order or process a payout to obtain
+read data. The existing fake payout repository remains available for tests.

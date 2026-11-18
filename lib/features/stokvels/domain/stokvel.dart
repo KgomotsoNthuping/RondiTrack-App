@@ -23,6 +23,7 @@ abstract class Stokvel with _$Stokvel {
     required List<Contribution> contributions,
     ContributionCycle? currentCycle,
     String? rules,
+    int? version,
   }) = _Stokvel;
 }
 
@@ -36,6 +37,7 @@ abstract class ContributionCycle with _$ContributionCycle {
     required Cents totalCollected,
     required Cents amountOutstanding,
     CalendarDate? dueDate,
+    int? version,
   }) = _ContributionCycle;
 }
 

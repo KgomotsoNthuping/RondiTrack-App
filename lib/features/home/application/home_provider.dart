@@ -1,5 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:ronditrack/app/api_repository_adapters.dart';
+import 'package:ronditrack/core/config/repository_mode_provider.dart';
+import 'package:ronditrack/core/session/access_token_store.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
+import 'package:ronditrack/features/home/data/api_home_repository.dart';
 import 'package:ronditrack/features/home/data/fake_home_repository.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/domain/home_repository.dart';
@@ -8,8 +12,17 @@ import 'package:ronditrack/features/invites/application/family_invite.dart';
 part 'home_provider.g.dart';
 
 @riverpod
-HomeRepository homeRepository(Ref ref) =>
-    FakeHomeRepository(nalediJoinedFamily: ref.watch(familyInviteProvider));
+HomeRepository homeRepository(Ref ref) {
+  if (!ref.watch(useApiRepositoriesProvider)) {
+    return FakeHomeRepository(
+      nalediJoinedFamily: ref.watch(familyInviteProvider),
+    );
+  }
+
+  ref.watch(accessTokenStoreProvider);
+
+  return HomeResultAdapter(ref.watch(apiHomeRepositoryProvider).fetchHome);
+}
 
 @riverpod
 class Home extends _$Home {
@@ -27,7 +40,7 @@ ScreenState<List<HomeEntry>> homeViewState(AsyncValue<List<HomeEntry>> state) {
     data: (entries) => entries.isEmpty
         ? const ScreenEmpty<List<HomeEntry>>()
         : ScreenData(entries),
-    error: (_, _) =>
-        const ScreenFailure<List<HomeEntry>>('Could not load your stokvels.'),
+    error: (error, _) =>
+        screenFailure(error, fallback: 'Could not load your stokvels.'),
   );
 }
