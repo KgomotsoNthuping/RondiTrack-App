@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_riverpod: 3.4.3
+  flutter_secure_storage: 11.2.0
   flutter_web_plugins:
     sdk: flutter
   freezed_annotation: 3.1.0
@@ -31,6 +32,10 @@ dev_dependencies:
   riverpod_generator: 4.0.9
   swagger_parser: 1.45.1
   very_good_analysis: 11.0.0
+
+dependency_overrides:
+  code_assets: 2.1.0
+  objective_c: 9.6.2
 
 flutter:
   uses-material-design: true

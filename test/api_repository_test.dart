@@ -19,25 +19,18 @@ void main() {
     final adapter = _FixtureAdapter();
     final dio = _dio(adapter);
 
-    final entries = _value(
-      await ApiHomeRepository(dio).fetchHome('lerato'),
-    );
+    final entries = _value(await ApiHomeRepository(dio).fetchHome('lerato'));
 
     final family = entries.singleWhere(
       (entry) => entry.name == 'Family Savers',
     );
-    final work = entries.singleWhere(
-      (entry) => entry.name == 'Work Savers',
-    );
+    final work = entries.singleWhere((entry) => entry.name == 'Work Savers');
 
     expect(family.membership.role, StokvelRole.treasurer);
     expect(work.membership.role, StokvelRole.member);
     expect(family.paidThisCycle?.value, 50000);
     expect(work.stillOwed?.value, 70000);
-    expect(
-      family.cycleDueDate,
-      (year: 2026, month: 10, day: 31),
-    );
+    expect(family.cycleDueDate, (year: 2026, month: 10, day: 31));
 
     for (final entry in entries) {
       final instant = entry.nextPayoutDateUtc;
@@ -53,16 +46,11 @@ void main() {
     final dio = _dio(adapter);
 
     final stokvel = _value(
-      await ApiStokvelRepository(dio).fetchDetail(
-        'fixture-user',
-        _familyId(),
-      ),
+      await ApiStokvelRepository(dio).fetchDetail('fixture-user', _familyId()),
     );
 
     final rawStokvel = _object(_fixture('stokvel.json'));
-    final rawCycle = _object(
-      (_fixture('cycles.json')! as List<Object?>).first,
-    );
+    final rawCycle = _object((_fixture('cycles.json')! as List<Object?>).first);
 
     expect(stokvel.membership.role, StokvelRole.treasurer);
     expect(stokvel.monthlyContribution.value, 50000);
@@ -88,9 +76,9 @@ void main() {
       }
     }
 
-    final pages = adapter.requests.where(
-      (request) => request.uri.path.endsWith('/contributions'),
-    ).toList();
+    final pages = adapter.requests
+        .where((request) => request.uri.path.endsWith('/contributions'))
+        .toList();
 
     expect(pages, hasLength(2));
     expect(pages.first.queryParameters['pageToken'], isNull);
@@ -101,22 +89,15 @@ void main() {
     final adapter = _FixtureAdapter(unknownStatuses: true);
     final dio = _dio(adapter);
 
-    final entries = _value(
-      await ApiHomeRepository(dio).fetchHome('lerato'),
-    );
+    final entries = _value(await ApiHomeRepository(dio).fetchHome('lerato'));
 
     expect(
-      entries.every(
-        (entry) => entry.membership.role == StokvelRole.unknown,
-      ),
+      entries.every((entry) => entry.membership.role == StokvelRole.unknown),
       isTrue,
     );
 
     final stokvel = _value(
-      await ApiStokvelRepository(dio).fetchDetail(
-        'fixture-user',
-        _familyId(),
-      ),
+      await ApiStokvelRepository(dio).fetchDetail('fixture-user', _familyId()),
     );
 
     expect(stokvel.membership.role, StokvelRole.unknown);
@@ -133,10 +114,8 @@ void main() {
     final adapter = _FixtureAdapter(missingStokvel: true);
     final dio = _dio(adapter);
 
-    final result = await ApiStokvelRepository(dio).fetchDetail(
-      'fixture-user',
-      _familyId(),
-    );
+    final result = await ApiStokvelRepository(dio)
+        .fetchDetail('fixture-user', _familyId());
 
     expect(
       result,
@@ -149,8 +128,7 @@ void main() {
 
     expect(
       adapter.requests.where(
-        (request) =>
-            request.uri.path == '/api/v1/stokvels/${_familyId()}',
+        (request) => request.uri.path == '/api/v1/stokvels/${_familyId()}',
       ),
       hasLength(1),
     );
@@ -174,9 +152,8 @@ void main() {
 }
 
 Dio _dio(HttpClientAdapter adapter) {
-  final dio = Dio(
-    BaseOptions(baseUrl: 'https://fixture.invalid'),
-  )..httpClientAdapter = adapter;
+  final dio = Dio(BaseOptions(baseUrl: 'https://fixture.invalid'))
+    ..httpClientAdapter = adapter;
 
   addTearDown(() => dio.close(force: true));
   return dio;
@@ -251,8 +228,7 @@ final class _FixtureAdapter implements HttpClientAdapter {
         body = {
           ...dashboard,
           'stokvels': [
-            for (final item
-                in dashboard['stokvels']! as List<Object?>)
+            for (final item in dashboard['stokvels']! as List<Object?>)
               {
                 ..._object(item),
                 'role': 'FutureRole',
@@ -271,10 +247,7 @@ final class _FixtureAdapter implements HttpClientAdapter {
       body = unknownStatuses
           ? [
               for (final item in cycles)
-                {
-                  ..._object(item),
-                  'status': 'FutureCycle',
-                },
+                {..._object(item), 'status': 'FutureCycle'},
             ]
           : cycles;
     } else if (path == '$root/members') {
@@ -297,17 +270,11 @@ final class _FixtureAdapter implements HttpClientAdapter {
       } else {
         expect(options.queryParameters['pageToken'], _cursor);
 
-        body = {
-          'items': <Object?>[],
-          'nextPageToken': '',
-        };
+        body = {'items': <Object?>[], 'nextPageToken': ''};
       }
     } else {
       status = 404;
-      body = {
-        'status': 404,
-        'correlationId': 'fixture-not-found',
-      };
+      body = {'status': 404, 'correlationId': 'fixture-not-found'};
     }
 
     return Future.value(
@@ -316,7 +283,10 @@ final class _FixtureAdapter implements HttpClientAdapter {
         status,
         headers: {
           Headers.contentTypeHeader: [
-            if (status >= 400) 'application/problem+json' else Headers.jsonContentType,
+            if (status >= 400)
+              'application/problem+json'
+            else
+              Headers.jsonContentType,
           ],
         },
       ),

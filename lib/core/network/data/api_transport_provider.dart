@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/config/app_config_provider.dart';
 import 'package:ronditrack/core/network/data/failure_mapper.dart';
+import 'package:ronditrack/core/network/data/platform_adapter.dart';
 import 'package:ronditrack/core/session/access_token_store.dart';
 
 part 'api_transport_provider.g.dart';
@@ -13,28 +14,40 @@ typedef ApiLog = void Function(String line);
 @Riverpod(keepAlive: true)
 ApiLog apiLog(Ref ref) => debugPrint;
 
-@Riverpod(keepAlive: true)
-Dio apiDio(Ref ref) {
-  final config = ref.watch(appConfigProvider);
-
+Dio createApiDio(
+  AppConfig config, {
+  required ApiLog writeLog,
+  bool browserCookies = false,
+}) {
   if (config.flavor != AppFlavor.dev && config.apiBaseUrl.scheme != 'https') {
     throw StateError('Staging and prod API connections require HTTPS.');
   }
 
-  final dio =
-      Dio(
-          BaseOptions(
-            baseUrl: config.apiBaseUrl.toString(),
-            connectTimeout: const Duration(seconds: 5),
-            sendTimeout: const Duration(seconds: 15),
-            receiveTimeout: const Duration(seconds: 45),
-            headers: const {'Accept': Headers.jsonContentType},
-          ),
-        )
-        ..interceptors.addAll([
-          _AuthorizationInterceptor(() => ref.read(accessTokenStoreProvider)),
-          _SafeLogInterceptor(ref.watch(apiLogProvider)),
-        ]);
+  return Dio(
+      BaseOptions(
+        baseUrl: config.apiBaseUrl.toString(),
+        connectTimeout: const Duration(seconds: 5),
+        sendTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 45),
+        followRedirects: !browserCookies,
+        headers: const {'Accept': Headers.jsonContentType},
+      ),
+    )
+    ..httpClientAdapter = createPlatformAdapter(withCredentials: browserCookies)
+    ..interceptors.add(_SafeLogInterceptor(writeLog));
+}
+
+@Riverpod(keepAlive: true)
+Dio apiDio(Ref ref) {
+  final dio = createApiDio(
+    ref.watch(appConfigProvider),
+    writeLog: ref.watch(apiLogProvider),
+  );
+
+  dio.interceptors.insert(
+    0,
+    _AuthorizationInterceptor(() => ref.read(accessTokenStoreProvider)),
+  );
 
   ref.onDispose(() => dio.close(force: true));
 
@@ -42,7 +55,7 @@ Dio apiDio(Ref ref) {
 }
 
 final class _AuthorizationInterceptor extends Interceptor {
-  new(this.readToken);
+  _AuthorizationInterceptor(this.readToken);
 
   final AccessToken? Function() readToken;
 
@@ -63,7 +76,7 @@ final class _AuthorizationInterceptor extends Interceptor {
 }
 
 final class _SafeLogInterceptor extends Interceptor {
-  new(this.write);
+  _SafeLogInterceptor(this.write);
 
   final ApiLog write;
   final _timers = Expando<Stopwatch>();

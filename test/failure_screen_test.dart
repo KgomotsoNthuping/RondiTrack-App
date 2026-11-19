@@ -12,44 +12,39 @@ import 'package:ronditrack/features/home/domain/home_repository.dart';
 import 'package:ronditrack/features/home/presentation/home_screen.dart';
 
 void main() {
-  const scenarios = <
-      ({
-        String name,
-        Failure failure,
-        String message,
-        int attempts,
-      })>[
-    (
-      name: 'not found',
-      failure: NotFoundFailure(),
-      message: 'Not found',
-      attempts: 1,
-    ),
-    (
-      name: 'forbidden',
-      failure: ForbiddenFailure(detail: 'This action is not permitted.'),
-      message: 'This action is not permitted.',
-      attempts: 1,
-    ),
-    (
-      name: 'rate limited',
-      failure: RateLimitedFailure(retryAfterSeconds: 17),
-      message: 'Too many attempts. Try again in 17 seconds.',
-      attempts: 1,
-    ),
-    (
-      name: 'server failure',
-      failure: ServerFailure(correlationId: 'trace-screen-06'),
-      message: 'Sorry, something went wrong on our side.',
-      attempts: 1,
-    ),
-    (
-      name: 'offline',
-      failure: OfflineFailure(isRead: true),
-      message: 'You’re offline, or we couldn’t reach the server.',
-      attempts: 3,
-    ),
-  ];
+  const scenarios =
+      <({String name, Failure failure, String message, int attempts})>[
+        (
+          name: 'not found',
+          failure: NotFoundFailure(),
+          message: 'Not found',
+          attempts: 1,
+        ),
+        (
+          name: 'forbidden',
+          failure: ForbiddenFailure(detail: 'This action is not permitted.'),
+          message: 'This action is not permitted.',
+          attempts: 1,
+        ),
+        (
+          name: 'rate limited',
+          failure: RateLimitedFailure(retryAfterSeconds: 17),
+          message: 'Too many attempts. Try again in 17 seconds.',
+          attempts: 1,
+        ),
+        (
+          name: 'server failure',
+          failure: ServerFailure(correlationId: 'trace-screen-06'),
+          message: 'Sorry, something went wrong on our side.',
+          attempts: 1,
+        ),
+        (
+          name: 'offline',
+          failure: OfflineFailure(isRead: true),
+          message: 'You’re offline, or we couldn’t reach the server.',
+          attempts: 3,
+        ),
+      ];
 
   for (final scenario in scenarios) {
     testWidgets('Home displays ${scenario.name}', (tester) async {
@@ -70,16 +65,10 @@ void main() {
         same(scenario.failure),
       );
 
-      expect(
-        container.read(demoSessionProvider),
-        DemoPersona.lerato,
-      );
+      expect(container.read(demoSessionProvider), DemoPersona.lerato);
 
       if (scenario.failure is OfflineFailure) {
-        expect(
-          find.widgetWithText(FilledButton, 'Try again'),
-          findsOneWidget,
-        );
+        expect(find.widgetWithText(FilledButton, 'Try again'), findsOneWidget);
       } else {
         expect(find.byType(FilledButton), findsNothing);
       }
@@ -117,17 +106,11 @@ void main() {
     await tester.pumpWidget(_app(repository));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Reference: trace-copy-06'),
-      findsOneWidget,
-    );
+    expect(find.text('Reference: trace-copy-06'), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 20));
 
-    expect(
-      find.text('Reference: trace-copy-06'),
-      findsOneWidget,
-    );
+    expect(find.text('Reference: trace-copy-06'), findsOneWidget);
 
     await tester.tap(find.text('Copy reference'));
     await tester.pump();
@@ -137,10 +120,7 @@ void main() {
     await tester.tap(find.text('Dismiss reference'));
     await tester.pump();
 
-    expect(
-      find.text('Reference: trace-copy-06'),
-      findsNothing,
-    );
+    expect(find.text('Reference: trace-copy-06'), findsNothing);
 
     expect(
       find.text('Sorry, something went wrong on our side.'),
@@ -153,15 +133,10 @@ Widget _app(HomeRepository repository) {
   return ProviderScope(
     retry: appProviderRetry,
     overrides: [
-      demoSessionProvider.overrideWithBuild(
-        (_, _) => DemoPersona.lerato,
-      ),
+      demoSessionProvider.overrideWithBuild((_, _) => DemoPersona.lerato),
       homeRepositoryProvider.overrideWithValue(repository),
     ],
-    child: MaterialApp(
-      theme: RondiTrackTheme.light,
-      home: const HomeScreen(),
-    ),
+    child: MaterialApp(theme: RondiTrackTheme.light, home: const HomeScreen()),
   );
 }
 

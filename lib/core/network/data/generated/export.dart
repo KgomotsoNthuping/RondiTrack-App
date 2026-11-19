@@ -25,6 +25,7 @@ export 'models/paged_response_of_cycle_contribution_response.dart';
 export 'models/paged_response_of_user_response.dart';
 export 'models/platform_role.dart';
 export 'models/record_contribution_request.dart';
+export 'models/register_request.dart';
 export 'models/stokvel.dart';
 export 'models/stokvel_member_role.dart';
 export 'models/update_contribution_cycle_request.dart';

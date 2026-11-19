@@ -16,10 +16,7 @@ final _directive = RegExp(
   multiLine: true,
 );
 
-final _exportDirective = RegExp(
-  r'^[ \t]*export\s+[^;]+;',
-  multiLine: true,
-);
+final _exportDirective = RegExp(r'^[ \t]*export\s+[^;]+;', multiLine: true);
 
 final _quotedUri = RegExp(r'''['"]([^'"]+)['"]''');
 
@@ -36,8 +33,9 @@ final _nonNewline = RegExp(r'[^\r\n]');
 
 void main() {
   final sources = <Uri, String>{
-    for (final file
-        in Directory('lib').listSync(recursive: true).whereType<File>())
+    for (final file in Directory(
+      'lib',
+    ).listSync(recursive: true).whereType<File>())
       if (file.path.endsWith('.dart') &&
           !file.path.endsWith('.g.dart') &&
           !file.path.endsWith('.freezed.dart') &&
@@ -78,7 +76,8 @@ void main() {
       }
 
       for (final dependency in _uris(entry.value)) {
-        final forbidden = _dataDependency(dependency.value) ||
+        final forbidden =
+            _dataDependency(dependency.value) ||
             _exportsData(
               _resolve(entry.key, dependency.value),
               sources,
@@ -139,10 +138,7 @@ Iterable<({String value, int offset})> _uris(
 
   for (final directive in pattern.allMatches(source)) {
     for (final match in _quotedUri.allMatches(directive[0]!)) {
-      yield (
-        value: match[1]!,
-        offset: directive.start + match.start,
-      );
+      yield (value: match[1]!, offset: directive.start + match.start);
     }
   }
 }
@@ -163,11 +159,7 @@ Uri? _resolve(Uri source, String dependency) {
   return source.resolveUri(parsed);
 }
 
-bool _exportsData(
-  Uri? uri,
-  Map<Uri, String> sources,
-  Set<Uri> seen,
-) {
+bool _exportsData(Uri? uri, Map<Uri, String> sources, Set<Uri> seen) {
   if (uri == null || !seen.add(uri)) {
     return false;
   }
@@ -180,11 +172,7 @@ bool _exportsData(
 
   for (final dependency in _uris(source, exportsOnly: true)) {
     if (_dataDependency(dependency.value) ||
-        _exportsData(
-          _resolve(uri, dependency.value),
-          sources,
-          seen,
-        )) {
+        _exportsData(_resolve(uri, dependency.value), sources, seen)) {
       return true;
     }
   }
@@ -195,8 +183,7 @@ bool _exportsData(
 String _removeComments(String source) {
   return source.replaceAllMapped(
     _stringsAndComments,
-    (match) =>
-        match[1] ?? match[0]!.replaceAll(_nonNewline, ' '),
+    (match) => match[1] ?? match[0]!.replaceAll(_nonNewline, ' '),
   );
 }
 
