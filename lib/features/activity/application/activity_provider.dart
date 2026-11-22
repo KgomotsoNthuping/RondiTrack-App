@@ -1,4 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:ronditrack/core/errors/failure.dart';
+import 'package:ronditrack/core/session/account_key.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
@@ -8,11 +10,20 @@ part 'activity_provider.g.dart';
 
 typedef ActivityEntry = ({String stokvelName, Contribution contribution});
 
-@riverpod
+@Riverpod(
+  dependencies: [accountKey, MembershipRevision, Home, stokvelRepository],
+)
 Future<List<ActivityEntry>> activityFeed(Ref ref, String userId) async {
+  final account = requireAccount(ref, userId: userId);
+  ref.watch(membershipRevisionProvider);
+
   final home = ref.watch(homeProvider(userId).future);
   final repository = ref.watch(stokvelRepositoryProvider);
   final memberships = await home;
+
+  if (!ref.mounted || ref.read(accountKeyProvider) != account) {
+    throw const UnauthorizedFailure();
+  }
 
   final stokvels = await Future.wait(
     memberships.map(

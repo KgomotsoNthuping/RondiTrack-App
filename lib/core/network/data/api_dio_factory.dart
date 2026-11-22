@@ -12,6 +12,13 @@ typedef ApiLog = void Function(String line);
 @Riverpod(keepAlive: true)
 ApiLog apiLog(Ref ref) => debugPrint;
 
+String safeApiPath(String path) {
+  return path.replaceAllMapped(
+    RegExp(r'(/invites/)[^/]+'),
+    (match) => '${match[1]}[redacted]',
+  );
+}
+
 Dio createApiDio(
   AppConfig config, {
   required ApiLog writeLog,
@@ -83,7 +90,8 @@ final class _SafeLogInterceptor extends Interceptor {
         : ' correlationId=$correlationId';
 
     write(
-      '${options.method.toUpperCase()} ${options.uri.path} '
+      '${options.method.toUpperCase()} '
+      '${safeApiPath(options.uri.path)} '
       '${status ?? '-'} ${elapsed}ms$reference',
     );
   }

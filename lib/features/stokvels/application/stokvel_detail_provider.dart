@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/api_repository_adapters.dart';
 import 'package:ronditrack/core/config/repository_mode_provider.dart';
-import 'package:ronditrack/core/session/access_token_store.dart';
+import 'package:ronditrack/core/session/account_key.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/features/invites/application/family_invite.dart';
@@ -16,8 +16,10 @@ part 'stokvel_detail_provider.g.dart';
 
 typedef StokvelDetail = ({Stokvel stokvel, Set<StokvelAction> actions});
 
-@riverpod
+@Riverpod(dependencies: [accountKey, FamilyInvite])
 StokvelRepository stokvelRepository(Ref ref) {
+  final account = requireAccount(ref);
+
   if (!ref.watch(useApiRepositoriesProvider)) {
     return FakeStokvelRepository(
       workDelay: const Duration(seconds: 2),
@@ -25,27 +27,28 @@ StokvelRepository stokvelRepository(Ref ref) {
     );
   }
 
-  final token = ref.watch(accessTokenStoreProvider);
-
   return StokvelResultAdapter(
     ref.watch(apiStokvelRepositoryProvider).fetchDetail,
-    subject: token?.userId,
+    subject: account?.userId,
   );
 }
 
-@riverpod
+@Riverpod(dependencies: [accountKey, MembershipRevision, stokvelRepository])
 Future<StokvelDetail?> stokvelDetail(
   Ref ref,
   String stokvelId, {
   String? cycleId,
 }) async {
+  final account = requireAccount(ref);
+  ref.watch(membershipRevisionProvider);
+
   final persona = ref.watch(demoSessionProvider);
 
   if (persona == null) {
     return null;
   }
 
-  final userId = ref.watch(accessTokenStoreProvider)?.userId ?? persona.name;
+  final userId = account?.userId ?? persona.name;
   final repository = ref.watch(stokvelRepositoryProvider);
 
   final stokvel = cycleId != null && repository is StokvelCycleRepository
