@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/config/app_flavor_scope.dart';
+import 'package:ronditrack/core/config/repository_mode_provider.dart';
 import 'package:ronditrack/core/layout/window_size.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
-import 'package:ronditrack/core/state/screen_state.dart';
-import 'package:ronditrack/core/widgets/failure_notice.dart';
-import 'package:ronditrack/features/auth/application/dev_sign_in_provider.dart';
+import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 
 const List<({IconData icon, String label, IconData selectedIcon})>
 _destinations = [
@@ -24,7 +24,7 @@ _destinations = [
 ];
 
 class RondiTrackShell extends StatelessWidget {
-  const new({required this.navigationShell, super.key});
+  const RondiTrackShell({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
 
@@ -89,7 +89,7 @@ class RondiTrackShell extends StatelessWidget {
 }
 
 class _DemoPersonaMenu extends ConsumerWidget {
-  const new();
+  const _DemoPersonaMenu();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -99,45 +99,32 @@ class _DemoPersonaMenu extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final request = ref.watch(devSignInProvider);
-    final error = request.error;
+    return PopupMenuButton<DemoPersona>(
+      tooltip: 'Switch demo profile',
+      initialValue: persona is DemoPersona ? persona : null,
+      onSelected: (selected) {
+        if (ref.read(useApiRepositoriesProvider)) {
+          final router = GoRouter.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        PopupMenuButton<DemoPersona>(
-          tooltip: 'Switch demo profile',
-          initialValue: persona,
-          enabled: !request.isLoading,
-          onSelected: (selected) {
-            unawaited(
-              ref.read(devSignInProvider.notifier).signIn(selected.email),
-            );
-          },
-          itemBuilder: (_) => [
-            for (final profile in DemoPersona.values)
-              CheckedPopupMenuItem(
-                value: profile,
-                checked: profile == persona,
-                child: Text(profile.displayName),
-              ),
-          ],
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-            child: Text('Switch demo profile'),
-          ),
-        ),
-        if (error != null)
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: FailureNotice(
-              state: screenFailure<Object?>(
-                error,
-                fallback: 'Could not switch profile.',
-              ),
-            ),
+          unawaited(ref.read(sessionCoordinatorProvider).signOut());
+
+          router.go(SignInRoute(email: selected.email).location);
+        } else {
+          ref.read(demoSessionProvider.notifier).select(selected);
+        }
+      },
+      itemBuilder: (_) => [
+        for (final profile in DemoPersona.values)
+          CheckedPopupMenuItem(
+            value: profile,
+            checked: profile.email == persona.email,
+            child: Text(profile.displayName),
           ),
       ],
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        child: Text('Switch demo profile'),
+      ),
     );
   }
 }

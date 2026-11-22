@@ -4,9 +4,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/auth_redirect.dart';
 import 'package:ronditrack/app/navigation/ronditrack_shell.dart';
 import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/core/config/repository_mode_provider.dart';
+import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
+import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 import 'package:ronditrack/features/activity/presentation/activity_screen.dart';
+import 'package:ronditrack/features/auth/presentation/register_screen.dart';
 import 'package:ronditrack/features/auth/presentation/sign_in_screen.dart';
+import 'package:ronditrack/features/auth/presentation/splash_screen.dart';
 import 'package:ronditrack/features/home/presentation/home_screen.dart';
 import 'package:ronditrack/features/invites/presentation/invite_preview_screen.dart';
 import 'package:ronditrack/features/payouts/presentation/payouts_screen.dart';
@@ -18,30 +23,45 @@ part 'app_router.g.dart';
 
 @riverpod
 GoRouter appRouter(Ref ref, AppFlavor flavor) {
-  final session = ValueNotifier<DemoPersona?>(ref.read(demoSessionProvider));
+  final useApi = ref.watch(useApiRepositoriesProvider);
+  final coordinator = useApi ? ref.watch(sessionCoordinatorProvider) : null;
+
+  final demo = ValueNotifier<SessionMember?>(
+    useApi ? null : ref.read(demoSessionProvider),
+  );
 
   final router = GoRouter(
     routes: $appRoutes,
-    refreshListenable: session,
-    redirect: (_, state) => authRedirect(
-      location: state.uri,
-      signedIn: session.value != null,
-      appLinkScheme: 'ronditrack-${flavor.name}',
-    ),
+    refreshListenable: coordinator ?? demo,
+    redirect: (_, state) {
+      final (signedIn, restoring) = switch (coordinator?.state) {
+        AuthSignedIn() => (true, false),
+        AuthRestoring() => (false, true),
+        AuthSignedOut() => (false, false),
+        null => (demo.value != null, false),
+      };
+
+      return authRedirect(
+        location: state.uri,
+        signedIn: signedIn,
+        restoring: restoring,
+        appLinkScheme: 'ronditrack-${flavor.name}',
+      );
+    },
     errorBuilder: (_, _) => Scaffold(
       appBar: AppBar(title: const Text('RondiTrack')),
       body: const Center(child: Text('Not found')),
     ),
   );
 
-  ref
-    ..listen(demoSessionProvider, (_, next) {
-      session.value = next;
-    })
-    ..onDispose(() {
-      router.dispose();
-      session.dispose();
-    });
+  if (!useApi) {
+    ref.listen(demoSessionProvider, (_, next) => demo.value = next);
+  }
+
+  ref.onDispose(() {
+    router.dispose();
+    demo.dispose();
+  });
 
   return router;
 }
@@ -83,7 +103,7 @@ GoRouter appRouter(Ref ref, AppFlavor flavor) {
   ],
 )
 class AppShellRoute extends StatefulShellRouteData {
-  const new();
+  const AppShellRoute();
 
   @override
   Widget builder(
@@ -96,23 +116,23 @@ class AppShellRoute extends StatefulShellRouteData {
 }
 
 class HomeBranch extends StatefulShellBranchData {
-  const new();
+  const HomeBranch();
 }
 
 class StokvelsBranch extends StatefulShellBranchData {
-  const new();
+  const StokvelsBranch();
 }
 
 class ActivityBranch extends StatefulShellBranchData {
-  const new();
+  const ActivityBranch();
 }
 
 class ProfileBranch extends StatefulShellBranchData {
-  const new();
+  const ProfileBranch();
 }
 
 class HomeRoute extends GoRouteData with $HomeRoute {
-  const new();
+  const HomeRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -121,7 +141,7 @@ class HomeRoute extends GoRouteData with $HomeRoute {
 }
 
 class JoinRoute extends GoRouteData with $JoinRoute {
-  const new({required this.code});
+  const JoinRoute({required this.code});
 
   final String code;
 
@@ -132,7 +152,7 @@ class JoinRoute extends GoRouteData with $JoinRoute {
 }
 
 class StokvelsRoute extends GoRouteData with $StokvelsRoute {
-  const new();
+  const StokvelsRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -141,7 +161,7 @@ class StokvelsRoute extends GoRouteData with $StokvelsRoute {
 }
 
 class StokvelDetailRoute extends GoRouteData with $StokvelDetailRoute {
-  const new({required this.id});
+  const StokvelDetailRoute({required this.id});
 
   final String id;
 
@@ -152,7 +172,7 @@ class StokvelDetailRoute extends GoRouteData with $StokvelDetailRoute {
 }
 
 class StokvelCycleRoute extends GoRouteData with $StokvelCycleRoute {
-  const new({required this.id, required this.cycleId});
+  const StokvelCycleRoute({required this.id, required this.cycleId});
 
   final String id;
   final String cycleId;
@@ -168,7 +188,7 @@ class StokvelCycleRoute extends GoRouteData with $StokvelCycleRoute {
 }
 
 class StokvelPayoutsRoute extends GoRouteData with $StokvelPayoutsRoute {
-  const new({required this.id, required this.cycleId});
+  const StokvelPayoutsRoute({required this.id, required this.cycleId});
 
   final String id;
   final String cycleId;
@@ -184,7 +204,7 @@ class StokvelPayoutsRoute extends GoRouteData with $StokvelPayoutsRoute {
 }
 
 class ActivityRoute extends GoRouteData with $ActivityRoute {
-  const new();
+  const ActivityRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -193,7 +213,7 @@ class ActivityRoute extends GoRouteData with $ActivityRoute {
 }
 
 class ProfileRoute extends GoRouteData with $ProfileRoute {
-  const new();
+  const ProfileRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -203,12 +223,39 @@ class ProfileRoute extends GoRouteData with $ProfileRoute {
 
 @TypedGoRoute<SignInRoute>(path: signInPath)
 class SignInRoute extends GoRouteData with $SignInRoute {
-  const new({this.from});
+  const SignInRoute({this.from, this.email});
+
+  final String? from;
+  final String? email;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return SignInScreen(key: ValueKey((from, email)), from: from, email: email);
+  }
+}
+
+@TypedGoRoute<RegisterRoute>(path: registerPath)
+class RegisterRoute extends GoRouteData with $RegisterRoute {
+  const RegisterRoute({this.from});
 
   final String? from;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const SignInScreen();
+    return RegisterScreen(from: from);
+  }
+}
+
+@TypedGoRoute<SplashRoute>(path: splashPath)
+class SplashRoute extends GoRouteData with $SplashRoute {
+  const SplashRoute({this.from, this.auth, this.email});
+
+  final String? from;
+  final String? auth;
+  final String? email;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const SplashScreen();
   }
 }

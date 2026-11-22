@@ -1,28 +1,89 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:ronditrack/core/config/repository_mode_provider.dart';
+import 'package:ronditrack/core/session/auth_state.dart';
+import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 
 part 'demo_session.g.dart';
 
-enum DemoPersona {
+abstract interface class SessionMember {
+  String get name;
+
+  String get displayName;
+
+  String get email;
+}
+
+enum DemoPersona implements SessionMember {
   lerato('Lerato', 'lerato@ronditrack.co.za'),
   nandi('Nandi', 'nandi@ronditrack.co.za'),
   naledi('Naledi', 'naledi@ronditrack.co.za');
 
-  const new(this.displayName, this.email);
+  const DemoPersona(this.displayName, this.email);
 
+  @override
+  String get name => switch (this) {
+    DemoPersona.lerato => 'lerato',
+    DemoPersona.nandi => 'nandi',
+    DemoPersona.naledi => 'naledi',
+  };
+
+  @override
   final String displayName;
+
+  @override
   final String email;
+}
+
+final class _AccountMember implements SessionMember {
+  const _AccountMember({required this.name, required this.email});
+
+  @override
+  final String name;
+
+  @override
+  final String email;
+
+  @override
+  String get displayName => email.split('@').first;
 }
 
 @Riverpod(keepAlive: true)
 class DemoSession extends _$DemoSession {
   @override
-  DemoPersona? build() => null;
+  SessionMember? build() {
+    if (!ref.watch(useApiRepositoriesProvider)) {
+      return null;
+    }
+
+    final account = ref.watch(
+      sessionStateProvider.select(
+        (value) => switch (value) {
+          AuthSignedIn(:final identity, :final sessionId) => (
+            id: identity.userId,
+            email: identity.email,
+            sessionId: sessionId,
+          ),
+          AuthRestoring() || AuthSignedOut() => null,
+        },
+      ),
+    );
+
+    return account == null
+        ? null
+        : _AccountMember(name: account.id, email: account.email);
+  }
 
   bool signIn(String email) {
-    final normalizedEmail = email.trim().toLowerCase();
+    if (ref.read(useApiRepositoriesProvider)) {
+      return false;
+    }
+
+    final normalized = email.trim().toLowerCase();
 
     for (final persona in DemoPersona.values) {
-      if (persona.email == normalizedEmail) {
+      if (persona.email == normalized) {
         state = persona;
         return true;
       }
@@ -38,6 +99,10 @@ class DemoSession extends _$DemoSession {
   }
 
   void signOut() {
-    state = null;
+    if (ref.read(useApiRepositoriesProvider)) {
+      unawaited(ref.read(sessionCoordinatorProvider).signOut());
+    } else {
+      state = null;
+    }
   }
 }
