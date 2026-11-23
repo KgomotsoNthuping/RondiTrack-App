@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 import 'package:ronditrack/core/theme/ronditrack_tokens.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/offline/application/offline_account_provider.dart';
 import 'package:ronditrack/features/offline/presentation/cache_view.dart';
 import 'package:ronditrack/features/payments/application/payment_provider.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
+import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_workflow_provider.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_forms.dart';
@@ -18,6 +23,7 @@ import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.d
 import 'package:ronditrack/features/stokvels/presentation/stokvel_workflow_navigation.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 class OfflineStokvelScreen extends ConsumerWidget {
   const new({required this.stokvelId, this.cycleId, super.key});
 
@@ -88,6 +94,7 @@ class OfflineStokvelScreen extends ConsumerWidget {
   }
 }
 
+@Dependencies([payoutOrder, stokvelDetail, Home])
 class _HistoricalCycle extends ConsumerStatefulWidget {
   const new({
     required this.stokvelId,
@@ -167,6 +174,7 @@ class _HistoricalCycleState extends ConsumerState<_HistoricalCycle> {
   }
 }
 
+@Dependencies([payoutOrder, stokvelDetail, Home, homeRepository])
 class _StockBody extends StatelessWidget {
   const new({
     required this.stokvel,

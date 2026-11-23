@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/app/provider_retry.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/features/auth/presentation/sign_in_screen.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/payouts/domain/payout_order.dart';
 import 'package:ronditrack/features/payouts/domain/payout_repository.dart';
@@ -18,10 +21,12 @@ import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider
 import 'package:ronditrack/features/stokvels/data/fake_stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
 
+@Dependencies([payoutOrder, stokvelDetail, Home])
 const _familyRoute = StokvelPayoutsRoute(
   id: 'family-savers',
   cycleId: 'family-cycle-1',
 );
+@Dependencies([payoutOrder, stokvelDetail, Home])
 const _workRoute = StokvelPayoutsRoute(
   id: 'work-savers',
   cycleId: 'work-cycle-1',
@@ -34,6 +39,7 @@ final _config = AppConfig.parse(
   apiBaseUrl: 'http://10.0.2.2:5227',
 );
 
+@Dependencies([payoutOrder, stokvelDetail, Home, homeRepository])
 void main() {
   testWidgets(
     'resumes a cold payout link after sign-in and goes back to cycle',

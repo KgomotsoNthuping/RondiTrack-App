@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/config/repository_mode_provider.dart';
 import 'package:ronditrack/core/errors/failure.dart';
@@ -8,11 +9,14 @@ import 'package:ronditrack/core/session/account_key.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/core/widgets/failure_notice.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/invites/application/family_invite.dart';
 import 'package:ronditrack/features/invites/application/invite_provider.dart';
 import 'package:ronditrack/features/invites/domain/invite_repository.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
+import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 
-@Dependencies([accountKey])
+@Dependencies([joinInvite, Home, stokvelDetail, homeRepository, payoutOrder, accountKey, FamilyInvite])
 class InvitePreviewScreen extends ConsumerWidget {
   const new({required this.code, super.key});
 
@@ -29,7 +33,7 @@ class InvitePreviewScreen extends ConsumerWidget {
   }
 }
 
-@Dependencies([joinInvite])
+@Dependencies([joinInvite, Home, stokvelDetail, homeRepository, payoutOrder])
 class _ApiInviteScreen extends ConsumerStatefulWidget {
   const new({required this.code, super.key});
 
@@ -99,7 +103,7 @@ class _ApiInviteScreenState extends ConsumerState<_ApiInviteScreen> {
   }
 }
 
-@Dependencies([FamilyInvite])
+@Dependencies([FamilyInvite, homeRepository, Home, payoutOrder, stokvelDetail])
 class _FixtureInviteScreen extends ConsumerWidget {
   const new({required this.code});
 

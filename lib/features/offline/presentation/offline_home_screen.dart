@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
 import 'package:ronditrack/features/offline/application/offline_account_provider.dart';
 import 'package:ronditrack/features/offline/presentation/cache_view.dart';
 import 'package:ronditrack/features/payments/application/payment_provider.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
+import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_workflow_navigation.dart';
 
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 class OfflineHomeScreen extends ConsumerWidget {
   const new({super.key});
 
@@ -77,6 +83,7 @@ class OfflineHomeScreen extends ConsumerWidget {
   }
 }
 
+@Dependencies([Home, stokvelDetail])
 class OfflineStokvelListPane extends ConsumerWidget {
   const new({this.selectedStokvelId, super.key});
 

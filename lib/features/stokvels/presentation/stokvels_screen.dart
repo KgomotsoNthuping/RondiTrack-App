@@ -11,9 +11,12 @@ import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/offline/presentation/offline_home_screen.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
+import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_workflow_navigation.dart';
 
+@Dependencies([homeRepository, Home, stokvelDetail, payoutOrder])
 class StokvelsScreen extends ConsumerWidget {
   const new({super.key});
 
@@ -34,7 +37,7 @@ class StokvelsScreen extends ConsumerWidget {
   }
 }
 
-@Dependencies([Home])
+@Dependencies([Home, stokvelDetail, homeRepository, payoutOrder])
 class StokvelLayout extends StatelessWidget {
   const new({this.selectedStokvelId, this.detail, super.key});
 
@@ -71,7 +74,7 @@ class StokvelLayout extends StatelessWidget {
   }
 }
 
-@Dependencies([Home])
+@Dependencies([Home, stokvelDetail, homeRepository, payoutOrder])
 class StokvelListPane extends ConsumerWidget {
   const new({this.selectedStokvelId, super.key});
 

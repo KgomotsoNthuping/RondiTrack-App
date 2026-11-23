@@ -12,6 +12,7 @@ import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/data/fake_home_repository.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/data/fake_stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
@@ -26,7 +27,7 @@ final _config = AppConfig.parse(
   apiBaseUrl: 'http://10.0.2.2:5227',
 );
 
-@Dependencies([Home])
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 void main() {
   test('classifies window widths at both breakpoints', () {
     expect(WindowSize.fromWidth(599), WindowSize.compact);

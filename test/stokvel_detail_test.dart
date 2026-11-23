@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
 import 'package:ronditrack/core/config/app_config.dart';
@@ -12,6 +13,7 @@ import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/theme/ronditrack_theme.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/data/fake_home_repository.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/data/fake_stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
@@ -29,7 +31,7 @@ final _config = AppConfig.parse(
   apiBaseUrl: 'http://10.0.2.2:5227',
 );
 
-@Dependencies([stokvelDetail])
+@Dependencies([stokvelDetail, homeRepository, Home, payoutOrder])
 void main() {
   test('separates IDs, shares fetches and disposes detail', () async {
     final calls = <String, int>{};

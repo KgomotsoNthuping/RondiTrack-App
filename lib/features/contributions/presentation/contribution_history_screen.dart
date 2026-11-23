@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/dates/south_african_dates.dart';
 import 'package:ronditrack/core/money/cents.dart';
@@ -10,10 +12,12 @@ import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 import 'package:ronditrack/features/contributions/application/contribution_history_controller.dart';
 import 'package:ronditrack/features/contributions/domain/contribution_history.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_workflow_provider.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
 
+@Dependencies([homeRepository])
 class ContributionHistoryScreen extends ConsumerWidget {
   const new({
     required this.stokvelId,
@@ -51,6 +55,7 @@ class ContributionHistoryScreen extends ConsumerWidget {
   }
 }
 
+@Dependencies([homeRepository])
 class _HistoryBody extends StatefulWidget {
   const new({
     required this.stokvelId,

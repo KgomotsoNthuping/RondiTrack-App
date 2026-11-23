@@ -4,16 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/provider_retry.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
 import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/core/session/account_key.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
+import 'package:ronditrack/features/activity/application/activity_provider.dart';
 import 'package:ronditrack/features/activity/presentation/activity_screen.dart';
 import 'package:ronditrack/features/auth/presentation/sign_in_screen.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/data/fake_home_repository.dart';
 import 'package:ronditrack/features/home/presentation/home_screen.dart';
+import 'package:ronditrack/features/invites/application/family_invite.dart';
+import 'package:ronditrack/features/invites/application/invite_provider.dart';
 import 'package:ronditrack/features/invites/presentation/invite_preview_screen.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/payouts/presentation/payouts_screen.dart';
 import 'package:ronditrack/features/profile/presentation/profile_screen.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
@@ -63,6 +70,7 @@ const _personas = [
   ),
 ];
 
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail, activityFeed, joinInvite, accountKey, FamilyInvite])
 void main() {
   for (final scenario in _personas) {
     final persona = scenario.persona;
@@ -292,6 +300,7 @@ void _setViewport(WidgetTester tester) {
   addTearDown(tester.view.resetPhysicalSize);
 }
 
+@Dependencies([Home, stokvelDetail])
 Future<GoRouter> _pumpSignedIn(
   WidgetTester tester,
   DemoPersona persona, {

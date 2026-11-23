@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/provider_retry.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
 import 'package:ronditrack/core/config/app_config.dart';
@@ -29,7 +30,7 @@ import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.
 
 import 'support/account_flow_server.dart';
 
-@Dependencies([Home, stokvelDetail, activityFeed, payoutOrder])
+@Dependencies([Home, stokvelDetail, activityFeed, payoutOrder, homeRepository])
 void main() {
   testWidgets('family phone disposes the old account and its caches', (
     tester,

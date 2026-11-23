@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/offline/offline_enabled.dart';
@@ -11,13 +12,14 @@ import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/offline/presentation/offline_stokvel_screen.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
-@Dependencies([Home, stokvelDetail])
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 class StokvelDetailScreen extends ConsumerWidget {
   const new({required this.stokvelId, super.key});
 
@@ -104,7 +106,7 @@ class StokvelDetailScreen extends ConsumerWidget {
   }
 }
 
-@Dependencies([stokvelDetail])
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 class StokvelCycleScreen extends ConsumerWidget {
   const new({required this.stokvelId, required this.cycleId, super.key});
 
@@ -188,6 +190,7 @@ List<Widget> _loading(String label) => [
   Text(label, textAlign: TextAlign.center),
 ];
 
+@Dependencies([stokvelDetail, homeRepository, Home, payoutOrder])
 List<Widget> _detailContent(BuildContext context, StokvelDetail detail) {
   final stokvel = detail.stokvel;
   final cycle = stokvel.currentCycle;

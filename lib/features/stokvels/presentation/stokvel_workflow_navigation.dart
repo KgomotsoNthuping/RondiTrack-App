@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/features/contributions/domain/contribution_history.dart';
 import 'package:ronditrack/features/contributions/presentation/contribution_history_screen.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/payments/presentation/payment_screen.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_form_screens.dart';
 
+@Dependencies([homeRepository])
 Widget? stokvelWorkflowScreenFor(
   BuildContext context, {
   String? stokvelId,

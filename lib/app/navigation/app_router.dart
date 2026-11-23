@@ -18,6 +18,7 @@ import 'package:ronditrack/features/auth/presentation/splash_screen.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/presentation/home_screen.dart';
 import 'package:ronditrack/features/invites/application/family_invite.dart';
+import 'package:ronditrack/features/invites/application/invite_provider.dart';
 import 'package:ronditrack/features/invites/presentation/invite_preview_screen.dart';
 import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/payouts/presentation/payouts_screen.dart';
@@ -73,7 +74,7 @@ Raw<GoRouter> appRouter(Ref ref, AppFlavor flavor) {
   return router;
 }
 
-@Dependencies([Home, accountKey, stokvelDetail, activityFeed])
+@Dependencies([Home, stokvelDetail, joinInvite, accountKey, FamilyInvite, payoutOrder, homeRepository, activityFeed])
 @TypedStatefulShellRoute<AppShellRoute>(
   branches: [
     TypedStatefulShellBranch<HomeBranch>(
@@ -139,7 +140,7 @@ class ProfileBranch extends StatefulShellBranchData {
   const new();
 }
 
-@Dependencies([Home])
+@Dependencies([Home, stokvelDetail])
 class HomeRoute extends GoRouteData with $HomeRoute {
   const new();
 
@@ -149,7 +150,7 @@ class HomeRoute extends GoRouteData with $HomeRoute {
   }
 }
 
-@Dependencies([accountKey])
+@Dependencies([joinInvite, Home, stokvelDetail, accountKey, FamilyInvite])
 class JoinRoute extends GoRouteData with $JoinRoute {
   const new({required this.code});
 
@@ -161,6 +162,7 @@ class JoinRoute extends GoRouteData with $JoinRoute {
   }
 }
 
+@Dependencies([Home])
 class StokvelsRoute extends GoRouteData with $StokvelsRoute {
   const new();
 
@@ -170,7 +172,7 @@ class StokvelsRoute extends GoRouteData with $StokvelsRoute {
   }
 }
 
-@Dependencies([Home, stokvelDetail])
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 class StokvelDetailRoute extends GoRouteData with $StokvelDetailRoute {
   const new({required this.id});
 
@@ -182,7 +184,7 @@ class StokvelDetailRoute extends GoRouteData with $StokvelDetailRoute {
   }
 }
 
-@Dependencies([stokvelDetail])
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 class StokvelCycleRoute extends GoRouteData with $StokvelCycleRoute {
   const new({required this.id, required this.cycleId});
 
@@ -199,7 +201,7 @@ class StokvelCycleRoute extends GoRouteData with $StokvelCycleRoute {
   }
 }
 
-@Dependencies([payoutOrder, stokvelDetail])
+@Dependencies([payoutOrder, stokvelDetail, Home])
 class StokvelPayoutsRoute extends GoRouteData with $StokvelPayoutsRoute {
   const new({required this.id, required this.cycleId});
 

@@ -2,13 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/app/navigation/auth_redirect.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
 import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/core/session/account_key.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/features/auth/presentation/sign_in_screen.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
+import 'package:ronditrack/features/invites/application/family_invite.dart';
+import 'package:ronditrack/features/invites/application/invite_provider.dart';
 import 'package:ronditrack/features/invites/presentation/invite_preview_screen.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
+import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
 
 final _config = AppConfig.parse(
@@ -17,6 +25,7 @@ final _config = AppConfig.parse(
   apiBaseUrl: 'http://10.0.2.2:5227',
 );
 
+@Dependencies([joinInvite, Home, stokvelDetail, homeRepository, payoutOrder, accountKey, FamilyInvite])
 void main() {
   test('remembers a native invite for the matching flavour', () {
     for (final flavor in AppFlavor.values) {

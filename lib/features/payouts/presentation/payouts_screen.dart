@@ -14,7 +14,7 @@ import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
-@Dependencies([payoutOrder, stokvelDetail])
+@Dependencies([payoutOrder, stokvelDetail, Home, homeRepository])
 class PayoutsScreen extends ConsumerWidget {
   const new({required this.stokvelId, required this.cycleId, super.key});
 
