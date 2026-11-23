@@ -19,10 +19,15 @@ class OfflineHomeScreen extends ConsumerWidget {
     final state = ref.watch(sessionStateProvider);
 
     if (state is! AuthSignedIn) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
-    final account = (userId: state.identity.userId, sessionId: state.sessionId);
+    final account = (
+      userId: state.identity.userId,
+      sessionId: state.sessionId,
+    );
 
     ref.watch(paymentWorkerProvider(account));
 
@@ -62,8 +67,9 @@ class OfflineHomeScreen extends ConsumerWidget {
                       HomeStokvelCard(
                         entry: entry,
                         onTap: () {
-                          StokvelDetailRoute(id: entry.membership.stokvelId)
-                              .go(context);
+                          StokvelDetailRoute(
+                            id: entry.membership.stokvelId,
+                          ).go(context);
                         },
                       ),
                   ],
@@ -78,7 +84,10 @@ class OfflineHomeScreen extends ConsumerWidget {
 }
 
 class OfflineStokvelListPane extends ConsumerWidget {
-  const OfflineStokvelListPane({this.selectedStokvelId, super.key});
+  const OfflineStokvelListPane({
+    this.selectedStokvelId,
+    super.key,
+  });
 
   final String? selectedStokvelId;
 
@@ -90,12 +99,10 @@ class OfflineStokvelListPane extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final controller = ref.watch(
-      cachedHomeProvider((
-        userId: state.identity.userId,
-        sessionId: state.sessionId,
-      )),
-    );
+    final controller = ref.watch(cachedHomeProvider((
+      userId: state.identity.userId,
+      sessionId: state.sessionId,
+    )));
 
     return CacheView<List<HomeEntry>>(
       controller: controller,
@@ -108,7 +115,8 @@ class OfflineStokvelListPane extends ConsumerWidget {
           padding: const EdgeInsets.all(20),
           children: [
             const CreateStokvelAction(),
-            if (entries.isEmpty) const Text('You have no stokvels yet.'),
+            if (entries.isEmpty)
+              const Text('You have no stokvels yet.'),
             for (final entry in entries)
               Card(
                 clipBehavior: Clip.antiAlias,
@@ -116,12 +124,14 @@ class OfflineStokvelListPane extends ConsumerWidget {
                   title: Text(entry.name),
                   subtitle: Text(entry.membership.role.label),
                   trailing: const Icon(Icons.chevron_right),
-                  selected: entry.membership.stokvelId == selectedStokvelId,
+                  selected:
+                      entry.membership.stokvelId == selectedStokvelId,
                   selectedColor: colors.onPrimaryContainer,
                   selectedTileColor: colors.primaryContainer,
                   onTap: () {
-                    StokvelDetailRoute(id: entry.membership.stokvelId)
-                        .go(context);
+                    StokvelDetailRoute(
+                      id: entry.membership.stokvelId,
+                    ).go(context);
                   },
                 ),
               ),

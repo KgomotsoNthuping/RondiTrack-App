@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/core/offline/cache_controller.dart';
 import 'package:ronditrack/core/offline/data/offline_database_provider.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
@@ -10,10 +9,16 @@ import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/data/home_cache.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
+import 'package:ronditrack/features/stokvels/application/stokvel_workflow_provider.dart';
 import 'package:ronditrack/features/stokvels/data/stokvel_cache.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 
 typedef OfflineAccountKey = ({String userId, int sessionId});
+
+typedef CachedStokvelKey = ({
+  OfflineAccountKey account,
+  String stokvelId,
+});
 
 final cachedHomeProvider = Provider.autoDispose
     .family<CacheController<List<HomeEntry>>, OfflineAccountKey>(
@@ -33,16 +38,19 @@ final cachedHomeProvider = Provider.autoDispose
 
         final controller = CacheController<List<HomeEntry>>(
           cache: cache.watch(account.userId),
-          load: () =>
-              ref.read(homeRepositoryProvider).fetchHome(account.userId),
+          load: () => ref
+              .read(homeRepositoryProvider)
+              .fetchHome(account.userId),
           save: (value, generation, updatedAt) => cache.replace(
             generation: generation,
             userId: account.userId,
             entries: value,
             updatedAtUtc: updatedAt,
           ),
-          remove: (generation) =>
-              cache.remove(generation: generation, userId: account.userId),
+          remove: (generation) => cache.remove(
+            generation: generation,
+            userId: account.userId,
+          ),
           generation: () => database.generation,
           isCurrent: isCurrent,
         );
@@ -52,7 +60,6 @@ final cachedHomeProvider = Provider.autoDispose
         });
 
         ref.onDispose(controller.dispose);
-
         return controller;
       },
       dependencies: [
@@ -61,8 +68,6 @@ final cachedHomeProvider = Provider.autoDispose
         homeRepositoryProvider,
       ],
     );
-
-typedef CachedStokvelKey = ({OfflineAccountKey account, String stokvelId});
 
 final cachedStokvelProvider = Provider.autoDispose
     .family<CacheController<Stokvel>, CachedStokvelKey>(
@@ -82,17 +87,9 @@ final cachedStokvelProvider = Provider.autoDispose
 
         final controller = CacheController<Stokvel>(
           cache: cache.watch(key.account.userId, key.stokvelId),
-          load: () async {
-            final value = await ref
-                .read(stokvelRepositoryProvider)
-                .fetchDetail(key.account.userId, key.stokvelId);
-
-            if (value == null) {
-              throw const NotFoundFailure();
-            }
-
-            return value;
-          },
+          load: () => ref
+              .read(stokvelWorkflowApiProvider)
+              .detail(key.account.userId, key.stokvelId),
           save: (value, generation, updatedAt) => cache.replace(
             generation: generation,
             userId: key.account.userId,
@@ -113,12 +110,12 @@ final cachedStokvelProvider = Provider.autoDispose
         });
 
         ref.onDispose(controller.dispose);
-
         return controller;
       },
       dependencies: [
         offlineDatabaseProvider,
         sessionCoordinatorProvider,
         stokvelRepositoryProvider,
+        stokvelWorkflowApiProvider,
       ],
     );

@@ -43,20 +43,28 @@ class OfflineStokvelScreen extends ConsumerWidget {
     final state = ref.watch(sessionStateProvider);
 
     if (state is! AuthSignedIn) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
-    final account = (userId: state.identity.userId, sessionId: state.sessionId);
+    final account = (
+      userId: state.identity.userId,
+      sessionId: state.sessionId,
+    );
 
     ref.watch(paymentWorkerProvider(account));
 
-    final controller = ref.watch(
-      cachedStokvelProvider((account: account, stokvelId: stokvelId)),
-    );
+    final controller = ref.watch(cachedStokvelProvider((
+      account: account,
+      stokvelId: stokvelId,
+    )));
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(cycleId == null ? 'Stokvel details' : 'Cycle details'),
+        title: Text(
+          cycleId == null ? 'Stokvel details' : 'Cycle details',
+        ),
       ),
       body: StokvelLayout(
         selectedStokvelId: stokvelId,
@@ -105,7 +113,8 @@ class _HistoricalCycle extends ConsumerStatefulWidget {
   final OfflineAccountKey account;
 
   @override
-  ConsumerState<_HistoricalCycle> createState() => _HistoricalCycleState();
+  ConsumerState<_HistoricalCycle> createState() =>
+      _HistoricalCycleState();
 }
 
 class _HistoricalCycleState extends ConsumerState<_HistoricalCycle> {
@@ -113,9 +122,14 @@ class _HistoricalCycleState extends ConsumerState<_HistoricalCycle> {
 
   @override
   Widget build(BuildContext context) {
-    final workflow = ref.watch(stokvelWorkflowProvider(widget.account));
+    final workflow = ref.watch(
+      stokvelWorkflowProvider(widget.account),
+    );
 
-    _cycle ??= workflow.latestCycle(widget.stokvelId, widget.cycleId);
+    _cycle ??= workflow.latestCycle(
+      widget.stokvelId,
+      widget.cycleId,
+    );
 
     return FutureBuilder<EditableCycle>(
       future: _cycle,
@@ -228,8 +242,12 @@ class _StockBody extends StatelessWidget {
                           : 'Due ${formatCalendarDate(due)}',
                     ),
                     Text('Target ${cycle.targetAmount.formatRand()}'),
-                    Text('Collected ${cycle.totalCollected.formatRand()}'),
-                    Text('Outstanding ${cycle.amountOutstanding.formatRand()}'),
+                    Text(
+                      'Collected ${cycle.totalCollected.formatRand()}',
+                    ),
+                    Text(
+                      'Outstanding ${cycle.amountOutstanding.formatRand()}',
+                    ),
                     const SizedBox(height: 12),
                     OutlinedButton(
                       onPressed: () {
@@ -245,10 +263,14 @@ class _StockBody extends StatelessWidget {
                           ).go(context);
                         }
                       },
-                      child: Text(cycleOnly ? 'View payouts' : 'View cycle'),
+                      child: Text(
+                        cycleOnly ? 'View payouts' : 'View cycle',
+                      ),
                     ),
                   ],
-                  if (!cycleOnly && rules != null && rules.isNotEmpty) ...[
+                  if (!cycleOnly &&
+                      rules != null &&
+                      rules.isNotEmpty) ...[
                     const Divider(height: 24),
                     const Text('Rules'),
                     Text(rules),
@@ -256,14 +278,19 @@ class _StockBody extends StatelessWidget {
                 ],
               ),
             ),
-            StokvelWorkflowActions(stokvel: stokvel, userId: userId),
+            StokvelWorkflowActions(
+              stokvel: stokvel,
+              userId: userId,
+            ),
             const SizedBox(height: 20),
             Text(
               'Your current contribution',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             if (stokvel.contributions.isEmpty)
-              const Text('No contribution recorded for you in this cycle.'),
+              const Text(
+                'No contribution recorded for you in this cycle.',
+              ),
             for (final item in stokvel.contributions)
               _DetailCard(
                 child: Column(

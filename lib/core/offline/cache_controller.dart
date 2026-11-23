@@ -22,12 +22,7 @@ final class CacheController<T> extends ChangeNotifier {
     _subscription = cache.listen(
       _accept,
       onError: (Object error, StackTrace stack) {
-        if (_closed) {
-          return;
-        }
-
-        _failure = error is Failure ? error : const ServerFailure();
-        notifyListeners();
+        reportFailure(error is Failure ? error : const ServerFailure());
       },
     );
   }
@@ -48,10 +43,27 @@ final class CacheController<T> extends ChangeNotifier {
   bool _closed = false;
 
   CachedValue<T>? get cached => _cached;
-
   Failure? get failure => _failure;
-
   bool get refreshing => _refreshing;
+
+  void reportSuccess() {
+    if (!_closed && _isCurrent()) {
+      _failure = null;
+      notifyListeners();
+    }
+  }
+
+  void reportFailure(Failure failure) {
+    if (!_closed && _isCurrent()) {
+      _failure = failure;
+
+      if (failure is NotFoundFailure) {
+        _cached = null;
+      }
+
+      notifyListeners();
+    }
+  }
 
   void _accept(CachedValue<T>? value) {
     if (_closed || !_isCurrent()) {
@@ -95,7 +107,6 @@ final class CacheController<T> extends ChangeNotifier {
 
   Future<void> _refresh() async {
     final generation = _generation();
-
     _refreshing = true;
     notifyListeners();
 
@@ -106,7 +117,11 @@ final class CacheController<T> extends ChangeNotifier {
         return;
       }
 
-      final accepted = await _save(value, generation, _clock().toUtc());
+      final accepted = await _save(
+        value,
+        generation,
+        _clock().toUtc(),
+      );
 
       if (accepted && !_closed && _isCurrent()) {
         _failure = null;

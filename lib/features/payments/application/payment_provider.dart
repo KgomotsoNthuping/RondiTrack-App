@@ -10,6 +10,7 @@ import 'package:ronditrack/features/offline/application/offline_account_provider
 import 'package:ronditrack/features/payments/application/payment_worker.dart';
 import 'package:ronditrack/features/payments/data/payment_outbox.dart';
 import 'package:ronditrack/features/payments/data/payment_sender.dart';
+import 'package:ronditrack/features/stokvels/application/stokvel_workflow_provider.dart';
 
 final paymentOutboxProvider = Provider<PaymentOutbox>(
   (ref) => PaymentOutbox(ref.watch(offlineDatabaseProvider)),
@@ -41,7 +42,6 @@ final paymentWorkerProvider = Provider.autoDispose
         }
 
         final sender = PaymentSender(() => ref.read(apiDioProvider));
-
         final keepAlive = ref.keepAlive();
 
         final worker = PaymentWorker(
@@ -51,24 +51,11 @@ final paymentWorkerProvider = Provider.autoDispose
           isCurrent: isCurrent,
           canSend: canSend,
           onResolved: (payment) async {
-            if (!isCurrent()) {
-              return;
+            if (isCurrent()) {
+              await ref
+                  .read(stokvelWorkflowProvider(account))
+                  .refreshScreens(payment.stokvelId);
             }
-
-            await home.refresh();
-
-            if (!isCurrent()) {
-              return;
-            }
-
-            final controller = ref.read(
-              cachedStokvelProvider((
-                account: account,
-                stokvelId: payment.stokvelId,
-              )),
-            );
-
-            await controller.refresh();
           },
         );
 
@@ -119,7 +106,7 @@ final paymentWorkerProvider = Provider.autoDispose
         sessionStateProvider,
         paymentOutboxProvider,
         cachedHomeProvider,
-        cachedStokvelProvider,
+        stokvelWorkflowProvider,
         apiDioProvider,
       ],
     );
