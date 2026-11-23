@@ -21,11 +21,25 @@ final class AuthSignedOut extends AuthState {
 final class AuthSignedIn extends AuthState {
   const AuthSignedIn({
     required this.identity,
-    required this.accessToken,
+    required AccessToken? accessToken,
     required this.sessionId,
-  });
+    this.failure,
+  }) : currentAccessToken = accessToken;
 
   final AuthIdentity identity;
-  final AccessToken accessToken;
+  final AccessToken? currentAccessToken;
   final int sessionId;
+  final Failure? failure;
+
+  bool get isOffline => currentAccessToken == null;
+
+  AccessToken get accessToken {
+    final token = currentAccessToken;
+
+    if (token == null) {
+      throw StateError('This cached account has no access token.');
+    }
+
+    return token;
+  }
 }

@@ -15,7 +15,7 @@ part 'app_database.g.dart';
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase(super.executor);
+  AppDatabase(QueryExecutor executor) : super(executor);
 
   factory AppDatabase.persistent({required String name}) {
     return AppDatabase(
@@ -36,6 +36,10 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
+  void invalidateWrites() {
+    _generation++;
+  }
+
   Future<bool> writeIfCurrent(
     int expectedGeneration,
     Future<void> Function() operation,
@@ -52,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> clearForSignOut() {
-    _generation++;
+    invalidateWrites();
 
     return transaction(() async {
       for (final table in allTables) {

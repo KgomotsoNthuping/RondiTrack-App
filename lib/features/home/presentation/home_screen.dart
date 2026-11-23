@@ -7,6 +7,8 @@ import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
+import 'package:ronditrack/core/offline/offline_enabled.dart';
+import 'package:ronditrack/features/offline/presentation/offline_home_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const new({super.key});

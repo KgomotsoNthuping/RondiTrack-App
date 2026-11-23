@@ -8,6 +8,7 @@ import 'package:ronditrack/core/session/auth_api.dart';
 import 'package:ronditrack/core/session/auth_models.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/refresh_token_store.dart';
+import 'package:ronditrack/core/session/session_persistence.dart';
 import 'package:ronditrack/core/session/sign_out_marker.dart';
 
 final class SessionCoordinator extends ChangeNotifier {
@@ -15,11 +16,13 @@ final class SessionCoordinator extends ChangeNotifier {
     required AuthApi api,
     RefreshTokenStore? refreshTokenStore,
     SignOutMarker? signOutMarker,
+    SessionPersistence? persistence,
     DateTime Function()? clock,
     this.refreshMargin = const Duration(seconds: 30),
   }) : _api = api,
        _store = refreshTokenStore,
        _marker = signOutMarker ?? MemorySignOutMarker(),
+       _persistence = persistence,
        _clock = clock ?? DateTime.now {
     if (!api.browserManagedCookies && refreshTokenStore == null) {
       throw ArgumentError('Native sessions require a refresh token store.');
@@ -29,6 +32,7 @@ final class SessionCoordinator extends ChangeNotifier {
   final AuthApi _api;
   final RefreshTokenStore? _store;
   final SignOutMarker _marker;
+  final SessionPersistence? _persistence;
   final DateTime Function() _clock;
   final Duration refreshMargin;
 
@@ -55,7 +59,9 @@ final class SessionCoordinator extends ChangeNotifier {
       return Future.value(const Ok(null));
     }
 
-    if (_restoreFlight case final pending?) {
+    final pending = _restoreFlight;
+
+    if (pending != null) {
       return pending;
     }
 
@@ -82,8 +88,32 @@ final class SessionCoordinator extends ChangeNotifier {
       }
 
       if (blocked) {
+        await _persistence?.clear();
+
+        if (!_current(generation)) {
+          return const Err(_cancelled);
+        }
+
         _publish(const AuthSignedOut());
         return const Ok(null);
+      }
+
+      final cached = await _serial(
+        () async => _persistence?.readIdentity(),
+      );
+
+      if (!_current(generation)) {
+        return const Err(_cancelled);
+      }
+
+      if (cached != null) {
+        _publish(
+          AuthSignedIn(
+            identity: cached,
+            accessToken: null,
+            sessionId: generation,
+          ),
+        );
       }
 
       if (!_api.browserManagedCookies) {
@@ -94,7 +124,7 @@ final class SessionCoordinator extends ChangeNotifier {
         }
 
         if (stored == null) {
-          _publish(const AuthSignedOut());
+          await signOut(reason: const UnauthorizedFailure());
           return const Ok(null);
         }
       }
@@ -109,7 +139,7 @@ final class SessionCoordinator extends ChangeNotifier {
       }
 
       const failure = ServerFailure();
-      _publish(const AuthRestoring(failure: failure));
+      _refreshFailed(failure);
       return const Err(failure);
     }
   }
@@ -142,11 +172,16 @@ final class SessionCoordinator extends ChangeNotifier {
         return const Err(_cancelled);
       }
 
-      if (_cleanupFailure case final failure?) {
-        return Err(failure);
+      final cleanupFailure = _cleanupFailure;
+
+      if (cleanupFailure != null) {
+        return Err(cleanupFailure);
       }
 
-      final result = await _api.signIn(email: email, password: password);
+      final result = await _api.signIn(
+        email: email,
+        password: password,
+      );
 
       if (!_current(generation)) {
         return const Err(_cancelled);
@@ -204,8 +239,10 @@ final class SessionCoordinator extends ChangeNotifier {
         return const Err(_cancelled);
       }
 
-      if (_cleanupFailure case final failure?) {
-        return Err(failure);
+      final cleanupFailure = _cleanupFailure;
+
+      if (cleanupFailure != null) {
+        return Err(cleanupFailure);
       }
 
       final result = await _api.register(
@@ -238,13 +275,14 @@ final class SessionCoordinator extends ChangeNotifier {
       return const Err(UnauthorizedFailure());
     }
 
+    final access = current.currentAccessToken;
     final threshold = _clock().toUtc().add(refreshMargin);
 
-    if (!current.accessToken.expiresAtUtc.isAfter(threshold)) {
+    if (access == null || !access.expiresAtUtc.isAfter(threshold)) {
       return refresh();
     }
 
-    return Ok(current.accessToken);
+    return Ok(access);
   }
 
   Future<Result<AccessToken>> refresh() {
@@ -252,7 +290,9 @@ final class SessionCoordinator extends ChangeNotifier {
       return Future.value(const Err(UnauthorizedFailure()));
     }
 
-    if (_refreshFlight case final pending?) {
+    final pending = _refreshFlight;
+
+    if (pending != null) {
       return pending;
     }
 
@@ -321,8 +361,19 @@ final class SessionCoordinator extends ChangeNotifier {
   }
 
   Result<AccessToken> _refreshFailed(Failure failure) {
-    if (_state is AuthRestoring) {
+    final current = _state;
+
+    if (current is AuthRestoring) {
       _publish(AuthRestoring(failure: failure));
+    } else if (current is AuthSignedIn) {
+      _publish(
+        AuthSignedIn(
+          identity: current.identity,
+          accessToken: current.currentAccessToken,
+          sessionId: current.sessionId,
+          failure: failure,
+        ),
+      );
     }
 
     return Err(failure);
@@ -351,6 +402,12 @@ final class SessionCoordinator extends ChangeNotifier {
 
         await _store!.write(refresh);
       }
+
+      if (!_current(generation)) {
+        return false;
+      }
+
+      await _persistence?.rememberIdentity(tokens.identity);
 
       if (!_current(generation)) {
         return false;
@@ -387,12 +444,15 @@ final class SessionCoordinator extends ChangeNotifier {
       return Future.value(const Err(ServerFailure()));
     }
 
-    if (_signOutFlight case final pending?) {
+    final pending = _signOutFlight;
+
+    if (pending != null) {
       return pending;
     }
 
     final generation = ++_epoch;
 
+    _persistence?.invalidateWrites();
     _api.cancelPending();
     _restoreFlight = null;
     _refreshFlight = null;
@@ -416,6 +476,12 @@ final class SessionCoordinator extends ChangeNotifier {
     final stored = await _serial<RefreshToken?>(() async {
       try {
         await _marker.write(true);
+      } on Object {
+        cleanupFailed = true;
+      }
+
+      try {
+        await _persistence?.clear();
       } on Object {
         cleanupFailed = true;
       }

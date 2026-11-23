@@ -26,7 +26,7 @@ class AccessTokenStore extends _$AccessTokenStore {
       return ref.watch(
         sessionStateProvider.select(
           (value) => switch (value) {
-            AuthSignedIn(:final accessToken) => accessToken,
+            AuthSignedIn(:final currentAccessToken) => currentAccessToken,
             AuthRestoring() || AuthSignedOut() => null,
           },
         ),

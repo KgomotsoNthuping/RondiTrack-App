@@ -131,8 +131,11 @@ final class SessionInterceptor extends Interceptor {
 
       final sent = options.headers['Authorization'];
 
-      final result = sent != 'Bearer ${current.accessToken.value}'
-          ? Ok(current.accessToken)
+      final currentAccess = current.currentAccessToken;
+
+      final result = currentAccess != null &&
+              sent != 'Bearer ${currentAccess.value}'
+          ? Ok(currentAccess)
           : await _session.refresh();
 
       if (generation != _session.epoch ||

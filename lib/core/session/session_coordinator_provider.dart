@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/config/app_config_provider.dart';
+import 'package:ronditrack/core/offline/data/offline_database_provider.dart';
+import 'package:ronditrack/core/offline/offline_enabled.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/data/auth_api_provider.dart';
+import 'package:ronditrack/core/session/data/drift_session_persistence.dart';
 import 'package:ronditrack/core/session/data/platform_sign_out_marker.dart';
 import 'package:ronditrack/core/session/data/secure_refresh_token_store.dart';
 import 'package:ronditrack/core/session/session_coordinator.dart';
@@ -24,6 +27,9 @@ SessionCoordinator sessionCoordinator(Ref ref) {
     signOutMarker: createSignOutMarker(
       'ronditrack.signed-out.${config.flavor.name}.$origin',
     ),
+    persistence: ref.watch(offlineEnabledProvider)
+        ? DriftSessionPersistence(ref.watch(offlineDatabaseProvider))
+        : null,
   );
 
   ref.onDispose(coordinator.dispose);
