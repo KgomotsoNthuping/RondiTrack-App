@@ -14,7 +14,7 @@ import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 import 'package:ronditrack/features/auth/presentation/auth_form.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
-  const SignInScreen({this.from, this.email, super.key});
+  const new({this.from, this.email, super.key});
 
   final String? from;
   final String? email;

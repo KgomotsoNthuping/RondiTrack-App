@@ -15,7 +15,7 @@ ApiInviteRepository apiInviteRepository(Ref ref) {
 }
 
 final class ApiInviteRepository implements InviteRepository {
-  ApiInviteRepository(this._dio);
+  new(this._dio);
 
   final Dio _dio;
 

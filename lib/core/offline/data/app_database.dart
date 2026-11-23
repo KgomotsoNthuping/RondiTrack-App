@@ -18,9 +18,9 @@ part 'app_database.g.dart';
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase(QueryExecutor executor) : super(executor);
+  new(super.executor);
 
-  factory AppDatabase.persistent({required String name}) {
+  factory persistent({required String name}) {
     return AppDatabase(
       driftDatabase(
         name: name,

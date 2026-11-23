@@ -25,11 +25,9 @@ RefreshTokenStore refreshTokenStore(Ref ref) {
 }
 
 final class SecureRefreshTokenStore implements RefreshTokenStore {
-  const SecureRefreshTokenStore({
-    required FlutterSecureStorage storage,
-    required String key,
-  }) : _storage = storage,
-       _key = key;
+  const new({required FlutterSecureStorage storage, required String key})
+    : _storage = storage,
+      _key = key;
 
   final FlutterSecureStorage _storage;
   final String _key;

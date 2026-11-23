@@ -15,7 +15,7 @@ import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
 
 class ContributionHistoryScreen extends ConsumerWidget {
-  const ContributionHistoryScreen({
+  const new({
     required this.stokvelId,
     required this.filters,
     this.invalidFilters = false,
@@ -31,22 +31,18 @@ class ContributionHistoryScreen extends ConsumerWidget {
     final session = ref.watch(sessionStateProvider);
 
     if (session is! AuthSignedIn) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final workflow = ref.watch(stokvelWorkflowProvider((
-      userId: session.identity.userId,
-      sessionId: session.sessionId,
-    )));
+    final workflow = ref.watch(
+      stokvelWorkflowProvider((
+        userId: session.identity.userId,
+        sessionId: session.sessionId,
+      )),
+    );
 
     return _HistoryBody(
-      key: ValueKey((
-        stokvelId,
-        session.identity.userId,
-        session.sessionId,
-      )),
+      key: ValueKey((stokvelId, session.identity.userId, session.sessionId)),
       stokvelId: stokvelId,
       workflow: workflow,
       filters: filters,
@@ -56,7 +52,7 @@ class ContributionHistoryScreen extends ConsumerWidget {
 }
 
 class _HistoryBody extends StatefulWidget {
-  const _HistoryBody({
+  const new({
     required this.stokvelId,
     required this.workflow,
     required this.filters,
@@ -136,9 +132,7 @@ class _HistoryBodyState extends State<_HistoryBody> {
         title: const Text('Contributions'),
         leading: BackButton(
           onPressed: () => context.go(
-            Uri(
-              pathSegments: ['', 'stokvels', widget.stokvelId],
-            ).toString(),
+            Uri(pathSegments: ['', 'stokvels', widget.stokvelId]).toString(),
           ),
         ),
       ),
@@ -169,9 +163,7 @@ class _HistoryBodyState extends State<_HistoryBody> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              _filters(
-                                snapshot.data ?? emptyHistoryOptions,
-                              ),
+                              _filters(snapshot.data ?? emptyHistoryOptions),
                               if (snapshot.hasError)
                                 TextButton(
                                   onPressed: () => setState(() {
@@ -188,8 +180,7 @@ class _HistoryBodyState extends State<_HistoryBody> {
                         );
                       },
                     ),
-                    if (_pager.refreshing)
-                      const LinearProgressIndicator(),
+                    if (_pager.refreshing) const LinearProgressIndicator(),
                     ..._content(),
                   ],
                 ),
@@ -219,10 +210,7 @@ class _HistoryBodyState extends State<_HistoryBody> {
             isExpanded: true,
             decoration: const InputDecoration(labelText: 'Cycle'),
             items: [
-              const DropdownMenuItem(
-                value: '',
-                child: Text('All cycles'),
-              ),
+              const DropdownMenuItem(value: '', child: Text('All cycles')),
               for (final item in options.cycles)
                 DropdownMenuItem(
                   value: item.id,
@@ -251,15 +239,9 @@ class _HistoryBodyState extends State<_HistoryBody> {
             isExpanded: true,
             decoration: const InputDecoration(labelText: 'Status'),
             items: [
-              const DropdownMenuItem(
-                value: '',
-                child: Text('All statuses'),
-              ),
+              const DropdownMenuItem(value: '', child: Text('All statuses')),
               for (final status in ContributionStatus.values)
-                DropdownMenuItem(
-                  value: status.name,
-                  child: Text(status.label),
-                ),
+                DropdownMenuItem(value: status.name, child: Text(status.label)),
             ],
             onChanged: (value) => _apply((
               cycleId: selected.cycleId,
@@ -279,15 +261,9 @@ class _HistoryBodyState extends State<_HistoryBody> {
             isExpanded: true,
             decoration: const InputDecoration(labelText: 'Member'),
             items: [
-              const DropdownMenuItem(
-                value: '',
-                child: Text('All members'),
-              ),
+              const DropdownMenuItem(value: '', child: Text('All members')),
               for (final item in options.members)
-                DropdownMenuItem(
-                  value: item.id,
-                  child: Text(item.name),
-                ),
+                DropdownMenuItem(value: item.id, child: Text(item.name)),
               if (selected.memberId != null &&
                   !memberIds.contains(selected.memberId))
                 DropdownMenuItem(
@@ -309,7 +285,7 @@ class _HistoryBodyState extends State<_HistoryBody> {
             selected.days == null
                 ? 'South African dates'
                 : '${formatCalendarDate(selected.days!.first)} – '
-                    '${formatCalendarDate(selected.days!.last)}',
+                      '${formatCalendarDate(selected.days!.last)}',
           ),
           onPressed: () async {
             final today = southAfricanCalendarDay(DateTime.now());
@@ -318,22 +294,14 @@ class _HistoryBodyState extends State<_HistoryBody> {
             final picked = await showDateRangePicker(
               context: context,
               firstDate: DateTime.utc(
-                days != null && days.first.year < 2000
-                    ? days.first.year
-                    : 2000,
+                days != null && days.first.year < 2000 ? days.first.year : 2000,
               ),
               lastDate: DateTime.utc(
-                days != null && days.last.year > 2100
-                    ? days.last.year
-                    : 2100,
+                days != null && days.last.year > 2100 ? days.last.year : 2100,
                 12,
                 31,
               ),
-              currentDate: DateTime.utc(
-                today.year,
-                today.month,
-                today.day,
-              ),
+              currentDate: DateTime.utc(today.year, today.month, today.day),
               initialDateRange: days == null
                   ? null
                   : DateTimeRange(
@@ -394,17 +362,11 @@ class _HistoryBodyState extends State<_HistoryBody> {
       return switch (_pager.phase) {
         HistoryPhase.initialLoading => [
           const Center(child: CircularProgressIndicator()),
-          const Text(
-            'Loading contributions…',
-            textAlign: TextAlign.center,
-          ),
+          const Text('Loading contributions…', textAlign: TextAlign.center),
         ],
         HistoryPhase.firstError => [
           Text(_pager.failure!.message),
-          TextButton(
-            onPressed: _pager.retry,
-            child: const Text('Try again'),
-          ),
+          TextButton(onPressed: _pager.retry, child: const Text('Try again')),
         ],
         HistoryPhase.filteredEmpty => [
           const Text('No contributions match these filters.'),
@@ -438,10 +400,7 @@ class _HistoryBodyState extends State<_HistoryBody> {
                 ContributionStatusBadge(status: item.status),
                 if (item.paidAtUtc != null)
                   Text(
-                    formatJohannesburgDate(
-                      item.paidAtUtc!,
-                      includeTime: true,
-                    ),
+                    formatJohannesburgDate(item.paidAtUtc!, includeTime: true),
                   ),
               ],
             ),
@@ -458,10 +417,7 @@ class _HistoryBodyState extends State<_HistoryBody> {
       ] else if (_pager.phase == HistoryPhase.end)
         const Text('End of contributions')
       else
-        TextButton(
-          onPressed: _pager.loadMore,
-          child: const Text('Load more'),
-        ),
+        TextButton(onPressed: _pager.loadMore, child: const Text('Load more')),
     ];
   }
 }
@@ -471,9 +427,9 @@ String historyLocation(String id, HistoryFilter filter) {
     pathSegments: ['', 'stokvels', id],
     queryParameters: {
       'view': 'history',
-      if (filter.cycleId != null) 'cycle': filter.cycleId!,
+      if (filter.cycleId != null) 'cycle': filter.cycleId,
       if (filter.status != null) 'status': filter.status!.name,
-      if (filter.memberId != null) 'member': filter.memberId!,
+      if (filter.memberId != null) 'member': filter.memberId,
       if (filter.days != null) 'from': _isoDay(filter.days!.first),
       if (filter.days != null) 'to': _isoDay(filter.days!.last),
     },
@@ -494,10 +450,7 @@ HistoryFilter? historyFilterFromUri(Uri uri) {
 
       days = (first: _parseDay(from), last: _parseDay(to));
 
-      southAfricanDateRange(
-        firstDay: days.first,
-        lastDay: days.last,
-      );
+      southAfricanDateRange(firstDay: days.first, lastDay: days.last);
     }
 
     final status = query['status'];
@@ -538,9 +491,7 @@ CalendarDate _parseDay(String value) {
 
   final date = DateTime.utc(parts[0], parts[1], parts[2]);
 
-  if (date.year != parts[0] ||
-      date.month != parts[1] ||
-      date.day != parts[2]) {
+  if (date.year != parts[0] || date.month != parts[1] || date.day != parts[2]) {
     throw const FormatException('Invalid calendar day.');
   }
 

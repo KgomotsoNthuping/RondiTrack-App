@@ -10,34 +10,29 @@ import 'package:ronditrack/features/stokvels/application/stokvel_workflow_provid
 import 'package:ronditrack/features/stokvels/domain/stokvel_forms.dart';
 
 class CreateStokvelScreen extends ConsumerWidget {
-  const CreateStokvelScreen({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionStateProvider);
 
     if (session is! AuthSignedIn) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return _CreateStokvelForm(
-      key: ValueKey(session.identity.userId),
-    );
+    return _CreateStokvelForm(key: ValueKey(session.identity.userId));
   }
 }
 
 class _CreateStokvelForm extends ConsumerStatefulWidget {
-  const _CreateStokvelForm({super.key});
+  const new({super.key});
 
   @override
   ConsumerState<_CreateStokvelForm> createState() =>
       _CreateStokvelScreenState();
 }
 
-class _CreateStokvelScreenState
-    extends ConsumerState<_CreateStokvelForm> {
+class _CreateStokvelScreenState extends ConsumerState<_CreateStokvelForm> {
   final _form = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _monthly = TextEditingController();
@@ -64,22 +59,20 @@ class _CreateStokvelScreenState
     final session = ref.watch(sessionStateProvider);
 
     if (session is! AuthSignedIn) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final workflow = ref.watch(stokvelWorkflowProvider((
-      userId: session.identity.userId,
-      sessionId: session.sessionId,
-    )));
+    final workflow = ref.watch(
+      stokvelWorkflowProvider((
+        userId: session.identity.userId,
+        sessionId: session.sessionId,
+      )),
+    );
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create stokvel'),
-        leading: BackButton(
-          onPressed: () => context.go('/stokvels'),
-        ),
+        leading: BackButton(onPressed: () => context.go('/stokvels')),
       ),
       body: Center(
         child: ConstrainedBox(
@@ -128,17 +121,13 @@ class _CreateStokvelScreenState
                   _rules,
                   'rules',
                   'Rules',
-                  validator: (text) =>
-                      (text?.length ?? 0) > 1000
-                          ? 'Use 1000 characters or fewer.'
-                          : null,
+                  validator: (text) => (text?.length ?? 0) > 1000
+                      ? 'Use 1000 characters or fewer.'
+                      : null,
                   lines: 4,
                 ),
                 if (_message != null) ...[
-                  Semantics(
-                    liveRegion: true,
-                    child: Text(_message!),
-                  ),
+                  Semantics(liveRegion: true, child: Text(_message!)),
                   const SizedBox(height: 16),
                 ],
                 FilledButton(
@@ -171,8 +160,7 @@ class _CreateStokvelScreenState
                             return;
                           }
 
-                          final parsed =
-                              parseRand(_monthly.text) as ParsedRand;
+                          final parsed = parseRand(_monthly.text) as ParsedRand;
 
                           setState(() => _busy = true);
 
@@ -257,11 +245,7 @@ class _CreateStokvelScreenState
 }
 
 class EditCycleScreen extends ConsumerWidget {
-  const EditCycleScreen({
-    required this.stokvelId,
-    required this.cycleId,
-    super.key,
-  });
+  const new({required this.stokvelId, required this.cycleId, super.key});
 
   final String stokvelId;
   final String cycleId;
@@ -271,9 +255,7 @@ class EditCycleScreen extends ConsumerWidget {
     final session = ref.watch(sessionStateProvider);
 
     if (session is! AuthSignedIn) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return _EditCycleFormScreen(
@@ -285,22 +267,16 @@ class EditCycleScreen extends ConsumerWidget {
 }
 
 class _EditCycleFormScreen extends ConsumerStatefulWidget {
-  const _EditCycleFormScreen({
-    required this.stokvelId,
-    required this.cycleId,
-    super.key,
-  });
+  const new({required this.stokvelId, required this.cycleId, super.key});
 
   final String stokvelId;
   final String cycleId;
 
   @override
-  ConsumerState<_EditCycleFormScreen> createState() =>
-      _EditCycleScreenState();
+  ConsumerState<_EditCycleFormScreen> createState() => _EditCycleScreenState();
 }
 
-class _EditCycleScreenState
-    extends ConsumerState<_EditCycleFormScreen> {
+class _EditCycleScreenState extends ConsumerState<_EditCycleFormScreen> {
   Future<EditableCycle>? _initial;
 
   @override
@@ -308,15 +284,15 @@ class _EditCycleScreenState
     final session = ref.watch(sessionStateProvider);
 
     if (session is! AuthSignedIn) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final workflow = ref.watch(stokvelWorkflowProvider((
-      userId: session.identity.userId,
-      sessionId: session.sessionId,
-    )));
+    final workflow = ref.watch(
+      stokvelWorkflowProvider((
+        userId: session.identity.userId,
+        sessionId: session.sessionId,
+      )),
+    );
 
     _initial ??= workflow.initialCycle(widget.stokvelId, widget.cycleId);
 
@@ -369,10 +345,8 @@ class _EditCycleScreenState
           return _CycleForm(
             key: ValueKey(widget.cycleId),
             initial: initial,
-            loadLatest: () => workflow.latestCycle(
-              widget.stokvelId,
-              widget.cycleId,
-            ),
+            loadLatest: () =>
+                workflow.latestCycle(widget.stokvelId, widget.cycleId),
             save: (number, target, version) => workflow.saveCycle(
               widget.stokvelId,
               widget.cycleId,
@@ -388,7 +362,7 @@ class _EditCycleScreenState
 }
 
 class _CycleForm extends StatefulWidget {
-  const _CycleForm({
+  const new({
     required this.initial,
     required this.loadLatest,
     required this.save,
@@ -415,18 +389,13 @@ class _CycleFormState extends State<_CycleForm> {
   void initState() {
     super.initState();
 
-    _number = TextEditingController(
-      text: widget.initial.number.toString(),
-    );
-    _target = TextEditingController(
-      text: widget.initial.target.formatRand(),
-    );
+    _number = TextEditingController(text: widget.initial.number.toString());
+    _target = TextEditingController(text: widget.initial.target.formatRand());
 
     _editor = CycleEditor(
       initial: widget.initial,
       loadLatest: () => widget.loadLatest(),
-      save: (number, target, version) =>
-          widget.save(number, target, version),
+      save: (number, target, version) => widget.save(number, target, version),
     );
   }
 
@@ -457,9 +426,7 @@ class _CycleFormState extends State<_CycleForm> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   Text(
-                    _editor.saving
-                        ? 'Proposed changes'
-                        : 'Latest saved values',
+                    _editor.saving ? 'Proposed changes' : 'Latest saved values',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   Text('Cycle ${_editor.displayed.number}'),
@@ -512,10 +479,7 @@ class _CycleFormState extends State<_CycleForm> {
                         child: const Text('Reload latest values'),
                       ),
                   ] else if (failure != null)
-                    Semantics(
-                      liveRegion: true,
-                      child: Text(failure.message),
-                    ),
+                    Semantics(liveRegion: true, child: Text(failure.message)),
                   if (_editor.reloadFailure != null)
                     Text(_editor.reloadFailure!.message),
                   if (_saved)

@@ -106,11 +106,11 @@ Map<String, String> _hostedPackages(List<String> lines) {
 
   void finish() {
     if (name != null && source == 'hosted') {
-      if (version == null || version!.isEmpty) {
+      if (version == null || version.isEmpty) {
         throw const FormatException('Missing dependency version.');
       }
 
-      result[name!] = version!;
+      result[name] = version;
     }
   }
 

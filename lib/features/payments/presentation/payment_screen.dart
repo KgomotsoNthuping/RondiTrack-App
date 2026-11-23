@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
@@ -13,11 +14,7 @@ import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 
 class PaymentScreen extends ConsumerStatefulWidget {
-  const PaymentScreen({
-    required this.stokvelId,
-    required this.cycleId,
-    super.key,
-  });
+  const new({required this.stokvelId, required this.cycleId, super.key});
 
   final String stokvelId;
   final String cycleId;
@@ -329,7 +326,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 }
 
 class PaymentPendingCard extends StatelessWidget {
-  const PaymentPendingCard({
+  const new({
     required this.payment,
     required this.onRetry,
     required this.onReview,
@@ -379,7 +376,7 @@ class PaymentPendingCard extends StatelessWidget {
 }
 
 class PaymentNoticeCard extends StatelessWidget {
-  const PaymentNoticeCard({required this.notice, super.key});
+  const new({required this.notice, super.key});
 
   final PaymentNotice notice;
 

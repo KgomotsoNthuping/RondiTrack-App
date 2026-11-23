@@ -24,7 +24,7 @@ _destinations = [
 ];
 
 class RondiTrackShell extends StatelessWidget {
-  const RondiTrackShell({required this.navigationShell, super.key});
+  const new({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
 
@@ -89,7 +89,7 @@ class RondiTrackShell extends StatelessWidget {
 }
 
 class _DemoPersonaMenu extends ConsumerWidget {
-  const _DemoPersonaMenu();
+  const new();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

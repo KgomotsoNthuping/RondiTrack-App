@@ -3,23 +3,23 @@ import 'package:ronditrack/core/session/access_token_store.dart';
 import 'package:ronditrack/core/session/auth_models.dart';
 
 sealed class AuthState {
-  const AuthState();
+  const new();
 }
 
 final class AuthRestoring extends AuthState {
-  const AuthRestoring({this.failure});
+  const new({this.failure});
 
   final Failure? failure;
 }
 
 final class AuthSignedOut extends AuthState {
-  const AuthSignedOut({this.failure});
+  const new({this.failure});
 
   final Failure? failure;
 }
 
 final class AuthSignedIn extends AuthState {
-  const AuthSignedIn({
+  const new({
     required this.identity,
     required AccessToken? accessToken,
     required this.sessionId,

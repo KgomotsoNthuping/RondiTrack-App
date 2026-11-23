@@ -12,7 +12,7 @@ typedef CreateStokvelDraft = ({
 });
 
 final class EditableCycle {
-  const EditableCycle({
+  const new({
     required this.id,
     required this.number,
     required this.target,
@@ -22,7 +22,7 @@ final class EditableCycle {
     this.dueDate,
   });
 
-  factory EditableCycle.fromCache(ContributionCycle cycle) {
+  factory fromCache(ContributionCycle cycle) {
     final version = cycle.version;
 
     if (version == null || version <= 0) {

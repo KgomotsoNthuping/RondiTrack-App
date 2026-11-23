@@ -18,7 +18,7 @@ extension SessionOfflineActions on SessionCoordinator {
       }
 
       if (!pending) {
-        return _finishSignOut(reason: reason);
+        return await _finishSignOut(reason: reason);
       }
 
       final current = _state;
@@ -26,7 +26,7 @@ extension SessionOfflineActions on SessionCoordinator {
       if (reason is UnauthorizedFailure && current is AuthSignedIn) {
         final next = ++_epoch;
 
-        _persistence!.invalidateWrites();
+        _persistence.invalidateWrites();
         _api.cancelPending();
         _restoreFlight = null;
         _refreshFlight = null;

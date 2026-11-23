@@ -9,7 +9,7 @@ abstract interface class RefreshTokenStore {
 }
 
 final class MemoryRefreshTokenStore implements RefreshTokenStore {
-  MemoryRefreshTokenStore({RefreshToken? initialToken}) : _token = initialToken;
+  new({RefreshToken? initialToken}) : _token = initialToken;
 
   RefreshToken? _token;
 

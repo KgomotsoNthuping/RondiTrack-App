@@ -21,7 +21,7 @@ class HomeCacheRows extends Table {
 }
 
 final class HomeCache {
-  HomeCache(this._db);
+  new(this._db);
 
   final AppDatabase _db;
 

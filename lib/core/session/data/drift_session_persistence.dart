@@ -5,7 +5,7 @@ import 'package:ronditrack/core/session/session_persistence.dart';
 import 'package:ronditrack/features/payments/data/payment_outbox.dart';
 
 final class DriftSessionPersistence implements SessionPersistence {
-  DriftSessionPersistence(this._database);
+  new(this._database);
 
   final AppDatabase _database;
 

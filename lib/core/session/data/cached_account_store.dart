@@ -16,7 +16,7 @@ class CachedAccountRows extends Table {
 }
 
 final class CachedAccountStore {
-  CachedAccountStore(this._db);
+  new(this._db);
 
   final AppDatabase _db;
 
@@ -51,7 +51,7 @@ final class CachedAccountStore {
           .into(_db.cachedAccountRows)
           .insertOnConflictUpdate(
             CachedAccountRowsCompanion.insert(
-              slot: 1,
+              slot: const Value(1),
               userId: identity.userId,
               email: identity.email,
               platformRole: Value(identity.platformRole),

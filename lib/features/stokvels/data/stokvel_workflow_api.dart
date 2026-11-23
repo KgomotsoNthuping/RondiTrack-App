@@ -13,7 +13,7 @@ import 'package:ronditrack/features/stokvels/domain/stokvel_forms.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 
 final class StokvelWorkflowApi {
-  StokvelWorkflowApi(this._readDio);
+  new(this._readDio);
 
   final Dio Function() _readDio;
   Future<void> _historyTail = Future<void>.value();
@@ -42,8 +42,7 @@ final class StokvelWorkflowApi {
     }
   }
 
-  String _stockPath(String id) =>
-      '/api/v1/stokvels/${Uri.encodeComponent(id)}';
+  String _stockPath(String id) => '/api/v1/stokvels/${Uri.encodeComponent(id)}';
 
   Future<String> create(CreateStokvelDraft draft) async {
     final result = cacheObject(
@@ -73,8 +72,7 @@ final class StokvelWorkflowApi {
       ),
     );
 
-    if (!_sameId(result['stokvelId'], id) ||
-        !_sameId(result['id'], cycleId)) {
+    if (!_sameId(result['stokvelId'], id) || !_sameId(result['id'], cycleId)) {
       throw const FormatException('The cycle does not match its address.');
     }
 
@@ -99,8 +97,7 @@ final class StokvelWorkflowApi {
       ),
     );
 
-    if (!_sameId(result['stokvelId'], id) ||
-        !_sameId(result['id'], cycleId)) {
+    if (!_sameId(result['stokvelId'], id) || !_sameId(result['id'], cycleId)) {
       throw const FormatException('The cycle does not match its address.');
     }
 
@@ -135,8 +132,8 @@ final class StokvelWorkflowApi {
         totalCollected: _cents(summary['totalCollectedInCents']),
         amountOutstanding: _cents(summary['amountOutstandingInCents']),
         dueDate: _day(summary['dueDate']),
-        version: metadata.number == number &&
-                metadata.target.value == target.value
+        version:
+            metadata.number == number && metadata.target.value == target.value
             ? metadata.version
             : null,
       );
@@ -145,20 +142,14 @@ final class StokvelWorkflowApi {
       final seen = <String>{};
 
       do {
-        final page = await history(
-          id,
-          (
-            cycleId: null,
-            status: null,
-            memberId: userId,
-            days: null,
-          ),
-          token,
-        );
+        final page = await history(id, (
+          cycleId: null,
+          status: null,
+          memberId: userId,
+          days: null,
+        ), token);
 
-        own.addAll(
-          page.items.where((item) => _sameId(item.cycleId, cycleId)),
-        );
+        own.addAll(page.items.where((item) => _sameId(item.cycleId, cycleId)));
 
         token = page.nextToken;
 
@@ -188,11 +179,7 @@ final class StokvelWorkflowApi {
     );
   }
 
-  Future<HistoryPage> history(
-    String id,
-    HistoryFilter filter,
-    String? token,
-  ) {
+  Future<HistoryPage> history(String id, HistoryFilter filter, String? token) {
     final completion = Completer<HistoryPage>();
 
     _historyTail = _historyTail.then((_) async {
@@ -212,24 +199,20 @@ final class StokvelWorkflowApi {
             '${_stockPath(id)}/contributions',
             query: {
               'pageSize': 20,
-              if (token != null) 'pageToken': token,
+              'pageToken': ?token,
               if (filter.memberId != null) 'member': filter.memberId,
               if (bounds != null)
                 'from': bounds.fromInclusive.toIso8601String(),
-              if (bounds != null)
-                'to': bounds.toExclusive.toIso8601String(),
+              if (bounds != null) 'to': bounds.toExclusive.toIso8601String(),
             },
           ),
         );
 
         completion.complete(
-          HistoryPage(
-            [
-              for (final value in cacheList(json['items']))
-                _contribution(cacheObject(value)),
-            ],
-            _next(json['nextPageToken']),
-          ),
+          HistoryPage([
+            for (final value in cacheList(json['items']))
+              _contribution(cacheObject(value)),
+          ], _next(json['nextPageToken'])),
         );
       } on Object catch (error, stack) {
         completion.completeError(error, stack);
@@ -240,9 +223,7 @@ final class StokvelWorkflowApi {
   }
 
   Future<HistoryOptions> options(String id) async {
-    final cycles = cacheList(
-      await _request('GET', '${_stockPath(id)}/cycles'),
-    );
+    final cycles = cacheList(await _request('GET', '${_stockPath(id)}/cycles'));
 
     final members = <({String id, String name})>[];
     String? token;
@@ -253,10 +234,7 @@ final class StokvelWorkflowApi {
         await _request(
           'GET',
           '${_stockPath(id)}/members',
-          query: {
-            'pageSize': 20,
-            if (token != null) 'pageToken': token,
-          },
+          query: {'pageSize': 20, 'pageToken': ?token},
         ),
       );
 
@@ -341,9 +319,7 @@ CalendarDate? _day(Object? value) {
 
   final date = DateTime.utc(parts[0], parts[1], parts[2]);
 
-  if (date.year != parts[0] ||
-      date.month != parts[1] ||
-      date.day != parts[2]) {
+  if (date.year != parts[0] || date.month != parts[1] || date.day != parts[2]) {
     throw const FormatException('Invalid calendar date.');
   }
 
@@ -356,6 +332,5 @@ String? _next(Object? value) {
 }
 
 bool _sameId(Object? value, String expected) {
-  return value is String &&
-      value.toLowerCase() == expected.toLowerCase();
+  return value is String && value.toLowerCase() == expected.toLowerCase();
 }

@@ -59,7 +59,7 @@ final paymentWorkerProvider = Provider.autoDispose
           },
         );
 
-        DateTime? lastHomeUpdate = home.cached?.updatedAtUtc;
+        var lastHomeUpdate = home.cached?.updatedAtUtc;
 
         void observeHome() {
           final updated = home.cached?.updatedAtUtc;

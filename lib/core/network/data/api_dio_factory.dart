@@ -43,7 +43,7 @@ Dio createApiDio(
 }
 
 final class _SafeLogInterceptor extends Interceptor {
-  _SafeLogInterceptor(this.write);
+  new(this.write);
 
   final ApiLog write;
   final _timers = Expando<Stopwatch>();

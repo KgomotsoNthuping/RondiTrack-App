@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:ronditrack/app/provider_retry.dart';
 import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
@@ -11,6 +12,7 @@ import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/domain/home_repository.dart';
 import 'package:ronditrack/features/home/presentation/home_screen.dart';
 
+@Dependencies([Home])
 void main() {
   const scenarios =
       <({String name, Failure failure, String message, int attempts})>[

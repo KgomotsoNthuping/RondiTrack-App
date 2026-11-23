@@ -8,7 +8,7 @@ import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 import 'package:ronditrack/features/auth/presentation/auth_form.dart';
 
 class SplashScreen extends ConsumerWidget {
-  const SplashScreen({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

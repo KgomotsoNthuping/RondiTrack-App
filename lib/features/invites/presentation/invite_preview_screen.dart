@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/config/repository_mode_provider.dart';
 import 'package:ronditrack/core/errors/failure.dart';
@@ -11,8 +12,9 @@ import 'package:ronditrack/features/invites/application/family_invite.dart';
 import 'package:ronditrack/features/invites/application/invite_provider.dart';
 import 'package:ronditrack/features/invites/domain/invite_repository.dart';
 
+@Dependencies([accountKey])
 class InvitePreviewScreen extends ConsumerWidget {
-  const InvitePreviewScreen({required this.code, super.key});
+  const new({required this.code, super.key});
 
   final String code;
 
@@ -27,8 +29,9 @@ class InvitePreviewScreen extends ConsumerWidget {
   }
 }
 
+@Dependencies([joinInvite])
 class _ApiInviteScreen extends ConsumerStatefulWidget {
-  const _ApiInviteScreen({required this.code, super.key});
+  const new({required this.code, super.key});
 
   final String code;
 
@@ -75,7 +78,7 @@ class _ApiInviteScreenState extends ConsumerState<_ApiInviteScreen> {
           ),
         ]);
       },
-      data: (JoinedInvite destination) {
+      data: (destination) {
         if (_opening != destination.stokvelId) {
           _opening = destination.stokvelId;
 
@@ -96,8 +99,9 @@ class _ApiInviteScreenState extends ConsumerState<_ApiInviteScreen> {
   }
 }
 
+@Dependencies([FamilyInvite])
 class _FixtureInviteScreen extends ConsumerWidget {
-  const _FixtureInviteScreen({required this.code});
+  const new({required this.code});
 
   final String code;
 

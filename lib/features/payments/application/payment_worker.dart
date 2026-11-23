@@ -8,7 +8,7 @@ import 'package:ronditrack/features/payments/data/payment_outbox.dart';
 import 'package:ronditrack/features/payments/domain/pending_payment.dart';
 
 final class PaymentWorker extends ChangeNotifier {
-  PaymentWorker({
+  new({
     required PaymentOutbox store,
     required this.userId,
     required Future<PaymentReply> Function(PendingPayment) send,

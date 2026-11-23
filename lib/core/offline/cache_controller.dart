@@ -5,7 +5,7 @@ import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/core/offline/cached_value.dart';
 
 final class CacheController<T> extends ChangeNotifier {
-  CacheController({
+  new({
     required Stream<CachedValue<T>?> cache,
     required Future<T> Function() load,
     required Future<bool> Function(T, int, DateTime) save,
@@ -117,11 +117,7 @@ final class CacheController<T> extends ChangeNotifier {
         return;
       }
 
-      final accepted = await _save(
-        value,
-        generation,
-        _clock().toUtc(),
-      );
+      final accepted = await _save(value, generation, _clock().toUtc());
 
       if (accepted && !_closed && _isCurrent()) {
         _failure = null;

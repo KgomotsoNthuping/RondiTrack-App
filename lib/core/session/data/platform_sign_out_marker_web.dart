@@ -18,7 +18,7 @@ SignOutMarker createSignOutMarker(String key) {
 }
 
 final class _BrowserSignOutMarker implements SignOutMarker {
-  const _BrowserSignOutMarker(this.key);
+  const new(this.key);
 
   final String key;
 

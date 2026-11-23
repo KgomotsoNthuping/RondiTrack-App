@@ -32,7 +32,7 @@ Dio apiDio(Ref ref) {
 }
 
 final class _FixtureAuthorizationInterceptor extends Interceptor {
-  _FixtureAuthorizationInterceptor(this.readToken);
+  new(this.readToken);
 
   final AccessToken? Function() readToken;
 

@@ -17,7 +17,7 @@ import 'package:ronditrack/core/session/data/auth_cookie.dart';
 import 'package:ronditrack/core/session/data/auth_paths.dart';
 
 final class DioAuthApi implements AuthApi {
-  DioAuthApi({
+  new({
     required Dio dio,
     required AuthConfig config,
     required this.browserManagedCookies,

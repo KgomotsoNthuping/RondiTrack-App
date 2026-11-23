@@ -15,10 +15,7 @@ import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 
 typedef OfflineAccountKey = ({String userId, int sessionId});
 
-typedef CachedStokvelKey = ({
-  OfflineAccountKey account,
-  String stokvelId,
-});
+typedef CachedStokvelKey = ({OfflineAccountKey account, String stokvelId});
 
 final cachedHomeProvider = Provider.autoDispose
     .family<CacheController<List<HomeEntry>>, OfflineAccountKey>(
@@ -38,19 +35,16 @@ final cachedHomeProvider = Provider.autoDispose
 
         final controller = CacheController<List<HomeEntry>>(
           cache: cache.watch(account.userId),
-          load: () => ref
-              .read(homeRepositoryProvider)
-              .fetchHome(account.userId),
+          load: () =>
+              ref.read(homeRepositoryProvider).fetchHome(account.userId),
           save: (value, generation, updatedAt) => cache.replace(
             generation: generation,
             userId: account.userId,
             entries: value,
             updatedAtUtc: updatedAt,
           ),
-          remove: (generation) => cache.remove(
-            generation: generation,
-            userId: account.userId,
-          ),
+          remove: (generation) =>
+              cache.remove(generation: generation, userId: account.userId),
           generation: () => database.generation,
           isCurrent: isCurrent,
         );

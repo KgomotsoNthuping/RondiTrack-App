@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/offline/offline_enabled.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
@@ -10,8 +11,9 @@ import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
 import 'package:ronditrack/features/offline/presentation/offline_home_screen.dart';
 
+@Dependencies([Home])
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

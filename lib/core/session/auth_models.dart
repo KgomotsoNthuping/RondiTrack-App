@@ -1,5 +1,5 @@
 final class RefreshToken {
-  const RefreshToken(this.value);
+  const new(this.value);
 
   final String value;
 
@@ -8,7 +8,7 @@ final class RefreshToken {
 }
 
 final class AuthIdentity {
-  const AuthIdentity({
+  const new({
     required this.userId,
     required this.email,
     this.platformRole,
@@ -22,7 +22,7 @@ final class AuthIdentity {
 }
 
 final class AuthTokens {
-  const AuthTokens({
+  const new({
     required this.accessToken,
     required this.expiresAtUtc,
     required this.identity,
@@ -39,7 +39,7 @@ final class AuthTokens {
 }
 
 final class RegisteredAccount {
-  const RegisteredAccount({
+  const new({
     required this.userId,
     required this.fullName,
     required this.email,

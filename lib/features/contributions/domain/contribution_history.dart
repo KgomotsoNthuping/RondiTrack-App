@@ -63,7 +63,7 @@ extension HistoryFilterRules on HistoryFilter {
 }
 
 final class HistoryPage {
-  const HistoryPage(this.items, this.nextToken);
+  const new(this.items, this.nextToken);
 
   final List<Contribution> items;
   final String? nextToken;

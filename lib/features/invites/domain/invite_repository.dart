@@ -3,7 +3,7 @@ import 'package:ronditrack/core/result/result.dart';
 const expiredInviteMessage = 'This invite has expired. Ask for a new invite.';
 
 final class InvitePreview {
-  const InvitePreview({
+  const new({
     required this.stokvelId,
     required this.name,
     required this.alreadyMember,
@@ -15,7 +15,7 @@ final class InvitePreview {
 }
 
 final class JoinedInvite {
-  const JoinedInvite({required this.stokvelId, required this.name});
+  const new({required this.stokvelId, required this.name});
 
   final String stokvelId;
   final String name;

@@ -6,7 +6,7 @@ import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/core/offline/cache_controller.dart';
 
 class CacheView<T> extends StatefulWidget {
-  const CacheView({required this.controller, required this.builder, super.key});
+  const new({required this.controller, required this.builder, super.key});
 
   final CacheController<T> controller;
   final Widget Function(BuildContext, T) builder;

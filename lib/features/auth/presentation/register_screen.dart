@@ -10,7 +10,7 @@ import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 import 'package:ronditrack/features/auth/presentation/auth_form.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
-  const RegisterScreen({this.from, super.key});
+  const new({this.from, super.key});
 
   final String? from;
 

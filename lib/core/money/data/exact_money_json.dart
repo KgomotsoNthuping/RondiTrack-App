@@ -10,10 +10,7 @@ String randNumber(Cents cents) {
   return '$sign$whole.$fraction';
 }
 
-String moneyJson(
-  Map<String, Object?> fields,
-  Map<String, Cents> amounts,
-) {
+String moneyJson(Map<String, Object?> fields, Map<String, Cents> amounts) {
   final entries = <String>[
     for (final entry in fields.entries)
       '${jsonEncode(entry.key)}:${jsonEncode(entry.value)}',
@@ -28,9 +25,8 @@ Cents decimalCents(String value) {
     throw const FormatException('The money value is too large.');
   }
 
-  final match = RegExp(
-    r'^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$',
-  ).firstMatch(value);
+  final match = RegExp(r'^(-?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$')
+      .firstMatch(value);
 
   if (match == null) {
     throw const FormatException('Invalid decimal money.');
@@ -113,8 +109,7 @@ Object? decodeMoneyJson(String source) {
 
     var valueStart = colon + 1;
 
-    while (valueStart < source.length &&
-        source[valueStart].trim().isEmpty) {
+    while (valueStart < source.length && source[valueStart].trim().isEmpty) {
       valueStart++;
     }
 

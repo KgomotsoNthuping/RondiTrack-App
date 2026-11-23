@@ -1,49 +1,30 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:ronditrack/app/api_repository_adapters.dart';
-import 'package:ronditrack/core/config/repository_mode_provider.dart';
-import 'package:ronditrack/core/session/account_key.dart';
-import 'package:ronditrack/core/state/screen_state.dart';
-import 'package:ronditrack/features/home/data/api_home_repository.dart';
-import 'package:ronditrack/features/home/data/fake_home_repository.dart';
-import 'package:ronditrack/features/home/domain/home_entry.dart';
-import 'package:ronditrack/features/home/domain/home_repository.dart';
-import 'package:ronditrack/features/invites/application/family_invite.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ronditrack/app/account_scope.dart';
+import 'package:ronditrack/app/navigation/app_router.dart';
+import 'package:ronditrack/core/config/app_config.dart';
+import 'package:ronditrack/core/config/app_flavor_scope.dart';
+import 'package:ronditrack/core/theme/ronditrack_theme.dart';
 
-part 'home_provider.g.dart';
+class RondiTrackApp extends ConsumerWidget {
+  const new({required this.config, super.key});
 
-@Riverpod(dependencies: [accountKey, FamilyInvite])
-HomeRepository homeRepository(Ref ref) {
-  requireAccount(ref);
+  final AppConfig config;
 
-  if (!ref.watch(useApiRepositoriesProvider)) {
-    return FakeHomeRepository(
-      nalediJoinedFamily: ref.watch(familyInviteProvider),
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return AppFlavorScope(
+      flavor: config.flavor,
+      child: MaterialApp.router(
+        title: config.flavor.displayName,
+        debugShowCheckedModeBanner: false,
+        theme: RondiTrackTheme.light,
+        darkTheme: RondiTrackTheme.dark,
+        routerConfig: ref.watch(appRouterProvider(config.flavor)),
+        builder: (context, child) {
+          return AccountScope(child: child ?? const SizedBox.shrink());
+        },
+      ),
     );
   }
-
-  return HomeResultAdapter(ref.watch(apiHomeRepositoryProvider).fetchHome);
-}
-
-@Riverpod(dependencies: [accountKey, MembershipRevision, homeRepository])
-class Home extends _$Home {
-  @override
-  Future<List<HomeEntry>> build(String userId) {
-    requireAccount(ref, userId: userId);
-    ref.watch(membershipRevisionProvider);
-
-    return ref.watch(homeRepositoryProvider).fetchHome(userId);
-  }
-}
-
-ScreenState<List<HomeEntry>> homeViewState(AsyncValue<List<HomeEntry>> state) {
-  return state.when(
-    skipLoadingOnRefresh: state.hasValue,
-    skipError: state.isRefreshing,
-    loading: () => const ScreenLoading<List<HomeEntry>>(),
-    data: (entries) => entries.isEmpty
-        ? const ScreenEmpty<List<HomeEntry>>()
-        : ScreenData(entries),
-    error: (error, _) =>
-        screenFailure(error, fallback: 'Could not load your stokvels.'),
-  );
 }

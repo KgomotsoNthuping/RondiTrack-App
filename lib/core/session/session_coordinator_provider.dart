@@ -14,7 +14,7 @@ import 'package:ronditrack/core/session/session_coordinator.dart';
 part 'session_coordinator_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-SessionCoordinator sessionCoordinator(Ref ref) {
+Raw<SessionCoordinator> sessionCoordinator(Ref ref) {
   final api = ref.watch(authApiProvider);
   final config = ref.watch(appConfigProvider);
   final origin = Uri.encodeComponent(config.apiBaseUrl.toString());
@@ -44,10 +44,15 @@ class SessionState extends _$SessionState {
   AuthState build() {
     final coordinator = ref.watch(sessionCoordinatorProvider);
 
-    void update() => state = coordinator.state;
+    void update() {
+      state = coordinator.state;
+    }
 
     coordinator.addListener(update);
-    ref.onDispose(() => coordinator.removeListener(update));
+
+    ref.onDispose(() {
+      coordinator.removeListener(update);
+    });
 
     return coordinator.state;
   }

@@ -52,7 +52,7 @@ class PaymentNoticeRows extends Table {
 }
 
 final class PaymentOutbox {
-  PaymentOutbox(this._database, {String Function()? newKey})
+  new(this._database, {String Function()? newKey})
     : _newKey = newKey ?? createPaymentKey;
 
   final AppDatabase _database;

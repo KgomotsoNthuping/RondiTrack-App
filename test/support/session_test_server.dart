@@ -8,10 +8,7 @@ import 'package:ronditrack/core/session/auth_api.dart';
 import 'package:ronditrack/core/session/auth_models.dart';
 
 final class RotatingAuthServer implements AuthApi, HttpClientAdapter {
-  RotatingAuthServer({
-    required this.clock,
-    this.browserManagedCookies = false,
-  }) {
+  new({required this.clock, this.browserManagedCookies = false}) {
     _expires = clock().add(const Duration(minutes: 10));
   }
 

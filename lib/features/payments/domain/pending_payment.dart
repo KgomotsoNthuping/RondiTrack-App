@@ -4,7 +4,7 @@ import 'package:ronditrack/core/money/cents.dart';
 enum PaymentPhase { pending, waiting, expired, clockMismatch }
 
 final class PendingPayment {
-  const PendingPayment({
+  const new({
     required this.key,
     required this.userId,
     required this.stokvelId,
@@ -30,7 +30,7 @@ final class PendingPayment {
 enum PaymentNoticeKind { paid, refused, expired, clockMismatch }
 
 final class PaymentNotice {
-  const PaymentNotice({
+  const new({
     required this.key,
     required this.userId,
     required this.stokvelId,
@@ -56,29 +56,29 @@ final class PaymentNotice {
 }
 
 sealed class PaymentReply {
-  const PaymentReply();
+  const new();
 }
 
 final class PaymentAccepted extends PaymentReply {
-  const PaymentAccepted(this.contributionId);
+  const new(this.contributionId);
 
   final String contributionId;
 }
 
 final class PaymentRefused extends PaymentReply {
-  const PaymentRefused(this.failure);
+  const new(this.failure);
 
   final Failure failure;
 }
 
 final class PaymentWaiting extends PaymentReply {
-  const PaymentWaiting(this.retryAtUtc);
+  const new(this.retryAtUtc);
 
   final DateTime retryAtUtc;
 }
 
 final class PaymentUnanswered extends PaymentReply {
-  const PaymentUnanswered(this.failure);
+  const new(this.failure);
 
   final Failure failure;
 }

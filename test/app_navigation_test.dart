@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/app/ronditrack_app.dart';
 import 'package:ronditrack/core/config/app_config.dart';
@@ -24,6 +26,7 @@ final _config = AppConfig.parse(
   apiBaseUrl: 'http://10.0.2.2:5227',
 );
 
+@Dependencies([Home])
 void main() {
   test('classifies window widths at both breakpoints', () {
     expect(WindowSize.fromWidth(599), WindowSize.compact);

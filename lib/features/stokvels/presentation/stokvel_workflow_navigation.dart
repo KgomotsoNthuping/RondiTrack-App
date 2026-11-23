@@ -27,17 +27,11 @@ Widget? stokvelWorkflowScreenFor(
 
   if (stokvelId != null && cycleId != null) {
     if (view == 'pay') {
-      return PaymentScreen(
-        stokvelId: stokvelId,
-        cycleId: cycleId,
-      );
+      return PaymentScreen(stokvelId: stokvelId, cycleId: cycleId);
     }
 
     if (view == 'edit') {
-      return EditCycleScreen(
-        stokvelId: stokvelId,
-        cycleId: cycleId,
-      );
+      return EditCycleScreen(stokvelId: stokvelId, cycleId: cycleId);
     }
   }
 
@@ -55,7 +49,7 @@ Widget? stokvelWorkflowScreenFor(
 }
 
 class CreateStokvelAction extends StatelessWidget {
-  const CreateStokvelAction({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -71,11 +65,7 @@ class CreateStokvelAction extends StatelessWidget {
 }
 
 class StokvelWorkflowActions extends StatelessWidget {
-  const StokvelWorkflowActions({
-    required this.stokvel,
-    required this.userId,
-    super.key,
-  });
+  const new({required this.stokvel, required this.userId, super.key});
 
   final Stokvel stokvel;
   final String userId;
@@ -121,18 +111,14 @@ class StokvelWorkflowActions extends StatelessWidget {
             onPressed: () => context.go(location('pay')),
             child: const Text('Pay contribution'),
           ),
-        if (cycle != null &&
-            stokvel.membership.role == StokvelRole.admin)
+        if (cycle != null && stokvel.membership.role == StokvelRole.admin)
           OutlinedButton(
             onPressed: () => context.go(location('edit')),
             child: const Text('Edit cycle'),
           ),
         OutlinedButton(
           onPressed: () => context.go(
-            historyLocation(
-              stokvel.membership.stokvelId,
-              allContributions,
-            ),
+            historyLocation(stokvel.membership.stokvelId, allContributions),
           ),
           child: const Text('Contribution history'),
         ),

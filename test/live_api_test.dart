@@ -6,6 +6,8 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/provider_retry.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/config/app_config_provider.dart';
@@ -23,6 +25,7 @@ import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 
+@Dependencies([Home, stokvelDetail])
 void main() {
   final enabled = Platform.environment['RUN_LIVE_TESTS'] == 'true';
 

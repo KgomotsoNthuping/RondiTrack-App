@@ -7,7 +7,7 @@ import 'package:ronditrack/core/session/session_coordinator.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 
 class AccountScope extends ConsumerStatefulWidget {
-  const AccountScope({required this.child, super.key});
+  const new({required this.child, super.key});
 
   final Widget child;
 

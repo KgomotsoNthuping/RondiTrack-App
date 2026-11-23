@@ -5,7 +5,7 @@ abstract interface class SignOutMarker {
 }
 
 final class MemorySignOutMarker implements SignOutMarker {
-  MemorySignOutMarker({bool signedOut = false}) : _signedOut = signedOut;
+  new({bool signedOut = false}) : _signedOut = signedOut;
 
   bool _signedOut;
 

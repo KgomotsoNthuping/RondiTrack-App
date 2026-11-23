@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/config/repository_mode_provider.dart';
 import 'package:ronditrack/core/errors/failure.dart';
@@ -8,13 +10,15 @@ part 'account_key.g.dart';
 
 typedef AccountKey = ({String userId, int sessionId});
 
-AccountKey? accountFromState(AuthState state) => switch (state) {
-  AuthSignedIn(:final identity, :final sessionId) => (
-    userId: identity.userId,
-    sessionId: sessionId,
-  ),
-  AuthRestoring() || AuthSignedOut() => null,
-};
+AccountKey? accountFromState(AuthState state) {
+  return switch (state) {
+    AuthSignedIn(:final identity, :final sessionId) => (
+      userId: identity.userId,
+      sessionId: sessionId,
+    ),
+    AuthRestoring() || AuthSignedOut() => null,
+  };
+}
 
 @Riverpod(keepAlive: true, dependencies: [])
 AccountKey? accountKey(Ref ref) {
@@ -25,6 +29,7 @@ AccountKey? accountKey(Ref ref) {
   return ref.watch(sessionStateProvider.select(accountFromState));
 }
 
+@Dependencies([accountKey])
 AccountKey? requireAccount(Ref ref, {String? userId}) {
   final account = ref.watch(accountKeyProvider);
 
@@ -44,5 +49,7 @@ class MembershipRevision extends _$MembershipRevision {
     return 0;
   }
 
-  void changed() => state++;
+  void changed() {
+    state++;
+  }
 }

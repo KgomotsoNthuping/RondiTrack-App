@@ -4,7 +4,7 @@ import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_forms.dart';
 
 final class CycleEditor extends ChangeNotifier {
-  CycleEditor({
+  new({
     required EditableCycle initial,
     required Future<EditableCycle> Function() loadLatest,
     required Future<EditableCycle> Function(int, Cents, int) save,
@@ -83,8 +83,7 @@ final class CycleEditor extends ChangeNotifier {
       }
     } on Object catch (error) {
       if (!_closed) {
-        reloadFailure =
-            error is Failure ? error : const ServerFailure();
+        reloadFailure = error is Failure ? error : const ServerFailure();
         canAcceptLatest = false;
       }
     }

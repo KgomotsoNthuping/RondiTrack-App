@@ -106,11 +106,7 @@ String? authFieldError(Failure? failure, String field) {
 }
 
 class AuthFailureNotice extends StatelessWidget {
-  const AuthFailureNotice({
-    required this.failure,
-    this.signIn = false,
-    super.key,
-  });
+  const new({required this.failure, this.signIn = false, super.key});
 
   final Failure failure;
   final bool signIn;
@@ -138,7 +134,7 @@ class AuthFailureNotice extends StatelessWidget {
 }
 
 class AuthPage extends StatelessWidget {
-  const AuthPage({
+  const new({
     required this.title,
     required this.subtitle,
     required this.child,

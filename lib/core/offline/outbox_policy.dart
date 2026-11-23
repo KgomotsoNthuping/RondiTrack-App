@@ -1,7 +1,7 @@
 enum OutboxAge { sendable, expired, clockMismatch }
 
 final class OutboxPolicy {
-  OutboxPolicy({required this.maximumAge, required this.serverRetention}) {
+  new({required this.maximumAge, required this.serverRetention}) {
     if (serverRetention <= Duration.zero) {
       throw ArgumentError.value(
         serverRetention,

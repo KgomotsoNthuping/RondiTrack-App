@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/provider_retry.dart';
 import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
@@ -33,6 +35,7 @@ const _workOrder = PayoutOrder(
   entries: [],
 );
 
+@Dependencies([payoutOrder])
 void main() {
   test('maps a request failure to a retryable screen state', () {
     final state = payoutOrderViewState(

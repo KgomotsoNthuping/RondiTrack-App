@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/config/repository_mode_provider.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
@@ -7,11 +8,7 @@ import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 part 'access_token_store.g.dart';
 
 final class AccessToken {
-  const AccessToken({
-    required this.value,
-    required this.expiresAtUtc,
-    this.userId,
-  });
+  const new({required this.value, required this.expiresAtUtc, this.userId});
 
   final String value;
   final DateTime expiresAtUtc;

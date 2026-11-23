@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/network/data/api_transport_provider.dart';
@@ -46,8 +47,9 @@ final stokvelWorkflowProvider = Provider.autoDispose
       ],
     );
 
+@Dependencies([homeRepository])
 final class StokvelWorkflow {
-  StokvelWorkflow(this._ref, this.account);
+  new(this._ref, this.account);
 
   final Ref _ref;
   final OfflineAccountKey account;
@@ -150,11 +152,7 @@ final class StokvelWorkflow {
     });
   }
 
-  Future<HistoryPage> history(
-    String id,
-    HistoryFilter filters,
-    String? token,
-  ) {
+  Future<HistoryPage> history(String id, HistoryFilter filters, String? token) {
     return _guard(
       () => _ref.read(stokvelWorkflowApiProvider).history(id, filters, token),
     );
@@ -199,9 +197,9 @@ final class StokvelWorkflow {
       }
     } on Object catch (error) {
       if (_current) {
-        _ref.read(cachedHomeProvider(account)).reportFailure(
-          error is Failure ? error : const ServerFailure(),
-        );
+        _ref
+            .read(cachedHomeProvider(account))
+            .reportFailure(error is Failure ? error : const ServerFailure());
       }
     }
   }
@@ -215,10 +213,7 @@ final class StokvelWorkflow {
     final generation = db.generation;
     final cache = StokvelCache(db);
 
-    final provider = cachedStokvelProvider((
-      account: account,
-      stokvelId: id,
-    ));
+    final provider = cachedStokvelProvider((account: account, stokvelId: id));
 
     try {
       final stock = await _ref

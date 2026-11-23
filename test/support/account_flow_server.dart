@@ -148,7 +148,7 @@ final class AccountFlowServer implements AuthApi, InviteRepository {
 }
 
 final class _Home implements HomeRepository {
-  const _Home(this.server);
+  const new(this.server);
 
   final AccountFlowServer server;
 
@@ -162,7 +162,7 @@ final class _Home implements HomeRepository {
 }
 
 final class _Stokvels implements StokvelCycleRepository {
-  const _Stokvels(this.server);
+  const new(this.server);
 
   final AccountFlowServer server;
 
@@ -188,7 +188,7 @@ final class _Stokvels implements StokvelCycleRepository {
 }
 
 final class _Payouts implements PayoutRepository {
-  const _Payouts(this.server);
+  const new(this.server);
 
   final AccountFlowServer server;
 

@@ -1,3 +1,4 @@
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/core/result/result.dart';
@@ -27,6 +28,7 @@ Future<JoinedInvite> joinInvite(Ref ref, String code) async {
 
   final repository = ref.watch(inviteRepositoryProvider);
 
+  @Dependencies([accountKey])
   void checkAccount() {
     if (!ref.mounted || ref.read(accountKeyProvider) != account) {
       throw const UnauthorizedFailure();

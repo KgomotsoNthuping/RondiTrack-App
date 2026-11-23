@@ -35,7 +35,7 @@ class CurrentCycleCacheRows extends Table {
 }
 
 final class StokvelCache {
-  StokvelCache(this._db);
+  new(this._db);
 
   final AppDatabase _db;
 
@@ -135,7 +135,7 @@ final class StokvelCache {
 }
 
 final class CurrentCycleCache {
-  CurrentCycleCache(this._db);
+  new(this._db);
 
   final AppDatabase _db;
 

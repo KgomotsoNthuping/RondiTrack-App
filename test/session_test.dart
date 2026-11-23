@@ -376,7 +376,7 @@ void main() {
 }
 
 final class _Harness {
-  _Harness({RefreshTokenStore? store, bool browser = false}) {
+  new({RefreshTokenStore? store, bool browser = false}) {
     this.store = store ?? MemoryRefreshTokenStore();
 
     server = RotatingAuthServer(

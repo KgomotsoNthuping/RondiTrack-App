@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/core/theme/ronditrack_tokens.dart';
 import 'package:ronditrack/core/widgets/failure_notice.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/payouts/domain/payout_order.dart';
 import 'package:ronditrack/features/payouts/presentation/payout_status_badge.dart';
@@ -12,6 +14,7 @@ import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
+@Dependencies([payoutOrder, stokvelDetail])
 class PayoutsScreen extends ConsumerWidget {
   const new({required this.stokvelId, required this.cycleId, super.key});
 

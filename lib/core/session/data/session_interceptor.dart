@@ -9,11 +9,9 @@ import 'package:ronditrack/core/session/data/auth_paths.dart';
 import 'package:ronditrack/core/session/session_coordinator.dart';
 
 final class SessionInterceptor extends Interceptor {
-  SessionInterceptor({
-    required SessionCoordinator session,
-    required Dio retryDio,
-  }) : _session = session,
-       _retryDio = retryDio;
+  new({required SessionCoordinator session, required Dio retryDio})
+    : _session = session,
+      _retryDio = retryDio;
 
   final SessionCoordinator _session;
   final Dio _retryDio;

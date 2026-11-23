@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/config/repository_mode_provider.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
@@ -20,7 +21,7 @@ enum DemoPersona implements SessionMember {
   nandi('Nandi', 'nandi@ronditrack.co.za'),
   naledi('Naledi', 'naledi@ronditrack.co.za');
 
-  const DemoPersona(this.displayName, this.email);
+  const new(this.displayName, this.email);
 
   @override
   String get name => switch (this) {
@@ -37,7 +38,7 @@ enum DemoPersona implements SessionMember {
 }
 
 final class _AccountMember implements SessionMember {
-  const _AccountMember({required this.name, required this.email});
+  const new({required this.name, required this.email});
 
   @override
   final String name;

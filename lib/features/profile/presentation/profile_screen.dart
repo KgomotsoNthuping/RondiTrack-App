@@ -16,7 +16,7 @@ import 'package:ronditrack/features/payments/domain/pending_payment.dart';
 import 'package:ronditrack/features/payments/presentation/payment_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -65,8 +65,8 @@ class ProfileScreen extends ConsumerWidget {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: OutlinedButton(
-                      onPressed: () {
-                        showDialog<void>(
+                      onPressed: () async {
+                        await showDialog<void>(
                           context: context,
                           builder: (_) =>
                               _SignInAgainDialog(email: member.email),
@@ -223,7 +223,7 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 class _SignInAgainDialog extends ConsumerStatefulWidget {
-  const _SignInAgainDialog({required this.email});
+  const new({required this.email});
 
   final String email;
 

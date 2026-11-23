@@ -1,28 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/auth_redirect.dart';
 import 'package:ronditrack/app/navigation/ronditrack_shell.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/config/repository_mode_provider.dart';
+import 'package:ronditrack/core/session/account_key.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
+import 'package:ronditrack/features/activity/application/activity_provider.dart';
 import 'package:ronditrack/features/activity/presentation/activity_screen.dart';
 import 'package:ronditrack/features/auth/presentation/register_screen.dart';
 import 'package:ronditrack/features/auth/presentation/sign_in_screen.dart';
 import 'package:ronditrack/features/auth/presentation/splash_screen.dart';
+import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/presentation/home_screen.dart';
+import 'package:ronditrack/features/invites/application/family_invite.dart';
 import 'package:ronditrack/features/invites/presentation/invite_preview_screen.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/payouts/presentation/payouts_screen.dart';
 import 'package:ronditrack/features/profile/presentation/profile_screen.dart';
+import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
 part 'app_router.g.dart';
 
 @riverpod
-GoRouter appRouter(Ref ref, AppFlavor flavor) {
+Raw<GoRouter> appRouter(Ref ref, AppFlavor flavor) {
   final useApi = ref.watch(useApiRepositoriesProvider);
   final coordinator = useApi ? ref.watch(sessionCoordinatorProvider) : null;
 
@@ -66,6 +73,7 @@ GoRouter appRouter(Ref ref, AppFlavor flavor) {
   return router;
 }
 
+@Dependencies([Home, accountKey, stokvelDetail, activityFeed])
 @TypedStatefulShellRoute<AppShellRoute>(
   branches: [
     TypedStatefulShellBranch<HomeBranch>(
@@ -103,7 +111,7 @@ GoRouter appRouter(Ref ref, AppFlavor flavor) {
   ],
 )
 class AppShellRoute extends StatefulShellRouteData {
-  const AppShellRoute();
+  const new();
 
   @override
   Widget builder(
@@ -116,23 +124,24 @@ class AppShellRoute extends StatefulShellRouteData {
 }
 
 class HomeBranch extends StatefulShellBranchData {
-  const HomeBranch();
+  const new();
 }
 
 class StokvelsBranch extends StatefulShellBranchData {
-  const StokvelsBranch();
+  const new();
 }
 
 class ActivityBranch extends StatefulShellBranchData {
-  const ActivityBranch();
+  const new();
 }
 
 class ProfileBranch extends StatefulShellBranchData {
-  const ProfileBranch();
+  const new();
 }
 
+@Dependencies([Home])
 class HomeRoute extends GoRouteData with $HomeRoute {
-  const HomeRoute();
+  const new();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -140,8 +149,9 @@ class HomeRoute extends GoRouteData with $HomeRoute {
   }
 }
 
+@Dependencies([accountKey])
 class JoinRoute extends GoRouteData with $JoinRoute {
-  const JoinRoute({required this.code});
+  const new({required this.code});
 
   final String code;
 
@@ -152,7 +162,7 @@ class JoinRoute extends GoRouteData with $JoinRoute {
 }
 
 class StokvelsRoute extends GoRouteData with $StokvelsRoute {
-  const StokvelsRoute();
+  const new();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -160,8 +170,9 @@ class StokvelsRoute extends GoRouteData with $StokvelsRoute {
   }
 }
 
+@Dependencies([Home, stokvelDetail])
 class StokvelDetailRoute extends GoRouteData with $StokvelDetailRoute {
-  const StokvelDetailRoute({required this.id});
+  const new({required this.id});
 
   final String id;
 
@@ -171,8 +182,9 @@ class StokvelDetailRoute extends GoRouteData with $StokvelDetailRoute {
   }
 }
 
+@Dependencies([stokvelDetail])
 class StokvelCycleRoute extends GoRouteData with $StokvelCycleRoute {
-  const StokvelCycleRoute({required this.id, required this.cycleId});
+  const new({required this.id, required this.cycleId});
 
   final String id;
   final String cycleId;
@@ -187,8 +199,9 @@ class StokvelCycleRoute extends GoRouteData with $StokvelCycleRoute {
   }
 }
 
+@Dependencies([payoutOrder, stokvelDetail])
 class StokvelPayoutsRoute extends GoRouteData with $StokvelPayoutsRoute {
-  const StokvelPayoutsRoute({required this.id, required this.cycleId});
+  const new({required this.id, required this.cycleId});
 
   final String id;
   final String cycleId;
@@ -203,8 +216,9 @@ class StokvelPayoutsRoute extends GoRouteData with $StokvelPayoutsRoute {
   }
 }
 
+@Dependencies([activityFeed])
 class ActivityRoute extends GoRouteData with $ActivityRoute {
-  const ActivityRoute();
+  const new();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -213,7 +227,7 @@ class ActivityRoute extends GoRouteData with $ActivityRoute {
 }
 
 class ProfileRoute extends GoRouteData with $ProfileRoute {
-  const ProfileRoute();
+  const new();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
@@ -223,7 +237,7 @@ class ProfileRoute extends GoRouteData with $ProfileRoute {
 
 @TypedGoRoute<SignInRoute>(path: signInPath)
 class SignInRoute extends GoRouteData with $SignInRoute {
-  const SignInRoute({this.from, this.email});
+  const new({this.from, this.email});
 
   final String? from;
   final String? email;
@@ -236,7 +250,7 @@ class SignInRoute extends GoRouteData with $SignInRoute {
 
 @TypedGoRoute<RegisterRoute>(path: registerPath)
 class RegisterRoute extends GoRouteData with $RegisterRoute {
-  const RegisterRoute({this.from});
+  const new({this.from});
 
   final String? from;
 
@@ -248,7 +262,7 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
 
 @TypedGoRoute<SplashRoute>(path: splashPath)
 class SplashRoute extends GoRouteData with $SplashRoute {
-  const SplashRoute({this.from, this.auth, this.email});
+  const new({this.from, this.auth, this.email});
 
   final String? from;
   final String? auth;

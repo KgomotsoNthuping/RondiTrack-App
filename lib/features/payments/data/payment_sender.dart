@@ -4,7 +4,7 @@ import 'package:ronditrack/core/network/data/failure_mapper.dart';
 import 'package:ronditrack/features/payments/domain/pending_payment.dart';
 
 final class PaymentSender {
-  PaymentSender(this._readDio, {DateTime Function()? clock})
+  new(this._readDio, {DateTime Function()? clock})
     : _clock = clock ?? DateTime.now;
 
   final Dio Function() _readDio;

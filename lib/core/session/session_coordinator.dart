@@ -14,7 +14,7 @@ import 'package:ronditrack/core/session/sign_out_marker.dart';
 part 'session_offline_guard.dart';
 
 final class SessionCoordinator extends ChangeNotifier {
-  SessionCoordinator({
+  new({
     required AuthApi api,
     RefreshTokenStore? refreshTokenStore,
     SignOutMarker? signOutMarker,
@@ -272,7 +272,7 @@ final class SessionCoordinator extends ChangeNotifier {
   }
 
   Future<Result<AccessToken>> tokenForRequest() async {
-    if (_closed || _authenticating || this._requiresReauthentication) {
+    if (_closed || _authenticating || _requiresReauthentication) {
       return const Err(UnauthorizedFailure());
     }
 
@@ -290,7 +290,7 @@ final class SessionCoordinator extends ChangeNotifier {
       return const Err(UnauthorizedFailure());
     }
 
-    if (_authenticating || this._requiresReauthentication) {
+    if (_authenticating || _requiresReauthentication) {
       return const Err(UnauthorizedFailure());
     }
 
@@ -307,7 +307,7 @@ final class SessionCoordinator extends ChangeNotifier {
   Future<Result<AccessToken>> refresh() {
     if (_closed ||
         _authenticating ||
-        this._requiresReauthentication ||
+        _requiresReauthentication ||
         _state is AuthSignedOut) {
       return Future.value(const Err(UnauthorizedFailure()));
     }
@@ -472,7 +472,7 @@ final class SessionCoordinator extends ChangeNotifier {
     }
 
     if (_persistence != null && !discardPendingPayments) {
-      return this._guardPendingExit(reason);
+      return _guardPendingExit(reason);
     }
 
     return _finishSignOut(reason: reason);

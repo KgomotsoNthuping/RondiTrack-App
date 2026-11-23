@@ -82,7 +82,7 @@ String _authLocation(String path, String? target, {String? email}) {
 String _splashLocation(String? target, {String? auth, String? email}) {
   final parameters = <String, String>{
     if (target != null && target != '/') 'from': target,
-    if (auth != null) 'auth': auth,
+    'auth': ?auth,
     if (email != null && email.isNotEmpty) 'email': email,
   };
 

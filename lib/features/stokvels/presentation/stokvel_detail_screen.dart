@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/dates/calendar_date.dart';
-import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/offline/offline_enabled.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
@@ -14,12 +14,12 @@ import 'package:ronditrack/features/offline/presentation/offline_stokvel_screen.
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
-import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
+@Dependencies([Home, stokvelDetail])
 class StokvelDetailScreen extends ConsumerWidget {
-  const StokvelDetailScreen({required this.stokvelId, super.key});
+  const new({required this.stokvelId, super.key});
 
   final String stokvelId;
 
@@ -104,12 +104,9 @@ class StokvelDetailScreen extends ConsumerWidget {
   }
 }
 
+@Dependencies([stokvelDetail])
 class StokvelCycleScreen extends ConsumerWidget {
-  const StokvelCycleScreen({
-    required this.stokvelId,
-    required this.cycleId,
-    super.key,
-  });
+  const new({required this.stokvelId, required this.cycleId, super.key});
 
   final String stokvelId;
   final String cycleId;
@@ -268,7 +265,7 @@ List<Widget> _contributions(
 ];
 
 class _CycleSummary extends StatelessWidget {
-  const _CycleSummary({required this.cycle});
+  const new({required this.cycle});
 
   final ContributionCycle cycle;
 
@@ -301,7 +298,7 @@ class _CycleSummary extends StatelessWidget {
 }
 
 class _ContributionCard extends StatelessWidget {
-  const _ContributionCard({required this.contribution});
+  const new({required this.contribution});
 
   final Contribution contribution;
 
@@ -344,7 +341,7 @@ class _ContributionCard extends StatelessWidget {
 }
 
 class _DetailCard extends StatelessWidget {
-  const _DetailCard({required this.child});
+  const new({required this.child});
 
   final Widget child;
 
@@ -368,7 +365,7 @@ class _DetailCard extends StatelessWidget {
 }
 
 class _DetailBody extends StatelessWidget {
-  const _DetailBody({required this.children});
+  const new({required this.children});
 
   final List<Widget> children;
 

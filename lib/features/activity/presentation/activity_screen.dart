@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 import 'package:ronditrack/core/dates/calendar_date.dart';
-import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/activity/application/activity_provider.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
 
+@Dependencies([activityFeed])
 class ActivityScreen extends ConsumerWidget {
   const new({super.key});
 

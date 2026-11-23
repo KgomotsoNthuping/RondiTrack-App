@@ -14,7 +14,7 @@ enum HistoryPhase {
 }
 
 final class ContributionHistoryController extends ChangeNotifier {
-  ContributionHistoryController({
+  new({
     required Future<HistoryPage> Function(HistoryFilter, String?) load,
     HistoryFilter filters = allContributions,
   }) : _load = load,
@@ -62,9 +62,7 @@ final class ContributionHistoryController extends ChangeNotifier {
         return HistoryPhase.initialLoading;
       }
 
-      return _filters.active
-          ? HistoryPhase.filteredEmpty
-          : HistoryPhase.empty;
+      return _filters.active ? HistoryPhase.filteredEmpty : HistoryPhase.empty;
     }
 
     if (_laterError != null) {
@@ -155,11 +153,7 @@ final class ContributionHistoryController extends ChangeNotifier {
     } while (_restart && !_closed);
   }
 
-  Future<void> _batch(
-    bool reset,
-    int revision,
-    HistoryFilter filters,
-  ) async {
+  Future<void> _batch(bool reset, int revision, HistoryFilter filters) async {
     _busy = true;
     _refreshing = reset && _hasPage;
 
@@ -173,9 +167,7 @@ final class ContributionHistoryController extends ChangeNotifier {
 
     var token = reset ? null : _next;
     final visited = reset ? <String>{} : {..._visited};
-    final ids = reset
-        ? <String>{}
-        : _items.map((item) => item.id).toSet();
+    final ids = reset ? <String>{} : _items.map((item) => item.id).toSet();
     final found = <Contribution>[];
 
     try {
