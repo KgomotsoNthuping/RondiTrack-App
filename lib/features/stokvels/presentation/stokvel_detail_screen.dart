@@ -19,10 +19,7 @@ import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.d
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
 class StokvelDetailScreen extends ConsumerWidget {
-  const StokvelDetailScreen({
-    required this.stokvelId,
-    super.key,
-  });
+  const StokvelDetailScreen({required this.stokvelId, super.key});
 
   final String stokvelId;
 
@@ -35,18 +32,14 @@ class StokvelDetailScreen extends ConsumerWidget {
     final persona = ref.watch(demoSessionProvider);
 
     if (persona == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final entries =
-        ref.watch(homeProvider(persona.name)).value ??
-        const <HomeEntry>[];
+        ref.watch(homeProvider(persona.name)).value ?? const <HomeEntry>[];
 
     final names = {
-      for (final entry in entries)
-        entry.membership.stokvelId: entry.name,
+      for (final entry in entries) entry.membership.stokvelId: entry.name,
     };
 
     final provider = stokvelDetailProvider(stokvelId);
@@ -59,8 +52,7 @@ class StokvelDetailScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final titleSize = theme.appBarTheme.titleTextStyle?.fontSize ?? 20;
     final titleInBody =
-        MediaQuery.textScalerOf(context).scale(titleSize) >
-        titleSize * 1.5;
+        MediaQuery.textScalerOf(context).scale(titleSize) > titleSize * 1.5;
 
     final children = switch (view) {
       ScreenLoading<StokvelDetail>() => _loading('Loading $name'),
@@ -70,13 +62,9 @@ class StokvelDetailScreen extends ConsumerWidget {
         Text('Check again after your treasurer opens a cycle.'),
       ],
       final ScreenFailure<StokvelDetail> failure => <Widget>[
-        FailureNotice(
-          state: failure,
-          onRetry: () => ref.invalidate(provider),
-        ),
+        FailureNotice(state: failure, onRetry: () => ref.invalidate(provider)),
       ],
-      ScreenData<StokvelDetail>(:final value) =>
-        _detailContent(context, value),
+      ScreenData<StokvelDetail>(:final value) => _detailContent(context, value),
     };
 
     return Scaffold(
@@ -93,10 +81,7 @@ class StokvelDetailScreen extends ConsumerWidget {
               },
               itemBuilder: (_) => [
                 for (final entry in names.entries)
-                  PopupMenuItem(
-                    value: entry.key,
-                    child: Text(entry.value),
-                  ),
+                  PopupMenuItem(value: entry.key, child: Text(entry.value)),
               ],
             ),
         ],
@@ -108,10 +93,7 @@ class StokvelDetailScreen extends ConsumerWidget {
             if (titleInBody &&
                 (view is ScreenData<StokvelDetail> ||
                     view is ScreenEmpty<StokvelDetail>)) ...[
-              Text(
-                name,
-                style: theme.textTheme.headlineSmall,
-              ),
+              Text(name, style: theme.textTheme.headlineSmall),
               const SizedBox(height: 12),
             ],
             ...children,
@@ -135,74 +117,66 @@ class StokvelCycleScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (ref.watch(offlineEnabledProvider)) {
-      return OfflineStokvelScreen(
-        stokvelId: stokvelId,
-        cycleId: cycleId,
-      );
+      return OfflineStokvelScreen(stokvelId: stokvelId, cycleId: cycleId);
     }
 
-    final provider = stokvelDetailProvider(
-      stokvelId,
-      cycleId: cycleId,
-    );
+    final provider = stokvelDetailProvider(stokvelId, cycleId: cycleId);
 
     void retry() => ref.invalidate(provider);
 
-    final children = ref.watch(provider).when<List<Widget>>(
-      skipLoadingOnRefresh: false,
-      skipLoadingOnReload: false,
-      loading: () => _loading('Loading cycle'),
-      error: (error, stack) => [
-        FailureNotice(
-          state: screenFailure<Object?>(
-            error,
-            fallback: 'Could not load this cycle.',
-          ),
-          onRetry: retry,
-        ),
-      ],
-      data: (detail) {
-        final cycle = detail?.stokvel.currentCycle;
-
-        if (detail == null || cycle == null || cycle.id != cycleId) {
-          return [
+    final children = ref
+        .watch(provider)
+        .when<List<Widget>>(
+          skipLoadingOnRefresh: false,
+          skipLoadingOnReload: false,
+          loading: () => _loading('Loading cycle'),
+          error: (error, stack) => [
             FailureNotice(
-              state: const ScreenFailure<Object?>('Not found'),
+              state: screenFailure<Object?>(
+                error,
+                fallback: 'Could not load this cycle.',
+              ),
               onRetry: retry,
             ),
-          ];
-        }
+          ],
+          data: (detail) {
+            final cycle = detail?.stokvel.currentCycle;
 
-        final contributions = detail.stokvel.contributions.where(
-          (contribution) => contribution.cycleId == cycle.id,
+            if (detail == null || cycle == null || cycle.id != cycleId) {
+              return [
+                FailureNotice(
+                  state: const ScreenFailure<Object?>('Not found'),
+                  onRetry: retry,
+                ),
+              ];
+            }
+
+            final contributions = detail.stokvel.contributions.where(
+              (contribution) => contribution.cycleId == cycle.id,
+            );
+
+            return [
+              _DetailCard(child: _CycleSummary(cycle: cycle)),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton(
+                  onPressed: () {
+                    StokvelPayoutsRoute(
+                      id: stokvelId,
+                      cycleId: cycleId,
+                    ).go(context);
+                  },
+                  child: const Text('View payouts'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ..._contributions(context, contributions),
+            ];
+          },
         );
 
-        return [
-          _DetailCard(
-            child: _CycleSummary(cycle: cycle),
-          ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton(
-              onPressed: () {
-                StokvelPayoutsRoute(
-                  id: stokvelId,
-                  cycleId: cycleId,
-                ).go(context);
-              },
-              child: const Text('View payouts'),
-            ),
-          ),
-          const SizedBox(height: 16),
-          ..._contributions(context, contributions),
-        ];
-      },
-    );
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cycle details'),
-      ),
+      appBar: AppBar(title: const Text('Cycle details')),
       body: StokvelLayout(
         selectedStokvelId: stokvelId,
         detail: _DetailBody(children: children),
@@ -217,10 +191,7 @@ List<Widget> _loading(String label) => [
   Text(label, textAlign: TextAlign.center),
 ];
 
-List<Widget> _detailContent(
-  BuildContext context,
-  StokvelDetail detail,
-) {
+List<Widget> _detailContent(BuildContext context, StokvelDetail detail) {
   final stokvel = detail.stokvel;
   final cycle = stokvel.currentCycle;
   final rules = stokvel.rules;
@@ -233,14 +204,9 @@ List<Widget> _detailContent(
         children: [
           Text(
             stokvel.membership.role.label,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
-          Text(
-            '${stokvel.monthlyContribution.formatRand()} per month',
-          ),
+          Text('${stokvel.monthlyContribution.formatRand()} per month'),
           Text(
             'Members ${stokvel.memberCount} · '
             'Period ${stokvel.currentPeriod} '
@@ -271,9 +237,7 @@ List<Widget> _detailContent(
                 for (final action in detail.actions)
                   Chip(
                     label: Text(_actionLabel(action)),
-                    labelStyle: TextStyle(
-                      color: colors.onPrimary,
-                    ),
+                    labelStyle: TextStyle(color: colors.onPrimary),
                     backgroundColor: colors.primary,
                     side: BorderSide.none,
                   ),
@@ -296,13 +260,9 @@ List<Widget> _contributions(
   BuildContext context,
   Iterable<Contribution> contributions,
 ) => [
-  Text(
-    'Contributions',
-    style: Theme.of(context).textTheme.titleLarge,
-  ),
+  Text('Contributions', style: Theme.of(context).textTheme.titleLarge),
   const SizedBox(height: 8),
-  if (contributions.isEmpty)
-    const Text('No contributions yet.'),
+  if (contributions.isEmpty) const Text('No contributions yet.'),
   for (final contribution in contributions)
     _ContributionCard(contribution: contribution),
 ];
@@ -330,9 +290,7 @@ class _CycleSummary extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          due == null
-              ? 'No due date set'
-              : 'Due ${formatCalendarDate(due)}',
+          due == null ? 'No due date set' : 'Due ${formatCalendarDate(due)}',
         ),
         Text('Target ${cycle.targetAmount.formatRand()}'),
         Text('Collected ${cycle.totalCollected.formatRand()}'),
@@ -357,9 +315,7 @@ class _ContributionCard extends StatelessWidget {
         children: [
           Text(
             contribution.memberName,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -374,20 +330,13 @@ class _ContributionCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              ContributionStatusBadge(
-                status: contribution.status,
-              ),
+              ContributionStatusBadge(status: contribution.status),
             ],
           ),
           const SizedBox(height: 8),
           Text('Cycle ${contribution.cycleNumber}'),
           if (paidAt != null)
-            Text(
-              formatJohannesburgDate(
-                paidAt,
-                includeTime: true,
-              ),
-            ),
+            Text(formatJohannesburgDate(paidAt, includeTime: true)),
         ],
       ),
     );

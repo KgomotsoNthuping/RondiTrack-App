@@ -106,11 +106,7 @@ final class CacheController<T> extends ChangeNotifier {
         return;
       }
 
-      final accepted = await _save(
-        value,
-        generation,
-        _clock().toUtc(),
-      );
+      final accepted = await _save(value, generation, _clock().toUtc());
 
       if (accepted && !_closed && _isCurrent()) {
         _failure = null;

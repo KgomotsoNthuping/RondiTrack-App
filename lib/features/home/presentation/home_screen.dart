@@ -22,9 +22,7 @@ class HomeScreen extends ConsumerWidget {
     final persona = ref.watch(demoSessionProvider);
 
     if (persona == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final provider = homeProvider(persona.name);
@@ -39,9 +37,7 @@ class HomeScreen extends ConsumerWidget {
     final content = switch (homeViewState(snapshot)) {
       ScreenLoading<List<HomeEntry>>() => const <Widget>[
         Center(
-          child: CircularProgressIndicator(
-            semanticsLabel: 'Loading stokvels',
-          ),
+          child: CircularProgressIndicator(semanticsLabel: 'Loading stokvels'),
         ),
       ],
       ScreenEmpty<List<HomeEntry>>() => const <Widget>[
@@ -50,19 +46,14 @@ class HomeScreen extends ConsumerWidget {
         Text('Ask a stokvel administrator to send you an invite.'),
       ],
       final ScreenFailure<List<HomeEntry>> failure => <Widget>[
-        FailureNotice(
-          state: failure,
-          onRetry: () => ref.invalidate(provider),
-        ),
+        FailureNotice(state: failure, onRetry: () => ref.invalidate(provider)),
       ],
       ScreenData<List<HomeEntry>>(:final value) => <Widget>[
         for (final entry in value)
           HomeStokvelCard(
             entry: entry,
             onTap: () {
-              StokvelDetailRoute(
-                id: entry.membership.stokvelId,
-              ).go(context);
+              StokvelDetailRoute(id: entry.membership.stokvelId).go(context);
             },
           ),
       ],

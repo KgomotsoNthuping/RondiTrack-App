@@ -7,7 +7,9 @@ import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
 import 'package:ronditrack/features/offline/application/offline_account_provider.dart';
 import 'package:ronditrack/features/offline/presentation/cache_view.dart';
+import 'package:ronditrack/features/payments/application/payment_provider.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
+import 'package:ronditrack/features/stokvels/presentation/stokvel_workflow_navigation.dart';
 
 class OfflineHomeScreen extends ConsumerWidget {
   const OfflineHomeScreen({super.key});
@@ -17,17 +19,14 @@ class OfflineHomeScreen extends ConsumerWidget {
     final state = ref.watch(sessionStateProvider);
 
     if (state is! AuthSignedIn) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final controller = ref.watch(
-      cachedHomeProvider((
-        userId: state.identity.userId,
-        sessionId: state.sessionId,
-      )),
-    );
+    final account = (userId: state.identity.userId, sessionId: state.sessionId);
+
+    ref.watch(paymentWorkerProvider(account));
+
+    final controller = ref.watch(cachedHomeProvider(account));
 
     return Scaffold(
       appBar: AppBar(title: const Text('RondiTrack')),
@@ -49,6 +48,8 @@ class OfflineHomeScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text('Account: ${state.identity.email}'),
+                    const SizedBox(height: 16),
+                    const CreateStokvelAction(),
                     const SizedBox(height: 20),
                     if (entries.isEmpty) ...[
                       const Text('You have no stokvels yet.'),
@@ -61,9 +62,8 @@ class OfflineHomeScreen extends ConsumerWidget {
                       HomeStokvelCard(
                         entry: entry,
                         onTap: () {
-                          StokvelDetailRoute(
-                            id: entry.membership.stokvelId,
-                          ).go(context);
+                          StokvelDetailRoute(id: entry.membership.stokvelId)
+                              .go(context);
                         },
                       ),
                   ],
@@ -78,10 +78,7 @@ class OfflineHomeScreen extends ConsumerWidget {
 }
 
 class OfflineStokvelListPane extends ConsumerWidget {
-  const OfflineStokvelListPane({
-    this.selectedStokvelId,
-    super.key,
-  });
+  const OfflineStokvelListPane({this.selectedStokvelId, super.key});
 
   final String? selectedStokvelId;
 
@@ -110,8 +107,8 @@ class OfflineStokvelListPane extends ConsumerWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
           children: [
-            if (entries.isEmpty)
-              const Text('You have no stokvels yet.'),
+            const CreateStokvelAction(),
+            if (entries.isEmpty) const Text('You have no stokvels yet.'),
             for (final entry in entries)
               Card(
                 clipBehavior: Clip.antiAlias,
@@ -119,14 +116,12 @@ class OfflineStokvelListPane extends ConsumerWidget {
                   title: Text(entry.name),
                   subtitle: Text(entry.membership.role.label),
                   trailing: const Icon(Icons.chevron_right),
-                  selected:
-                      entry.membership.stokvelId == selectedStokvelId,
+                  selected: entry.membership.stokvelId == selectedStokvelId,
                   selectedColor: colors.onPrimaryContainer,
                   selectedTileColor: colors.primaryContainer,
                   onTap: () {
-                    StokvelDetailRoute(
-                      id: entry.membership.stokvelId,
-                    ).go(context);
+                    StokvelDetailRoute(id: entry.membership.stokvelId)
+                        .go(context);
                   },
                 ),
               ),

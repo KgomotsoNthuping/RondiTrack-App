@@ -33,26 +33,23 @@ final cachedHomeProvider = Provider.autoDispose
 
         final controller = CacheController<List<HomeEntry>>(
           cache: cache.watch(account.userId),
-          load: () => ref
-              .read(homeRepositoryProvider)
-              .fetchHome(account.userId),
+          load: () =>
+              ref.read(homeRepositoryProvider).fetchHome(account.userId),
           save: (value, generation, updatedAt) => cache.replace(
             generation: generation,
             userId: account.userId,
             entries: value,
             updatedAtUtc: updatedAt,
           ),
-          remove: (generation) => cache.remove(
-            generation: generation,
-            userId: account.userId,
-          ),
+          remove: (generation) =>
+              cache.remove(generation: generation, userId: account.userId),
           generation: () => database.generation,
           isCurrent: isCurrent,
         );
 
         ref.listen(homeRepositoryProvider, (_, next) {
-            unawaited(controller.refresh());
-          });
+          unawaited(controller.refresh());
+        });
 
         ref.onDispose(controller.dispose);
 
@@ -65,10 +62,7 @@ final cachedHomeProvider = Provider.autoDispose
       ],
     );
 
-typedef CachedStokvelKey = ({
-  OfflineAccountKey account,
-  String stokvelId,
-});
+typedef CachedStokvelKey = ({OfflineAccountKey account, String stokvelId});
 
 final cachedStokvelProvider = Provider.autoDispose
     .family<CacheController<Stokvel>, CachedStokvelKey>(
@@ -87,17 +81,11 @@ final cachedStokvelProvider = Provider.autoDispose
         }
 
         final controller = CacheController<Stokvel>(
-          cache: cache.watch(
-            key.account.userId,
-            key.stokvelId,
-          ),
+          cache: cache.watch(key.account.userId, key.stokvelId),
           load: () async {
             final value = await ref
                 .read(stokvelRepositoryProvider)
-                .fetchDetail(
-                  key.account.userId,
-                  key.stokvelId,
-                );
+                .fetchDetail(key.account.userId, key.stokvelId);
 
             if (value == null) {
               throw const NotFoundFailure();

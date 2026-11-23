@@ -133,8 +133,8 @@ final class SessionInterceptor extends Interceptor {
 
       final currentAccess = current.currentAccessToken;
 
-      final result = currentAccess != null &&
-              sent != 'Bearer ${currentAccess.value}'
+      final result =
+          currentAccess != null && sent != 'Bearer ${currentAccess.value}'
           ? Ok(currentAccess)
           : await _session.refresh();
 

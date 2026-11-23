@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:ronditrack/core/session/data/cached_account_store.dart';
 import 'package:ronditrack/features/home/data/home_cache.dart';
+import 'package:ronditrack/features/payments/data/payment_outbox.dart';
 import 'package:ronditrack/features/stokvels/data/stokvel_cache.dart';
 
 part 'app_database.g.dart';
@@ -12,6 +13,8 @@ part 'app_database.g.dart';
     StokvelCacheRows,
     CurrentCycleCacheRows,
     CachedAccountRows,
+    PaymentOutboxRows,
+    PaymentNoticeRows,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -34,7 +37,18 @@ class AppDatabase extends _$AppDatabase {
   int get generation => _generation;
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (migrator) => migrator.createAll(),
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        await migrator.createTable(paymentOutboxRows);
+        await migrator.createTable(paymentNoticeRows);
+      }
+    },
+  );
 
   void invalidateWrites() {
     _generation++;

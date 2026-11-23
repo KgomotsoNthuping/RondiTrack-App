@@ -11,6 +11,8 @@ import 'package:ronditrack/core/session/refresh_token_store.dart';
 import 'package:ronditrack/core/session/session_persistence.dart';
 import 'package:ronditrack/core/session/sign_out_marker.dart';
 
+part 'session_offline_guard.dart';
+
 final class SessionCoordinator extends ChangeNotifier {
   SessionCoordinator({
     required AuthApi api,
@@ -42,6 +44,7 @@ final class SessionCoordinator extends ChangeNotifier {
   Future<Result<void>>? _signOutFlight;
   Future<Result<AccessToken>>? _refreshFlight;
   Failure? _cleanupFailure;
+
   int _epoch = 0;
   bool _closed = false;
   bool _authenticating = false;
@@ -59,9 +62,7 @@ final class SessionCoordinator extends ChangeNotifier {
       return Future.value(const Ok(null));
     }
 
-    final pending = _restoreFlight;
-
-    if (pending != null) {
+    if (_restoreFlight case final pending?) {
       return pending;
     }
 
@@ -88,7 +89,9 @@ final class SessionCoordinator extends ChangeNotifier {
       }
 
       if (blocked) {
-        await _persistence?.clear();
+        await _serial(() async {
+          await _persistence?.clear();
+        });
 
         if (!_current(generation)) {
           return const Err(_cancelled);
@@ -98,9 +101,9 @@ final class SessionCoordinator extends ChangeNotifier {
         return const Ok(null);
       }
 
-      final cached = await _serial(
-        () async => _persistence?.readIdentity(),
-      );
+      final cached = await _serial(() async {
+        return await _persistence?.readIdentity();
+      });
 
       if (!_current(generation)) {
         return const Err(_cancelled);
@@ -124,7 +127,22 @@ final class SessionCoordinator extends ChangeNotifier {
         }
 
         if (stored == null) {
-          await signOut(reason: const UnauthorizedFailure());
+          if (cached != null) {
+            const failure = UnauthorizedFailure();
+
+            _publish(
+              AuthSignedIn(
+                identity: cached,
+                accessToken: null,
+                sessionId: generation,
+                failure: failure,
+              ),
+            );
+
+            return const Err(failure);
+          }
+
+          _publish(const AuthSignedOut());
           return const Ok(null);
         }
       }
@@ -172,16 +190,11 @@ final class SessionCoordinator extends ChangeNotifier {
         return const Err(_cancelled);
       }
 
-      final cleanupFailure = _cleanupFailure;
-
-      if (cleanupFailure != null) {
-        return Err(cleanupFailure);
+      if (_cleanupFailure case final failure?) {
+        return Err(failure);
       }
 
-      final result = await _api.signIn(
-        email: email,
-        password: password,
-      );
+      final result = await _api.signIn(email: email, password: password);
 
       if (!_current(generation)) {
         return const Err(_cancelled);
@@ -239,10 +252,8 @@ final class SessionCoordinator extends ChangeNotifier {
         return const Err(_cancelled);
       }
 
-      final cleanupFailure = _cleanupFailure;
-
-      if (cleanupFailure != null) {
-        return Err(cleanupFailure);
+      if (_cleanupFailure case final failure?) {
+        return Err(failure);
       }
 
       final result = await _api.register(
@@ -261,6 +272,10 @@ final class SessionCoordinator extends ChangeNotifier {
   }
 
   Future<Result<AccessToken>> tokenForRequest() async {
+    if (_closed || _authenticating || this._requiresReauthentication) {
+      return const Err(UnauthorizedFailure());
+    }
+
     if (_state is AuthRestoring) {
       await restore();
     }
@@ -275,6 +290,10 @@ final class SessionCoordinator extends ChangeNotifier {
       return const Err(UnauthorizedFailure());
     }
 
+    if (_authenticating || this._requiresReauthentication) {
+      return const Err(UnauthorizedFailure());
+    }
+
     final access = current.currentAccessToken;
     final threshold = _clock().toUtc().add(refreshMargin);
 
@@ -286,13 +305,14 @@ final class SessionCoordinator extends ChangeNotifier {
   }
 
   Future<Result<AccessToken>> refresh() {
-    if (_closed || _state is AuthSignedOut) {
+    if (_closed ||
+        _authenticating ||
+        this._requiresReauthentication ||
+        _state is AuthSignedOut) {
       return Future.value(const Err(UnauthorizedFailure()));
     }
 
-    final pending = _refreshFlight;
-
-    if (pending != null) {
+    if (_refreshFlight case final pending?) {
       return pending;
     }
 
@@ -439,14 +459,31 @@ final class SessionCoordinator extends ChangeNotifier {
     return access;
   }
 
-  Future<Result<void>> signOut({Failure? reason}) {
+  Future<Result<void>> signOut({
+    Failure? reason,
+    bool discardPendingPayments = false,
+  }) {
     if (_closed) {
       return Future.value(const Err(ServerFailure()));
     }
 
-    final pending = _signOutFlight;
+    if (_signOutFlight case final pending?) {
+      return pending;
+    }
 
-    if (pending != null) {
+    if (_persistence != null && !discardPendingPayments) {
+      return this._guardPendingExit(reason);
+    }
+
+    return _finishSignOut(reason: reason);
+  }
+
+  Future<Result<void>> _finishSignOut({Failure? reason}) {
+    if (_closed) {
+      return Future.value(const Err(ServerFailure()));
+    }
+
+    if (_signOutFlight case final pending?) {
       return pending;
     }
 

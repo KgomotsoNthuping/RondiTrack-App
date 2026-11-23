@@ -6,11 +6,7 @@ import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/core/offline/cache_controller.dart';
 
 class CacheView<T> extends StatefulWidget {
-  const CacheView({
-    required this.controller,
-    required this.builder,
-    super.key,
-  });
+  const CacheView({required this.controller, required this.builder, super.key});
 
   final CacheController<T> controller;
   final Widget Function(BuildContext, T) builder;
@@ -78,10 +74,7 @@ class _CacheViewState<T> extends State<CacheView<T>> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    failure.message,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text(failure.message, textAlign: TextAlign.center),
                   const SizedBox(height: 12),
                   TextButton(
                     onPressed: () {
@@ -95,9 +88,7 @@ class _CacheViewState<T> extends State<CacheView<T>> {
           );
         }
 
-        final elapsed = DateTime.now().toUtc().difference(
-          cached.updatedAtUtc,
-        );
+        final elapsed = DateTime.now().toUtc().difference(cached.updatedAtUtc);
 
         final age = elapsed.isNegative
             ? 'The saved time is ahead of this device clock.'
@@ -120,10 +111,7 @@ class _CacheViewState<T> extends State<CacheView<T>> {
                     Text(age),
                     Text(
                       'Updated '
-                      '${formatJohannesburgDate(
-                        cached.updatedAtUtc,
-                        includeTime: true,
-                      )} SAST',
+                      '${formatJohannesburgDate(cached.updatedAtUtc, includeTime: true)} SAST',
                     ),
                     if (failure != null) ...[
                       const SizedBox(height: 8),
@@ -143,9 +131,7 @@ class _CacheViewState<T> extends State<CacheView<T>> {
                               },
                         icon: const Icon(Icons.refresh),
                         label: Text(
-                          controller.refreshing
-                              ? 'Refreshing…'
-                              : 'Try again',
+                          controller.refreshing ? 'Refreshing…' : 'Try again',
                         ),
                       ),
                     ),

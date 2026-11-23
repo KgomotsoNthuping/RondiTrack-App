@@ -20,19 +20,13 @@ void main() {
   final refreshedAt = DateTime.utc(2026, 11, 1, 11);
 
   const original = HomeEntry(
-    membership: Membership(
-      stokvelId: 'stokvel-1',
-      role: StokvelRole.member,
-    ),
+    membership: Membership(stokvelId: 'stokvel-1', role: StokvelRole.member),
     name: 'Family Stokvel',
     arrears: Cents(125050),
   );
 
   const refreshed = HomeEntry(
-    membership: Membership(
-      stokvelId: 'stokvel-1',
-      role: StokvelRole.member,
-    ),
+    membership: Membership(stokvelId: 'stokvel-1', role: StokvelRole.member),
     name: 'Family Stokvel',
     arrears: Cents(0),
   );
@@ -71,10 +65,8 @@ void main() {
         entries: value,
         updatedAtUtc: at,
       ),
-      remove: (generation) => cache.remove(
-        generation: generation,
-        userId: 'user-1',
-      ),
+      remove: (generation) =>
+          cache.remove(generation: generation, userId: 'user-1'),
       generation: () => database.generation,
       isCurrent: () => true,
       clock: () => refreshedAt,
@@ -148,9 +140,7 @@ void main() {
   });
 
   test('not found removes the cached response', () async {
-    final subject = controller(
-      () async => throw const NotFoundFailure(),
-    );
+    final subject = controller(() async => throw const NotFoundFailure());
 
     addTearDown(subject.dispose);
 

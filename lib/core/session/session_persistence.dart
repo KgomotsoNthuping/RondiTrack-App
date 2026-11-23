@@ -5,6 +5,8 @@ abstract interface class SessionPersistence {
 
   Future<void> rememberIdentity(AuthIdentity identity);
 
+  Future<bool> hasPendingPayments();
+
   void invalidateWrites();
 
   Future<void> clear();

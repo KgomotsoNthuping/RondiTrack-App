@@ -5,16 +5,17 @@ import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
-import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/core/theme/ronditrack_tokens.dart';
-import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/offline/application/offline_account_provider.dart';
 import 'package:ronditrack/features/offline/presentation/cache_view.dart';
-import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
+import 'package:ronditrack/features/payments/application/payment_provider.dart';
+import 'package:ronditrack/features/stokvels/application/stokvel_workflow_provider.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
-import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
+import 'package:ronditrack/features/stokvels/domain/stokvel_forms.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
+import 'package:ronditrack/features/stokvels/presentation/stokvel_form_screens.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
+import 'package:ronditrack/features/stokvels/presentation/stokvel_workflow_navigation.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvels_screen.dart';
 
 class OfflineStokvelScreen extends ConsumerWidget {
@@ -29,29 +30,33 @@ class OfflineStokvelScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final workflowScreen = stokvelWorkflowScreenFor(
+      context,
+      stokvelId: stokvelId,
+      cycleId: cycleId,
+    );
+
+    if (workflowScreen != null) {
+      return workflowScreen;
+    }
+
     final state = ref.watch(sessionStateProvider);
 
     if (state is! AuthSignedIn) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final account = (userId: state.identity.userId, sessionId: state.sessionId);
+
+    ref.watch(paymentWorkerProvider(account));
+
     final controller = ref.watch(
-      cachedStokvelProvider((
-        account: (
-          userId: state.identity.userId,
-          sessionId: state.sessionId,
-        ),
-        stokvelId: stokvelId,
-      )),
+      cachedStokvelProvider((account: account, stokvelId: stokvelId)),
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          cycleId == null ? 'Stokvel details' : 'Cycle details',
-        ),
+        title: Text(cycleId == null ? 'Stokvel details' : 'Cycle details'),
       ),
       body: StokvelLayout(
         selectedStokvelId: stokvelId,
@@ -59,27 +64,26 @@ class OfflineStokvelScreen extends ConsumerWidget {
           listenable: controller,
           builder: (context, child) {
             final cached = controller.cached;
-            final selectedCycle = cycleId;
+            final selected = cycleId;
 
-            if (selectedCycle != null &&
+            if (selected != null &&
                 cached != null &&
-                cached.value.currentCycle?.id != selectedCycle) {
+                cached.value.currentCycle?.id != selected) {
               return _HistoricalCycle(
+                key: ValueKey((account, selected)),
                 stokvelId: stokvelId,
-                cycleId: selectedCycle,
-                userId: state.identity.userId,
+                cycleId: selected,
+                account: account,
               );
             }
 
             return CacheView<Stokvel>(
               controller: controller,
-              builder: (context, stokvel) {
-                return _StokvelBody(
-                  stokvel: stokvel,
-                  userId: state.identity.userId,
-                  cycleOnly: cycleId != null,
-                );
-              },
+              builder: (context, stokvel) => _StockBody(
+                stokvel: stokvel,
+                userId: account.userId,
+                cycleOnly: selected != null,
+              ),
             );
           },
         ),
@@ -88,53 +92,87 @@ class OfflineStokvelScreen extends ConsumerWidget {
   }
 }
 
-class _HistoricalCycle extends ConsumerWidget {
+class _HistoricalCycle extends ConsumerStatefulWidget {
   const _HistoricalCycle({
     required this.stokvelId,
     required this.cycleId,
-    required this.userId,
+    required this.account,
+    super.key,
   });
 
   final String stokvelId;
   final String cycleId;
-  final String userId;
+  final OfflineAccountKey account;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final provider = stokvelDetailProvider(
-      stokvelId,
-      cycleId: cycleId,
-    );
+  ConsumerState<_HistoricalCycle> createState() => _HistoricalCycleState();
+}
 
-    return ref.watch(provider).when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(
-        child: FailureNotice(
-          state: screenFailure<Object?>(
-            error,
-            fallback: 'Could not load this cycle.',
-          ),
-          onRetry: () => ref.invalidate(provider),
-        ),
-      ),
-      data: (detail) {
-        if (detail == null ||
-            detail.stokvel.currentCycle?.id != cycleId) {
-          return const Center(child: Text('Not found'));
+class _HistoricalCycleState extends ConsumerState<_HistoricalCycle> {
+  Future<EditableCycle>? _cycle;
+
+  @override
+  Widget build(BuildContext context) {
+    final workflow = ref.watch(stokvelWorkflowProvider(widget.account));
+
+    _cycle ??= workflow.latestCycle(widget.stokvelId, widget.cycleId);
+
+    return FutureBuilder<EditableCycle>(
+      future: _cycle,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(formFailure(snapshot.error!)),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _cycle = workflow.latestCycle(
+                      widget.stokvelId,
+                      widget.cycleId,
+                    );
+                  }),
+                  child: const Text('Try again'),
+                ),
+              ],
+            ),
+          );
         }
 
-        return _StokvelBody(
-          stokvel: detail.stokvel,
-          userId: userId,
-          cycleOnly: true,
+        final cycle = snapshot.data;
+
+        if (cycle == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            Text('Cycle ${cycle.number}'),
+            CycleStatusBadge(status: cycle.status),
+            Text('Target ${cycle.target.formatRand()}'),
+            Text('Collected ${cycle.collected.formatRand()}'),
+            if (cycle.dueDate != null)
+              Text('Due ${formatCalendarDate(cycle.dueDate!)}'),
+            OutlinedButton(
+              onPressed: () {
+                StokvelPayoutsRoute(
+                  id: widget.stokvelId,
+                  cycleId: widget.cycleId,
+                ).go(context);
+              },
+              child: const Text('View payouts'),
+            ),
+          ],
         );
       },
     );
   }
 }
 
-class _StokvelBody extends StatelessWidget {
-  const _StokvelBody({
+class _StockBody extends StatelessWidget {
+  const _StockBody({
     required this.stokvel,
     required this.userId,
     required this.cycleOnly,
@@ -148,30 +186,7 @@ class _StokvelBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final cycle = stokvel.currentCycle;
     final rules = stokvel.rules;
-
-    ContributionStatus? ownStatus;
-
-    for (final contribution in stokvel.contributions) {
-      if (contribution.userId == userId &&
-          contribution.cycleId == cycle?.id) {
-        ownStatus = contribution.status;
-        break;
-      }
-    }
-
-    final actions = availableActions((
-      stokvel.membership.role,
-      cycle?.status,
-      ownStatus,
-    ));
-
-    final contributions = cycleOnly
-        ? stokvel.contributions.where(
-            (item) => item.cycleId == cycle?.id,
-          )
-        : stokvel.contributions;
-
-    final colors = Theme.of(context).colorScheme;
+    final due = cycle?.dueDate;
 
     return Center(
       child: ConstrainedBox(
@@ -197,54 +212,40 @@ class _StokvelBody extends StatelessWidget {
                     ),
                     Text(
                       'Members ${stokvel.memberCount} · '
-                      'Period ${stokvel.currentPeriod} '
-                      'of ${stokvel.totalPeriods}',
+                      'Period ${stokvel.currentPeriod} of '
+                      '${stokvel.totalPeriods}',
                     ),
                     const Divider(height: 24),
                   ],
                   if (cycle == null)
                     const Text('No current cycle')
                   else ...[
-                    _CycleSummary(cycle: cycle),
+                    Text('Cycle ${cycle.number}'),
+                    CycleStatusBadge(status: cycle.status),
+                    Text(
+                      due == null
+                          ? 'No due date set'
+                          : 'Due ${formatCalendarDate(due)}',
+                    ),
+                    Text('Target ${cycle.targetAmount.formatRand()}'),
+                    Text('Collected ${cycle.totalCollected.formatRand()}'),
+                    Text('Outstanding ${cycle.amountOutstanding.formatRand()}'),
                     const SizedBox(height: 12),
-                    if (!cycleOnly)
-                      FilledButton(
-                        onPressed: () {
-                          StokvelCycleRoute(
-                            id: stokvel.membership.stokvelId,
-                            cycleId: cycle.id,
-                          ).go(context);
-                        },
-                        child: const Text('View cycle'),
-                      )
-                    else
-                      OutlinedButton(
-                        onPressed: () {
+                    OutlinedButton(
+                      onPressed: () {
+                        if (cycleOnly) {
                           StokvelPayoutsRoute(
                             id: stokvel.membership.stokvelId,
                             cycleId: cycle.id,
                           ).go(context);
-                        },
-                        child: const Text('View payouts'),
-                      ),
-                  ],
-                  if (!cycleOnly && actions.isNotEmpty) ...[
-                    const Divider(height: 24),
-                    const Text('Available actions'),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        for (final action in actions)
-                          Chip(
-                            label: Text(_actionLabel(action)),
-                            labelStyle: TextStyle(
-                              color: colors.onPrimary,
-                            ),
-                            backgroundColor: colors.primary,
-                            side: BorderSide.none,
-                          ),
-                      ],
+                        } else {
+                          StokvelCycleRoute(
+                            id: stokvel.membership.stokvelId,
+                            cycleId: cycle.id,
+                          ).go(context);
+                        }
+                      },
+                      child: Text(cycleOnly ? 'View payouts' : 'View cycle'),
                     ),
                   ],
                   if (!cycleOnly && rules != null && rules.isNotEmpty) ...[
@@ -255,42 +256,26 @@ class _StokvelBody extends StatelessWidget {
                 ],
               ),
             ),
+            StokvelWorkflowActions(stokvel: stokvel, userId: userId),
+            const SizedBox(height: 20),
             Text(
-              'Contributions',
+              'Your current contribution',
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 8),
-            if (contributions.isEmpty)
-              const Text('No contributions yet.'),
-            for (final contribution in contributions)
+            if (stokvel.contributions.isEmpty)
+              const Text('No contribution recorded for you in this cycle.'),
+            for (final item in stokvel.contributions)
               _DetailCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      contribution.memberName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(contribution.amount.formatRand()),
-                        ContributionStatusBadge(
-                          status: contribution.status,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text('Cycle ${contribution.cycleNumber}'),
-                    if (contribution.paidAtUtc != null)
+                    Text(item.memberName),
+                    Text(item.amount.formatRand()),
+                    ContributionStatusBadge(status: item.status),
+                    if (item.paidAtUtc != null)
                       Text(
                         formatJohannesburgDate(
-                          contribution.paidAtUtc!,
+                          item.paidAtUtc!,
                           includeTime: true,
                         ),
                       ),
@@ -300,41 +285,6 @@ class _StokvelBody extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _CycleSummary extends StatelessWidget {
-  const _CycleSummary({required this.cycle});
-
-  final ContributionCycle cycle;
-
-  @override
-  Widget build(BuildContext context) {
-    final due = cycle.dueDate;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 12,
-          runSpacing: 8,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text('Cycle ${cycle.number}'),
-            CycleStatusBadge(status: cycle.status),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          due == null
-              ? 'No due date set'
-              : 'Due ${formatCalendarDate(due)}',
-        ),
-        Text('Target ${cycle.targetAmount.formatRand()}'),
-        Text('Collected ${cycle.totalCollected.formatRand()}'),
-        Text('Outstanding ${cycle.amountOutstanding.formatRand()}'),
-      ],
     );
   }
 }
@@ -362,11 +312,3 @@ class _DetailCard extends StatelessWidget {
     );
   }
 }
-
-String _actionLabel(StokvelAction action) => switch (action) {
-  StokvelAction.pay => 'Pay',
-  StokvelAction.uploadProof => 'Upload proof',
-  StokvelAction.confirmContributions => 'Confirm contributions',
-  StokvelAction.closeCycle => 'Close cycle',
-  StokvelAction.recordPayout => 'Record payout',
-};
