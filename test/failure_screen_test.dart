@@ -12,9 +12,10 @@ import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/domain/home_repository.dart';
 import 'package:ronditrack/features/home/presentation/home_screen.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 
-@Dependencies([Home, stokvelDetail])
+@Dependencies([Home, stokvelDetail, homeRepository, payoutOrder])
 void main() {
   const scenarios =
       <({String name, Failure failure, String message, int attempts})>[
@@ -133,7 +134,7 @@ void main() {
   });
 }
 
-@Dependencies([Home, stokvelDetail])
+@Dependencies([Home, payoutOrder, stokvelDetail])
 Widget _app(HomeRepository repository) {
   return ProviderScope(
     retry: appProviderRetry,

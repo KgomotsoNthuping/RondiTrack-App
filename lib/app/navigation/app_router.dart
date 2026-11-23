@@ -140,7 +140,7 @@ class ProfileBranch extends StatefulShellBranchData {
   const new();
 }
 
-@Dependencies([Home, stokvelDetail])
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 class HomeRoute extends GoRouteData with $HomeRoute {
   const new();
 
@@ -150,7 +150,7 @@ class HomeRoute extends GoRouteData with $HomeRoute {
   }
 }
 
-@Dependencies([joinInvite, Home, stokvelDetail, accountKey, FamilyInvite])
+@Dependencies([joinInvite, Home, stokvelDetail, homeRepository, payoutOrder, accountKey, FamilyInvite])
 class JoinRoute extends GoRouteData with $JoinRoute {
   const new({required this.code});
 
@@ -162,7 +162,7 @@ class JoinRoute extends GoRouteData with $JoinRoute {
   }
 }
 
-@Dependencies([Home])
+@Dependencies([homeRepository, Home, stokvelDetail, payoutOrder])
 class StokvelsRoute extends GoRouteData with $StokvelsRoute {
   const new();
 
@@ -201,7 +201,7 @@ class StokvelCycleRoute extends GoRouteData with $StokvelCycleRoute {
   }
 }
 
-@Dependencies([payoutOrder, stokvelDetail, Home])
+@Dependencies([payoutOrder, stokvelDetail, Home, homeRepository])
 class StokvelPayoutsRoute extends GoRouteData with $StokvelPayoutsRoute {
   const new({required this.id, required this.cycleId});
 

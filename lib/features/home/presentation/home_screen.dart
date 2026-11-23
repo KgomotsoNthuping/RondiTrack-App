@@ -11,9 +11,10 @@ import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
 import 'package:ronditrack/features/offline/presentation/offline_home_screen.dart';
+import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 
-@Dependencies([Home, stokvelDetail])
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 class HomeScreen extends ConsumerWidget {
   const new({super.key});
 

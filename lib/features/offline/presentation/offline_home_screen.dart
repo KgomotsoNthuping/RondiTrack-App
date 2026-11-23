@@ -83,7 +83,7 @@ class OfflineHomeScreen extends ConsumerWidget {
   }
 }
 
-@Dependencies([Home, stokvelDetail])
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 class OfflineStokvelListPane extends ConsumerWidget {
   const new({this.selectedStokvelId, super.key});
 

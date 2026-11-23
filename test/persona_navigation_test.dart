@@ -300,7 +300,7 @@ void _setViewport(WidgetTester tester) {
   addTearDown(tester.view.resetPhysicalSize);
 }
 
-@Dependencies([Home, stokvelDetail])
+@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
 Future<GoRouter> _pumpSignedIn(
   WidgetTester tester,
   DemoPersona persona, {

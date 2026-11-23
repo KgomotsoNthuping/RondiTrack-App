@@ -21,12 +21,12 @@ import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider
 import 'package:ronditrack/features/stokvels/data/fake_stokvel_repository.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_detail_screen.dart';
 
-@Dependencies([payoutOrder, stokvelDetail, Home])
+@Dependencies([payoutOrder, stokvelDetail, Home, homeRepository])
 const _familyRoute = StokvelPayoutsRoute(
   id: 'family-savers',
   cycleId: 'family-cycle-1',
 );
-@Dependencies([payoutOrder, stokvelDetail, Home])
+@Dependencies([payoutOrder, stokvelDetail, Home, homeRepository])
 const _workRoute = StokvelPayoutsRoute(
   id: 'work-savers',
   cycleId: 'work-cycle-1',

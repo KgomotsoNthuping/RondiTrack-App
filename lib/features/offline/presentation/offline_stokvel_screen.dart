@@ -94,7 +94,7 @@ class OfflineStokvelScreen extends ConsumerWidget {
   }
 }
 
-@Dependencies([payoutOrder, stokvelDetail, Home])
+@Dependencies([payoutOrder, stokvelDetail, Home, homeRepository])
 class _HistoricalCycle extends ConsumerStatefulWidget {
   const new({
     required this.stokvelId,
