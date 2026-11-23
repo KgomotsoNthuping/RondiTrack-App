@@ -7,6 +7,7 @@ import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/config/app_config_provider.dart';
 import 'package:ronditrack/core/config/auth_config.dart';
 import 'package:ronditrack/core/config/repository_mode_provider.dart';
+import 'package:ronditrack/core/offline/offline_enabled.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,7 @@ void main() {
         appConfigProvider.overrideWithValue(config),
         authConfigProvider.overrideWithValue(authentication),
         useApiRepositoriesProvider.overrideWithValue(true),
+        offlineEnabledProvider.overrideWithValue(true),
       ],
       child: RondiTrackApp(config: config),
     ),

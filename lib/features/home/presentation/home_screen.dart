@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
+import 'package:ronditrack/core/offline/offline_enabled.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
 import 'package:ronditrack/core/state/screen_state.dart';
 import 'package:ronditrack/core/widgets/failure_notice.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/home/domain/home_entry.dart';
 import 'package:ronditrack/features/home/presentation/home_stokvel_card.dart';
-import 'package:ronditrack/core/offline/offline_enabled.dart';
 import 'package:ronditrack/features/offline/presentation/offline_home_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
-  const new({super.key});
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (ref.watch(offlineEnabledProvider)) {
+      return const OfflineHomeScreen();
+    }
+
     final persona = ref.watch(demoSessionProvider);
 
     if (persona == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     final provider = homeProvider(persona.name);
@@ -33,7 +39,9 @@ class HomeScreen extends ConsumerWidget {
     final content = switch (homeViewState(snapshot)) {
       ScreenLoading<List<HomeEntry>>() => const <Widget>[
         Center(
-          child: CircularProgressIndicator(semanticsLabel: 'Loading stokvels'),
+          child: CircularProgressIndicator(
+            semanticsLabel: 'Loading stokvels',
+          ),
         ),
       ],
       ScreenEmpty<List<HomeEntry>>() => const <Widget>[
@@ -42,14 +50,19 @@ class HomeScreen extends ConsumerWidget {
         Text('Ask a stokvel administrator to send you an invite.'),
       ],
       final ScreenFailure<List<HomeEntry>> failure => <Widget>[
-        FailureNotice(state: failure, onRetry: () => ref.invalidate(provider)),
+        FailureNotice(
+          state: failure,
+          onRetry: () => ref.invalidate(provider),
+        ),
       ],
       ScreenData<List<HomeEntry>>(:final value) => <Widget>[
         for (final entry in value)
           HomeStokvelCard(
             entry: entry,
             onTap: () {
-              StokvelDetailRoute(id: entry.membership.stokvelId).go(context);
+              StokvelDetailRoute(
+                id: entry.membership.stokvelId,
+              ).go(context);
             },
           ),
       ],
