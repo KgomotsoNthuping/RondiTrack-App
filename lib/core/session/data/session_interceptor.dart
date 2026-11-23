@@ -95,8 +95,8 @@ final class SessionInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioException error, ErrorInterceptorHandler handler) {
-    unawaited(_recover(error, handler));
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    unawaited(_recover(err, handler));
   }
 
   Future<void> _recover(

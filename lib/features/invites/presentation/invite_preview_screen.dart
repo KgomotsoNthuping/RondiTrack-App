@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/config/repository_mode_provider.dart';
 import 'package:ronditrack/core/errors/failure.dart';
