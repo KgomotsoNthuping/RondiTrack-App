@@ -6,6 +6,8 @@ import 'package:ronditrack/features/contributions/domain/contribution_history.da
 import 'package:ronditrack/features/contributions/presentation/contribution_history_screen.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/payments/presentation/payment_screen.dart';
+import 'package:ronditrack/features/proofs/domain/proof_models.dart';
+import 'package:ronditrack/features/proofs/presentation/proof_upload_screen.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_actions.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
@@ -30,6 +32,18 @@ Widget? stokvelWorkflowScreenFor(
   }
 
   if (stokvelId != null && cycleId != null) {
+    if (view == 'proof') {
+      final target = ProofTarget.parse(
+        stokvelId: stokvelId,
+        cycleId: cycleId,
+        contributionId: route.uri.queryParameters['contributionId'] ?? '',
+      );
+
+      return target == null
+          ? const Scaffold(body: Center(child: Text('Not found')))
+          : ProofUploadScreen(target: target);
+    }
+
     if (view == 'pay') {
       return PaymentScreen(stokvelId: stokvelId, cycleId: cycleId);
     }
@@ -77,12 +91,15 @@ class StokvelWorkflowActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cycle = stokvel.currentCycle;
+
     ContributionStatus? own;
+    String? contributionId;
 
     for (final item in stokvel.contributions) {
       if (item.userId.toLowerCase() == userId.toLowerCase() &&
           item.cycleId.toLowerCase() == cycle?.id.toLowerCase()) {
         own = item.status;
+        contributionId = item.id;
         break;
       }
     }
@@ -93,7 +110,7 @@ class StokvelWorkflowActions extends StatelessWidget {
       own,
     ));
 
-    String location(String view) {
+    String location(String view, {String? contributionId}) {
       return Uri(
         pathSegments: [
           '',
@@ -102,7 +119,10 @@ class StokvelWorkflowActions extends StatelessWidget {
           'cycles',
           cycle!.id,
         ],
-        queryParameters: {'view': view},
+        queryParameters: {
+          'view': view,
+          if (contributionId != null) 'contributionId': contributionId,
+        },
       ).toString();
     }
 
@@ -114,6 +134,15 @@ class StokvelWorkflowActions extends StatelessWidget {
           FilledButton(
             onPressed: () => context.go(location('pay')),
             child: const Text('Pay contribution'),
+          ),
+        if (cycle != null &&
+            contributionId != null &&
+            actions.contains(StokvelAction.uploadProof))
+          OutlinedButton.icon(
+            onPressed: () =>
+                context.go(location('proof', contributionId: contributionId)),
+            icon: const Icon(Icons.receipt_long_outlined),
+            label: const Text('Upload proof'),
           ),
         if (cycle != null && stokvel.membership.role == StokvelRole.admin)
           OutlinedButton(
