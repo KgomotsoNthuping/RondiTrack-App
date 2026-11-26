@@ -46,6 +46,6 @@ final class SecureRefreshTokenStore implements RefreshTokenStore {
 
   @override
   Future<void> clear() {
-    return _storage.deleteAll();
+    return _storage.delete(key: _key);
   }
 }

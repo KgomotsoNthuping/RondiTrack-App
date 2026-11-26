@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
@@ -6,6 +8,7 @@ import 'package:ronditrack/app/navigation/auth_redirect.dart';
 import 'package:ronditrack/app/navigation/ronditrack_shell.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/config/repository_mode_provider.dart';
+import 'package:ronditrack/core/push/notification_providers.dart';
 import 'package:ronditrack/core/session/account_key.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/demo_session.dart';
@@ -38,7 +41,48 @@ Raw<GoRouter> appRouter(Ref ref, AppFlavor flavor) {
     useApi ? null : ref.read(demoSessionProvider),
   );
 
+  final push = ref.watch(pushRuntimeProvider);
+
+  var previousAccount = switch (coordinator?.state) {
+    AuthSignedIn(:final identity, :final sessionId) => (
+      identity.userId,
+      sessionId,
+    ),
+    _ => null,
+  };
+
+  void synchronizePush() {
+    final state = coordinator?.state;
+
+    final next = switch (state) {
+      AuthSignedIn(:final identity, :final sessionId) => (
+        identity.userId,
+        sessionId,
+      ),
+      _ => null,
+    };
+
+    if (previousAccount != null && previousAccount != next) {
+      scheduleMicrotask(() {
+        if (ref.mounted) {
+          ref.read(pushRevisionsProvider.notifier).clear();
+        }
+      });
+    }
+
+    previousAccount = next;
+    push.synchronize(state);
+  }
+
+  synchronizePush();
+  coordinator?.addListener(synchronizePush);
+
+  final initial = push.initialTarget;
+
   final router = GoRouter(
+    navigatorKey: ref.watch(rootNavigatorKeyProvider),
+    initialLocation: initial?.location ?? '/',
+    overridePlatformDefaultLocation: initial != null,
     routes: $appRoutes,
     refreshListenable: coordinator ?? demo,
     redirect: (_, state) {
@@ -62,11 +106,28 @@ Raw<GoRouter> appRouter(Ref ref, AppFlavor flavor) {
     ),
   );
 
+  final taps = push.taps.listen((target) {
+    push.takePending();
+    router.go(target.location);
+  });
+
+  scheduleMicrotask(() {
+    if (ref.mounted) {
+      final target = push.takePending();
+
+      if (target != null) {
+        router.go(target.location);
+      }
+    }
+  });
+
   if (!useApi) {
     ref.listen(demoSessionProvider, (_, next) => demo.value = next);
   }
 
   ref.onDispose(() {
+    coordinator?.removeListener(synchronizePush);
+    unawaited(taps.cancel());
     router.dispose();
     demo.dispose();
   });

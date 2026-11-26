@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,9 @@ import 'package:ronditrack/core/observability/error_reporter.dart';
 import 'package:ronditrack/core/observability/sentry_reporting.dart';
 import 'package:ronditrack/core/offline/offline_enabled.dart';
 import 'package:ronditrack/core/push/data/firebase_installation_messaging.dart';
+import 'package:ronditrack/core/push/data/push_bootstrap.dart';
 import 'package:ronditrack/core/push/device_providers.dart';
+import 'package:ronditrack/core/push/notification_providers.dart';
 
 void main() {
   unawaited(
@@ -59,6 +62,8 @@ void main() {
           isTest: isTest,
         );
 
+        final push = await createPushRuntime(messaging);
+
         runApp(
           ProviderScope(
             retry: appProviderRetry,
@@ -68,6 +73,7 @@ void main() {
               useApiRepositoriesProvider.overrideWithValue(true),
               offlineEnabledProvider.overrideWithValue(true),
               installationMessagingProvider.overrideWithValue(messaging),
+              pushRuntimeProvider.overrideWithValue(push),
             ],
             child: RondiTrackApp(config: config),
           ),

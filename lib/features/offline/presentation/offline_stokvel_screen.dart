@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/money/cents.dart';
+import 'package:ronditrack/core/push/notification_providers.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 import 'package:ronditrack/core/theme/ronditrack_tokens.dart';
@@ -50,6 +51,21 @@ class OfflineStokvelScreen extends ConsumerWidget {
 
     final account = (userId: state.identity.userId, sessionId: state.sessionId);
 
+    final revision = cycleId == null
+        ? 0
+        : ref.watch(
+            pushRevisionsProvider.select(
+              (values) =>
+                  values[(
+                    userId: account.userId,
+                    sessionId: account.sessionId,
+                    stokvelId: stokvelId,
+                    cycleId: cycleId!,
+                  )] ??
+                  0,
+            ),
+          );
+
     ref.watch(paymentWorkerProvider(account));
 
     final controller = ref.watch(
@@ -72,7 +88,7 @@ class OfflineStokvelScreen extends ConsumerWidget {
                 cached != null &&
                 cached.value.currentCycle?.id != selected) {
               return _HistoricalCycle(
-                key: ValueKey((account, selected)),
+                key: ValueKey((account, selected, revision)),
                 stokvelId: stokvelId,
                 cycleId: selected,
                 account: account,
@@ -212,7 +228,8 @@ class _StockBody extends StatelessWidget {
                   if (!cycleOnly) ...[
                     Text(stokvel.membership.role.label),
                     Text(
-                      '${stokvel.monthlyContribution.formatRand()} per month',
+                      '${stokvel.monthlyContribution.formatRand()} '
+                      'per month',
                     ),
                     Text(
                       'Members ${stokvel.memberCount} · '
@@ -233,7 +250,10 @@ class _StockBody extends StatelessWidget {
                     ),
                     Text('Target ${cycle.targetAmount.formatRand()}'),
                     Text('Collected ${cycle.totalCollected.formatRand()}'),
-                    Text('Outstanding ${cycle.amountOutstanding.formatRand()}'),
+                    Text(
+                      'Outstanding '
+                      '${cycle.amountOutstanding.formatRand()}',
+                    ),
                     const SizedBox(height: 12),
                     OutlinedButton(
                       onPressed: () {

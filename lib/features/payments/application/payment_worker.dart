@@ -15,6 +15,7 @@ final class PaymentWorker extends ChangeNotifier {
     required bool Function() isCurrent,
     required bool Function() canSend,
     required Future<void> Function(PendingPayment) onResolved,
+    void Function()? onQueued,
     DateTime Function()? clock,
     OutboxPolicy? policy,
   }) : _store = store,
@@ -22,6 +23,7 @@ final class PaymentWorker extends ChangeNotifier {
        _isCurrent = isCurrent,
        _canSend = canSend,
        _onResolved = onResolved,
+       _onQueued = onQueued,
        _clock = clock ?? DateTime.now,
        _policy =
            policy ??
@@ -36,12 +38,14 @@ final class PaymentWorker extends ChangeNotifier {
   final bool Function() _isCurrent;
   final bool Function() _canSend;
   final Future<void> Function(PendingPayment) _onResolved;
+  final void Function()? _onQueued;
   final DateTime Function() _clock;
   final OutboxPolicy _policy;
 
   Future<void>? _flight;
   Timer? _timer;
   Failure? _lastFailure;
+
   bool _again = false;
   bool _closed = false;
   bool _sending = false;
@@ -75,6 +79,12 @@ final class PaymentWorker extends ChangeNotifier {
       amount: amount,
       createdAtUtc: _clock().toUtc(),
     );
+
+    if (_active) {
+      try {
+        _onQueued?.call();
+      } on Object {}
+    }
 
     await drain();
     return payment;
@@ -153,6 +163,7 @@ final class PaymentWorker extends ChangeNotifier {
               kind: PaymentNoticeKind.expired,
               nowUtc: now,
             );
+
             continue;
           }
 
@@ -268,6 +279,7 @@ final class PaymentWorker extends ChangeNotifier {
         }
 
         var deadline = payment.createdAtUtc.add(_policy.maximumAge);
+
         final retry = payment.retryAtUtc;
 
         if (retry != null && retry.isBefore(deadline)) {
@@ -286,6 +298,7 @@ final class PaymentWorker extends ChangeNotifier {
       final delay = nextWake.difference(_clock().toUtc());
 
       _timer?.cancel();
+
       _timer = Timer(
         delay <= Duration.zero ? const Duration(seconds: 1) : delay,
         () => unawaited(drain()),

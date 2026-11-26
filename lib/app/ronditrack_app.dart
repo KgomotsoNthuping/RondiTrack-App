@@ -4,6 +4,7 @@ import 'package:ronditrack/app/account_scope.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/config/app_flavor_scope.dart';
+import 'package:ronditrack/core/push/notification_binding.dart';
 import 'package:ronditrack/core/theme/ronditrack_theme.dart';
 
 class RondiTrackApp extends ConsumerWidget {
@@ -22,7 +23,9 @@ class RondiTrackApp extends ConsumerWidget {
         darkTheme: RondiTrackTheme.dark,
         routerConfig: ref.watch(appRouterProvider(config.flavor)),
         builder: (context, child) {
-          return AccountScope(child: child ?? const SizedBox.shrink());
+          return AccountScope(
+            child: NotificationBinding(child: child ?? const SizedBox.shrink()),
+          );
         },
       ),
     );

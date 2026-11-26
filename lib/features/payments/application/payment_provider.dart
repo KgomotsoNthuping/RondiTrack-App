@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/core/network/data/api_transport_provider.dart';
 import 'package:ronditrack/core/offline/data/offline_database_provider.dart';
+import 'package:ronditrack/core/push/notification_providers.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 import 'package:ronditrack/features/offline/application/offline_account_provider.dart';
@@ -42,6 +43,7 @@ final paymentWorkerProvider = Provider.autoDispose
         }
 
         final sender = PaymentSender(() => ref.read(apiDioProvider));
+
         final keepAlive = ref.keepAlive();
 
         final worker = PaymentWorker(
@@ -50,6 +52,7 @@ final paymentWorkerProvider = Provider.autoDispose
           send: sender.send,
           isCurrent: isCurrent,
           canSend: canSend,
+          onQueued: () => ref.read(paymentRecordedProvider.notifier).record(),
           onResolved: (payment) async {
             if (isCurrent()) {
               await ref
@@ -108,5 +111,6 @@ final paymentWorkerProvider = Provider.autoDispose
         cachedHomeProvider,
         stokvelWorkflowProvider,
         apiDioProvider,
+        paymentRecordedProvider,
       ],
     );
