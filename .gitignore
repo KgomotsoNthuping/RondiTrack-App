@@ -40,3 +40,4 @@ app.*.map.json
 !lib/core/network/data/generated/**
 
 **/failures/
+/integration-artifacts/
