@@ -15,7 +15,15 @@ import 'package:ronditrack/features/invites/domain/invite_repository.dart';
 import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
 
-@Dependencies([joinInvite, Home, stokvelDetail, homeRepository, payoutOrder, accountKey, FamilyInvite])
+@Dependencies([
+  joinInvite,
+  Home,
+  stokvelDetail,
+  homeRepository,
+  payoutOrder,
+  accountKey,
+  FamilyInvite,
+])
 class InvitePreviewScreen extends ConsumerWidget {
   const new({required this.code, super.key});
 

@@ -25,7 +25,15 @@ final _config = AppConfig.parse(
   apiBaseUrl: 'http://10.0.2.2:5227',
 );
 
-@Dependencies([joinInvite, Home, stokvelDetail, homeRepository, payoutOrder, accountKey, FamilyInvite])
+@Dependencies([
+  joinInvite,
+  Home,
+  stokvelDetail,
+  homeRepository,
+  payoutOrder,
+  accountKey,
+  FamilyInvite,
+])
 void main() {
   test('remembers a native invite for the matching flavour', () {
     for (final flavor in AppFlavor.values) {

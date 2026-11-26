@@ -74,7 +74,16 @@ Raw<GoRouter> appRouter(Ref ref, AppFlavor flavor) {
   return router;
 }
 
-@Dependencies([Home, stokvelDetail, joinInvite, accountKey, FamilyInvite, payoutOrder, homeRepository, activityFeed])
+@Dependencies([
+  Home,
+  stokvelDetail,
+  joinInvite,
+  accountKey,
+  FamilyInvite,
+  payoutOrder,
+  homeRepository,
+  activityFeed,
+])
 @TypedStatefulShellRoute<AppShellRoute>(
   branches: [
     TypedStatefulShellBranch<HomeBranch>(
@@ -150,7 +159,15 @@ class HomeRoute extends GoRouteData with $HomeRoute {
   }
 }
 
-@Dependencies([joinInvite, Home, stokvelDetail, homeRepository, payoutOrder, accountKey, FamilyInvite])
+@Dependencies([
+  joinInvite,
+  Home,
+  stokvelDetail,
+  homeRepository,
+  payoutOrder,
+  accountKey,
+  FamilyInvite,
+])
 class JoinRoute extends GoRouteData with $JoinRoute {
   const new({required this.code});
 

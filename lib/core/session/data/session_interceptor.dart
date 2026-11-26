@@ -6,14 +6,21 @@ import 'package:ronditrack/core/result/result.dart';
 import 'package:ronditrack/core/session/access_token_store.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/data/auth_paths.dart';
+import 'package:ronditrack/core/session/session_access.dart';
 import 'package:ronditrack/core/session/session_coordinator.dart';
 
 final class SessionInterceptor extends Interceptor {
   new({required SessionCoordinator session, required Dio retryDio})
+    : this.withSession(
+        session: CoordinatorSessionAccess(session),
+        retryDio: retryDio,
+      );
+
+  new withSession({required SessionAccess session, required Dio retryDio})
     : _session = session,
       _retryDio = retryDio;
 
-  final SessionCoordinator _session;
+  final SessionAccess _session;
   final Dio _retryDio;
 
   static const _epochKey = 'ronditrack.sessionEpoch';
@@ -128,7 +135,6 @@ final class SessionInterceptor extends Interceptor {
       }
 
       final sent = options.headers['Authorization'];
-
       final currentAccess = current.currentAccessToken;
 
       final result =

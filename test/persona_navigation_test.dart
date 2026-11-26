@@ -70,7 +70,16 @@ const _personas = [
   ),
 ];
 
-@Dependencies([homeRepository, Home, payoutOrder, stokvelDetail, activityFeed, joinInvite, accountKey, FamilyInvite])
+@Dependencies([
+  homeRepository,
+  Home,
+  payoutOrder,
+  stokvelDetail,
+  activityFeed,
+  joinInvite,
+  accountKey,
+  FamilyInvite,
+])
 void main() {
   for (final scenario in _personas) {
     final persona = scenario.persona;
