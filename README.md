@@ -389,16 +389,3 @@ flutter test --update-goldens test/goldens
 flutter test test/privacy --exclude-tags live
 flutter test integration_test --flavor dev --dart-define-from-file=config/dev.json
 ```
-
-Do not update goldens merely to make a failure pass.
-The integration command targets an Android emulator, not Chrome.
-A DSN supplied after the configuration-file define overrides its empty value.
-
-Before hand-in, record the measured coverage/floor, dependency-age output,
-reviewed light/dark goldens, three successful emulator journeys, the five
-mutation exercises, DevTools before/after results, a scrubbed real Sentry
-event and the final successful CI jobs.
-
-The earlier 11.3 language/accessibility completion commit was omitted.
-Do not describe multilingual work or manual accessibility evidence as
-complete without implementing or checking it.
