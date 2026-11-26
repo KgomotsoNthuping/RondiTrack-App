@@ -56,6 +56,8 @@ abstract final class RondiTrackTheme {
   }) {
     return ThemeData(
       useMaterial3: true,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+      visualDensity: VisualDensity.standard,
       colorScheme: colors,
       extensions: [tokens],
       scaffoldBackgroundColor: colors.surface,
@@ -97,6 +99,12 @@ abstract final class RondiTrackTheme {
             borderRadius: BorderRadius.all(Radius.circular(14)),
           ),
         ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: colors.onSurface),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(foregroundColor: colors.onSurface),
       ),
       inputDecorationTheme: InputDecorationThemeData(
         floatingLabelStyle: TextStyle(color: colors.onSurfaceVariant),

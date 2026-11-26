@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/app/navigation/app_router.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
@@ -13,7 +12,6 @@ import 'package:ronditrack/features/offline/presentation/cache_view.dart';
 import 'package:ronditrack/features/payments/application/payment_provider.dart';
 import 'package:ronditrack/features/payouts/application/payout_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_detail_provider.dart';
-import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
 import 'package:ronditrack/features/stokvels/presentation/stokvel_workflow_navigation.dart';
 
 @Dependencies([homeRepository, Home, payoutOrder, stokvelDetail])
@@ -40,6 +38,7 @@ class OfflineHomeScreen extends ConsumerWidget {
         top: false,
         child: CacheView<List<HomeEntry>>(
           controller: controller,
+          clock: ref.watch(offlineCacheClockProvider),
           builder: (context, entries) {
             return Center(
               child: ConstrainedBox(
@@ -106,6 +105,7 @@ class OfflineStokvelListPane extends ConsumerWidget {
 
     return CacheView<List<HomeEntry>>(
       controller: controller,
+      clock: ref.watch(offlineCacheClockProvider),
       builder: (context, entries) {
         final colors = Theme.of(context).colorScheme;
 

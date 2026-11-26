@@ -24,6 +24,7 @@ dependencies:
   riverpod_annotation: 4.0.7
 
 dev_dependencies:
+  alchemist: 0.14.1
   build_runner: 2.16.2
   drift_dev: 2.35.2
   flutter_test:

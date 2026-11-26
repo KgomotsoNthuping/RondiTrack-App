@@ -31,149 +31,157 @@ class HomeStokvelCard extends StatelessWidget {
     final isOpen = cycle != null && status == CycleStatus.open;
     final arrears = 'Arrears ${entry.arrears.formatRand()}';
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: DefaultTextStyle.merge(
-            style: TextStyle(color: muted, fontSize: 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: wallet.background,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.account_balance_wallet_outlined,
-                        color: wallet.foreground,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            entry.name,
-                            style: TextStyle(
-                              color: ink,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(entry.membership.role.label),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Divider(height: 32, color: border),
-                if (cycle != null) ...[
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.center,
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      button: true,
+      label: 'Open ${entry.name}',
+      onTap: onTap,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          excludeFromSemantics: true,
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: DefaultTextStyle.merge(
+              style: TextStyle(color: muted, fontSize: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Cycle $cycle',
-                        style: TextStyle(
-                          color: ink,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      Container(
+                        width: 44,
+                        height: 44,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: wallet.background,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: wallet.foreground,
+                          size: 20,
                         ),
                       ),
-                      CycleStatusBadge(status: status),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              entry.name,
+                              style: TextStyle(
+                                color: ink,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(entry.membership.role.label),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    due == null
-                        ? 'No due date set'
-                        : 'Due ${formatCalendarDate(due)}',
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                if (isOpen && paid != null && owed != null)
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      const double gap = 12;
-                      final textScaler = MediaQuery.textScalerOf(context);
-                      final scale =
-                          textScaler.scale(_AmountTile.amountFontSize) /
-                          _AmountTile.amountFontSize;
-                      final minimumTileWidth = 134 * scale;
-                      final width = constraints.maxWidth;
-                      final tileWidth = width >= 2 * minimumTileWidth + gap
-                          ? (width - gap) / 2
-                          : width;
+                  Divider(height: 32, color: border),
+                  if (cycle != null) ...[
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          'Cycle $cycle',
+                          style: TextStyle(
+                            color: ink,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        CycleStatusBadge(status: status),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      due == null
+                          ? 'No due date set'
+                          : 'Due ${formatCalendarDate(due)}',
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  if (isOpen && paid != null && owed != null)
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        const double gap = 12;
+                        final textScaler = MediaQuery.textScalerOf(context);
+                        final scale =
+                            textScaler.scale(_AmountTile.amountFontSize) /
+                            _AmountTile.amountFontSize;
+                        final minimumTileWidth = 134 * scale;
+                        final width = constraints.maxWidth;
+                        final tileWidth = width >= 2 * minimumTileWidth + gap
+                            ? (width - gap) / 2
+                            : width;
 
-                      return Wrap(
-                        spacing: gap,
-                        runSpacing: gap,
-                        children: [
-                          SizedBox(
-                            width: tileWidth,
-                            child: _AmountTile(
-                              label: 'Paid this cycle',
-                              amount: paid.formatRand(),
-                              fill: paidAmount.background,
-                              ink: paidAmount.foreground,
+                        return Wrap(
+                          spacing: gap,
+                          runSpacing: gap,
+                          children: [
+                            SizedBox(
+                              width: tileWidth,
+                              child: _AmountTile(
+                                label: 'Paid this cycle',
+                                amount: paid.formatRand(),
+                                fill: paidAmount.background,
+                                ink: paidAmount.foreground,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            width: tileWidth,
-                            child: _AmountTile(
-                              label: 'Still owed',
-                              amount: owed.formatRand(),
-                              fill: owedAmount.background,
-                              ink: owedAmount.foreground,
+                            SizedBox(
+                              width: tileWidth,
+                              child: _AmountTile(
+                                label: 'Still owed',
+                                amount: owed.formatRand(),
+                                fill: owedAmount.background,
+                                ink: owedAmount.foreground,
+                              ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
-                  )
-                else
-                  Text(
-                    isOpen ? 'Payment details unavailable' : 'No open cycle',
-                  ),
-                if (isOpen && owed?.value == 0) ...[
+                          ],
+                        );
+                      },
+                    )
+                  else
+                    Text(
+                      isOpen ? 'Payment details unavailable' : 'No open cycle',
+                    ),
+                  if (isOpen && owed?.value == 0) ...[
+                    const SizedBox(height: 12),
+                    const StokvelBadge(
+                      label: 'All paid up for this cycle',
+                      token: RondiTrackToken.paidUp,
+                    ),
+                  ],
                   const SizedBox(height: 12),
-                  const StokvelBadge(
-                    label: 'All paid up for this cycle',
-                    token: RondiTrackToken.paidUp,
+                  if (entry.arrears.value > 0)
+                    StokvelBadge(label: arrears, token: RondiTrackToken.arrears)
+                  else
+                    Text(arrears),
+                  Divider(height: 32, color: border),
+                  Text(
+                    'Next payout',
+                    style: TextStyle(color: ink, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    payout == null
+                        ? 'No payout scheduled'
+                        : formatJohannesburgDate(payout),
                   ),
                 ],
-                const SizedBox(height: 12),
-                if (entry.arrears.value > 0)
-                  StokvelBadge(label: arrears, token: RondiTrackToken.arrears)
-                else
-                  Text(arrears),
-                Divider(height: 32, color: border),
-                Text(
-                  'Next payout',
-                  style: TextStyle(color: ink, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  payout == null
-                      ? 'No payout scheduled'
-                      : formatJohannesburgDate(payout),
-                ),
-              ],
+              ),
             ),
           ),
         ),

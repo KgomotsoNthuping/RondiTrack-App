@@ -38,3 +38,5 @@ app.*.map.json
 *.freezed.dart
 
 !lib/core/network/data/generated/**
+
+**/failures/
