@@ -3,8 +3,15 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:ronditrack/core/errors/failure.dart';
+import 'package:ronditrack/core/observability/error_reporter.dart';
 
 Failure mapFailure(Object error, {required bool isRead}) {
+  final failure = _mapFailure(error, isRead: isRead);
+  Reporting.capture(failure, StackTrace.current);
+  return failure;
+}
+
+Failure _mapFailure(Object error, {required bool isRead}) {
   if (error is OfflineFailure && !isRead) {
     return OfflineFailure(isRead: false, correlationId: error.correlationId);
   }
@@ -14,7 +21,7 @@ Failure mapFailure(Object error, {required bool isRead}) {
   }
 
   if (error is AsyncError) {
-    return mapFailure(error.error, isRead: isRead);
+    return _mapFailure(error.error, isRead: isRead);
   }
 
   if (error is ParallelWaitError<Object?, Object?>) {
@@ -33,7 +40,7 @@ Failure mapFailure(Object error, {required bool isRead}) {
         continue;
       }
 
-      final failure = mapFailure(nestedError, isRead: isRead);
+      final failure = _mapFailure(nestedError, isRead: isRead);
 
       if (failure is NotFoundFailure) {
         return failure;
@@ -42,7 +49,7 @@ Failure mapFailure(Object error, {required bool isRead}) {
       firstFailure ??= failure;
     }
 
-    return firstFailure ?? const ServerFailure();
+    return firstFailure ?? ServerFailure();
   }
 
   if (error is TimeoutException) {
@@ -50,7 +57,7 @@ Failure mapFailure(Object error, {required bool isRead}) {
   }
 
   if (error is! DioException) {
-    return const ServerFailure();
+    return ServerFailure();
   }
 
   final response = error.response;
@@ -86,7 +93,7 @@ Failure mapFailure(Object error, {required bool isRead}) {
   final cause = error.error;
 
   if (cause is Failure) {
-    return mapFailure(cause, isRead: retryableRead);
+    return _mapFailure(cause, isRead: retryableRead);
   }
 
   return switch (error.type) {
@@ -98,7 +105,7 @@ Failure mapFailure(Object error, {required bool isRead}) {
     DioExceptionType.badCertificate ||
     DioExceptionType.badResponse ||
     DioExceptionType.unknown ||
-    DioExceptionType.transformTimeout => const ServerFailure(),
+    DioExceptionType.transformTimeout => ServerFailure(),
   };
 }
 

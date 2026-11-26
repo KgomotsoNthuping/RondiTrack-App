@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/network/data/failure_mapper.dart';
 import 'package:ronditrack/core/network/data/platform_adapter.dart';
+import 'package:ronditrack/core/observability/report_scrubber.dart';
 
 part 'api_dio_factory.g.dart';
 
@@ -13,10 +14,57 @@ typedef ApiLog = void Function(String line);
 ApiLog apiLog(Ref ref) => debugPrint;
 
 String safeApiPath(String path) {
-  return path.replaceAllMapped(
-    RegExp(r'(/invites/)[^/]+'),
-    (match) => '${match[1]}[redacted]',
-  );
+  const routes = {
+    'api',
+    'v1',
+    'auth',
+    'login',
+    'register',
+    'refresh',
+    'logout',
+    'me',
+    'home',
+    'stokvels',
+    'cycles',
+    'members',
+    'contributions',
+    'payments',
+    'invites',
+    'join',
+    'activity',
+    'profile',
+  };
+
+  final uri = Uri.tryParse(path);
+
+  if (uri == null) {
+    return '/[redacted]';
+  }
+
+  const dynamicAfter = {
+    'stokvels',
+    'cycles',
+    'members',
+    'contributions',
+    'invites',
+    'join',
+  };
+
+  final segments = uri.pathSegments;
+  final safe = <String>[];
+
+  for (var index = 0; index < segments.length; index++) {
+    final segment = segments[index];
+
+    final dynamicValue =
+        index > 0 && dynamicAfter.contains(segments[index - 1]);
+
+    safe.add(
+      !dynamicValue && routes.contains(segment) ? segment : '[redacted]',
+    );
+  }
+
+  return '/${safe.join('/')}';
 }
 
 Dio createApiDio(
@@ -39,7 +87,11 @@ Dio createApiDio(
       ),
     )
     ..httpClientAdapter = createPlatformAdapter(withCredentials: browserCookies)
-    ..interceptors.add(_SafeLogInterceptor(writeLog));
+    ..interceptors.add(
+      _SafeLogInterceptor(
+        kDebugMode && config.flavor == AppFlavor.dev ? writeLog : (_) {},
+      ),
+    );
 }
 
 final class _SafeLogInterceptor extends Interceptor {
@@ -85,12 +137,29 @@ final class _SafeLogInterceptor extends Interceptor {
     _timers[options] = null;
 
     final elapsed = timer?.elapsedMilliseconds ?? 0;
-    final reference = correlationId == null
+    final safeReference = safeReportReference(correlationId);
+
+    final reference = safeReference == null
         ? ''
-        : ' correlationId=$correlationId';
+        : ' correlationId=$safeReference';
+
+    final requestedMethod = options.method.toUpperCase();
+
+    final method =
+        const {
+          'GET',
+          'HEAD',
+          'POST',
+          'PUT',
+          'PATCH',
+          'DELETE',
+          'OPTIONS',
+        }.contains(requestedMethod)
+        ? requestedMethod
+        : 'HTTP';
 
     write(
-      '${options.method.toUpperCase()} '
+      '$method '
       '${safeApiPath(options.uri.path)} '
       '${status ?? '-'} ${elapsed}ms$reference',
     );

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:ronditrack/core/errors/failure.dart';
+import 'package:ronditrack/core/observability/error_reporter.dart';
 import 'package:ronditrack/core/offline/cached_value.dart';
 
 final class CacheController<T> extends ChangeNotifier {
@@ -22,7 +23,10 @@ final class CacheController<T> extends ChangeNotifier {
     _subscription = cache.listen(
       _accept,
       onError: (Object error, StackTrace stack) {
-        reportFailure(error is Failure ? error : const ServerFailure());
+        reportFailure(
+          error is Failure ? error : ServerFailure(),
+          stackTrace: stack,
+        );
       },
     );
   }
@@ -53,9 +57,11 @@ final class CacheController<T> extends ChangeNotifier {
     }
   }
 
-  void reportFailure(Failure failure) {
+  void reportFailure(Failure failure, {StackTrace? stackTrace}) {
     if (!_closed && _isCurrent()) {
       _failure = failure;
+
+      Reporting.capture(failure, stackTrace ?? StackTrace.current);
 
       if (failure is NotFoundFailure) {
         _cached = null;
@@ -122,12 +128,14 @@ final class CacheController<T> extends ChangeNotifier {
       if (accepted && !_closed && _isCurrent()) {
         _failure = null;
       }
-    } on Object catch (error) {
+    } on Object catch (error, stack) {
       if (_closed || !_isCurrent()) {
         return;
       }
 
-      final failure = error is Failure ? error : const ServerFailure();
+      final failure = error is Failure ? error : ServerFailure();
+
+      Reporting.capture(failure, stack);
 
       if (failure is NotFoundFailure) {
         final removed = await _remove(generation);
