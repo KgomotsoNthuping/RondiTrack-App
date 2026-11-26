@@ -23,7 +23,7 @@ final class ContributionHistoryController extends ChangeNotifier {
   final Future<HistoryPage> Function(HistoryFilter, String?) _load;
 
   HistoryFilter _filters;
-  List<Contribution> _items = [];
+  List<Contribution> _items = const [];
   Set<String> _visited = {};
   String? _next;
   Future<void>? _flight;
@@ -39,7 +39,7 @@ final class ContributionHistoryController extends ChangeNotifier {
   bool _closed = false;
 
   HistoryFilter get filters => _filters;
-  List<Contribution> get items => List.unmodifiable(_items);
+  List<Contribution> get items => _items;
   bool get loading => _busy;
   bool get refreshing => _refreshing;
   Failure? get failure => _firstError ?? _laterError ?? _refreshError;
@@ -74,7 +74,7 @@ final class ContributionHistoryController extends ChangeNotifier {
 
   Future<void> changeFilters(HistoryFilter filters) {
     _filters = filters;
-    _items = [];
+    _items = const [];
     _visited = {};
     _next = null;
     _hasPage = false;
@@ -195,7 +195,9 @@ final class ContributionHistoryController extends ChangeNotifier {
         }
 
         if (found.isNotEmpty || token == null) {
-          _items = reset ? found : [..._items, ...found];
+          _items = List<Contribution>.unmodifiable(
+            reset ? found : [..._items, ...found],
+          );
           _next = token;
           _visited = visited;
           _hasPage = true;
@@ -231,7 +233,7 @@ final class ContributionHistoryController extends ChangeNotifier {
   void dispose() {
     _closed = true;
     _revision++;
-    _items = [];
+    _items = const [];
     super.dispose();
   }
 }

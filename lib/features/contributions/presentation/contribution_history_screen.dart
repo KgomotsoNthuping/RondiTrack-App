@@ -4,18 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/dates/calendar_date.dart';
 import 'package:ronditrack/core/dates/south_african_dates.dart';
-import 'package:ronditrack/core/money/cents.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/session_coordinator_provider.dart';
 import 'package:ronditrack/features/contributions/application/contribution_history_controller.dart';
 import 'package:ronditrack/features/contributions/domain/contribution_history.dart';
+import 'package:ronditrack/features/contributions/presentation/contribution_history_list.dart';
 import 'package:ronditrack/features/home/application/home_provider.dart';
 import 'package:ronditrack/features/stokvels/application/stokvel_workflow_provider.dart';
 import 'package:ronditrack/features/stokvels/domain/stokvel_status.dart';
-import 'package:ronditrack/features/stokvels/presentation/stokvel_status_badge.dart';
 
 @Dependencies([homeRepository])
 class ContributionHistoryScreen extends ConsumerWidget {
@@ -120,16 +118,6 @@ class _HistoryBodyState extends State<_HistoryBody> {
     context.go(historyLocation(widget.stokvelId, filters));
   }
 
-  void _nearEnd(ScrollMetrics metrics) {
-    if (metrics.extentAfter < 300 && _pager.canLoadMore) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _pager.canLoadMore) {
-          unawaited(_pager.loadMore());
-        }
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,58 +129,31 @@ class _HistoryBodyState extends State<_HistoryBody> {
           ),
         ),
       ),
-      body: ListenableBuilder(
-        listenable: _pager,
-        builder: (context, child) {
-          return NotificationListener<ScrollMetricsNotification>(
-            onNotification: (notification) {
-              _nearEnd(notification.metrics);
-              return false;
-            },
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-                _nearEnd(notification.metrics);
-                return false;
-              },
-              child: RefreshIndicator(
-                onRefresh: _pager.refresh,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    FutureBuilder<HistoryOptions>(
-                      future: _options,
-                      builder: (context, snapshot) {
-                        return Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _filters(snapshot.data ?? emptyHistoryOptions),
-                              if (snapshot.hasError)
-                                TextButton(
-                                  onPressed: () => setState(() {
-                                    _options = widget.workflow.options(
-                                      widget.stokvelId,
-                                    );
-                                  }),
-                                  child: const Text(
-                                    'Retry member and cycle choices',
-                                  ),
-                                ),
-                            ],
-                          ),
-                        );
-                      },
+      body: ContributionHistoryList(
+        controller: _pager,
+        invalidFilters: widget.invalidFilters,
+        onClearFilters: () => _apply(allContributions),
+        header: FutureBuilder<HistoryOptions>(
+          future: _options,
+          builder: (context, snapshot) {
+            return Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _filters(snapshot.data ?? emptyHistoryOptions),
+                  if (snapshot.hasError)
+                    TextButton(
+                      onPressed: () => setState(() {
+                        _options = widget.workflow.options(widget.stokvelId);
+                      }),
+                      child: const Text('Retry member and cycle choices'),
                     ),
-                    if (_pager.refreshing) const LinearProgressIndicator(),
-                    ..._content(),
-                  ],
-                ),
+                ],
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -202,228 +163,180 @@ class _HistoryBodyState extends State<_HistoryBody> {
     final cycleIds = options.cycles.map((item) => item.id).toSet();
     final memberIds = options.members.map((item) => item.id).toSet();
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        SizedBox(
-          width: 220,
-          child: DropdownButtonFormField<String>(
-            key: ValueKey(('cycle', selected.cycleId)),
-            initialValue: selected.cycleId ?? '',
-            isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Cycle'),
-            items: [
-              const DropdownMenuItem(value: '', child: Text('All cycles')),
-              for (final item in options.cycles)
-                DropdownMenuItem(
-                  value: item.id,
-                  child: Text('Cycle ${item.number}'),
-                ),
-              if (selected.cycleId != null &&
-                  !cycleIds.contains(selected.cycleId))
-                DropdownMenuItem(
-                  value: selected.cycleId,
-                  child: const Text('Selected cycle'),
-                ),
-            ],
-            onChanged: (value) => _apply((
-              cycleId: value == '' ? null : value,
-              status: selected.status,
-              memberId: selected.memberId,
-              days: selected.days,
-            )),
-          ),
-        ),
-        SizedBox(
-          width: 220,
-          child: DropdownButtonFormField<String>(
-            key: ValueKey(('status', selected.status)),
-            initialValue: selected.status?.name ?? '',
-            isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Status'),
-            items: [
-              const DropdownMenuItem(value: '', child: Text('All statuses')),
-              for (final status in ContributionStatus.values)
-                DropdownMenuItem(value: status.name, child: Text(status.label)),
-            ],
-            onChanged: (value) => _apply((
-              cycleId: selected.cycleId,
-              status: value == null || value.isEmpty
-                  ? null
-                  : ContributionStatus.values.byName(value),
-              memberId: selected.memberId,
-              days: selected.days,
-            )),
-          ),
-        ),
-        SizedBox(
-          width: 220,
-          child: DropdownButtonFormField<String>(
-            key: ValueKey(('member', selected.memberId)),
-            initialValue: selected.memberId ?? '',
-            isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Member'),
-            items: [
-              const DropdownMenuItem(value: '', child: Text('All members')),
-              for (final item in options.members)
-                DropdownMenuItem(value: item.id, child: Text(item.name)),
-              if (selected.memberId != null &&
-                  !memberIds.contains(selected.memberId))
-                DropdownMenuItem(
-                  value: selected.memberId,
-                  child: const Text('Selected member'),
-                ),
-            ],
-            onChanged: (value) => _apply((
-              cycleId: selected.cycleId,
-              status: selected.status,
-              memberId: value == '' ? null : value,
-              days: selected.days,
-            )),
-          ),
-        ),
-        OutlinedButton.icon(
-          icon: const Icon(Icons.date_range),
-          label: Text(
-            selected.days == null
-                ? 'South African dates'
-                : '${formatCalendarDate(selected.days!.first)} – '
-                      '${formatCalendarDate(selected.days!.last)}',
-          ),
-          onPressed: () async {
-            final today = southAfricanCalendarDay(DateTime.now());
-            final days = selected.days;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
+        final preferred = 220 * scale;
+        final width = constraints.maxWidth < preferred
+            ? constraints.maxWidth
+            : preferred;
 
-            final picked = await showDateRangePicker(
-              context: context,
-              firstDate: DateTime.utc(
-                days != null && days.first.year < 2000 ? days.first.year : 2000,
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            SizedBox(
+              width: width,
+              child: DropdownButtonFormField<String>(
+                key: ValueKey(('cycle', selected.cycleId)),
+                initialValue: selected.cycleId ?? '',
+                isExpanded: true,
+                isDense: scale <= 1,
+                itemHeight: null,
+                decoration: const InputDecoration(labelText: 'Cycle'),
+                items: [
+                  const DropdownMenuItem(value: '', child: Text('All cycles')),
+                  for (final item in options.cycles)
+                    DropdownMenuItem(
+                      value: item.id,
+                      child: Text('Cycle ${item.number}'),
+                    ),
+                  if (selected.cycleId != null &&
+                      !cycleIds.contains(selected.cycleId))
+                    DropdownMenuItem(
+                      value: selected.cycleId,
+                      child: const Text('Selected cycle'),
+                    ),
+                ],
+                onChanged: (value) => _apply((
+                  cycleId: value == '' ? null : value,
+                  status: selected.status,
+                  memberId: selected.memberId,
+                  days: selected.days,
+                )),
               ),
-              lastDate: DateTime.utc(
-                days != null && days.last.year > 2100 ? days.last.year : 2100,
-                12,
-                31,
+            ),
+            SizedBox(
+              width: width,
+              child: DropdownButtonFormField<String>(
+                key: ValueKey(('status', selected.status)),
+                initialValue: selected.status?.name ?? '',
+                isExpanded: true,
+                isDense: scale <= 1,
+                itemHeight: null,
+                decoration: const InputDecoration(labelText: 'Status'),
+                items: [
+                  const DropdownMenuItem(
+                    value: '',
+                    child: Text('All statuses'),
+                  ),
+                  for (final status in ContributionStatus.values)
+                    DropdownMenuItem(
+                      value: status.name,
+                      child: Text(status.label),
+                    ),
+                ],
+                onChanged: (value) => _apply((
+                  cycleId: selected.cycleId,
+                  status: value == null || value.isEmpty
+                      ? null
+                      : ContributionStatus.values.byName(value),
+                  memberId: selected.memberId,
+                  days: selected.days,
+                )),
               ),
-              currentDate: DateTime.utc(today.year, today.month, today.day),
-              initialDateRange: days == null
-                  ? null
-                  : DateTimeRange(
-                      start: DateTime.utc(
-                        days.first.year,
-                        days.first.month,
-                        days.first.day,
+            ),
+            SizedBox(
+              width: width,
+              child: DropdownButtonFormField<String>(
+                key: ValueKey(('member', selected.memberId)),
+                initialValue: selected.memberId ?? '',
+                isExpanded: true,
+                isDense: scale <= 1,
+                itemHeight: null,
+                decoration: const InputDecoration(labelText: 'Member'),
+                items: [
+                  const DropdownMenuItem(value: '', child: Text('All members')),
+                  for (final item in options.members)
+                    DropdownMenuItem(value: item.id, child: Text(item.name)),
+                  if (selected.memberId != null &&
+                      !memberIds.contains(selected.memberId))
+                    DropdownMenuItem(
+                      value: selected.memberId,
+                      child: const Text('Selected member'),
+                    ),
+                ],
+                onChanged: (value) => _apply((
+                  cycleId: selected.cycleId,
+                  status: selected.status,
+                  memberId: value == '' ? null : value,
+                  days: selected.days,
+                )),
+              ),
+            ),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.date_range),
+              label: Text(
+                selected.days == null
+                    ? 'South African dates'
+                    : '${formatCalendarDate(selected.days!.first)} – '
+                          '${formatCalendarDate(selected.days!.last)}',
+              ),
+              onPressed: () async {
+                final today = southAfricanCalendarDay(DateTime.now());
+                final days = selected.days;
+
+                final picked = await showDateRangePicker(
+                  context: context,
+                  firstDate: DateTime.utc(
+                    days != null && days.first.year < 2000
+                        ? days.first.year
+                        : 2000,
+                  ),
+                  lastDate: DateTime.utc(
+                    days != null && days.last.year > 2100
+                        ? days.last.year
+                        : 2100,
+                    12,
+                    31,
+                  ),
+                  currentDate: DateTime.utc(today.year, today.month, today.day),
+                  initialDateRange: days == null
+                      ? null
+                      : DateTimeRange(
+                          start: DateTime.utc(
+                            days.first.year,
+                            days.first.month,
+                            days.first.day,
+                          ),
+                          end: DateTime.utc(
+                            days.last.year,
+                            days.last.month,
+                            days.last.day,
+                          ),
+                        ),
+                );
+
+                if (picked != null && mounted) {
+                  _apply((
+                    cycleId: _selection.cycleId,
+                    status: _selection.status,
+                    memberId: _selection.memberId,
+                    days: (
+                      first: (
+                        year: picked.start.year,
+                        month: picked.start.month,
+                        day: picked.start.day,
                       ),
-                      end: DateTime.utc(
-                        days.last.year,
-                        days.last.month,
-                        days.last.day,
+                      last: (
+                        year: picked.end.year,
+                        month: picked.end.month,
+                        day: picked.end.day,
                       ),
                     ),
-            );
-
-            if (picked != null && mounted) {
-              _apply((
-                cycleId: _selection.cycleId,
-                status: _selection.status,
-                memberId: _selection.memberId,
-                days: (
-                  first: (
-                    year: picked.start.year,
-                    month: picked.start.month,
-                    day: picked.start.day,
-                  ),
-                  last: (
-                    year: picked.end.year,
-                    month: picked.end.month,
-                    day: picked.end.day,
-                  ),
-                ),
-              ));
-            }
-          },
-        ),
-        TextButton(
-          onPressed: () => _apply(allContributions),
-          child: const Text('Clear filters'),
-        ),
-      ],
-    );
-  }
-
-  List<Widget> _content() {
-    if (widget.invalidFilters) {
-      return [
-        const Text('These contribution filters are invalid.'),
-        TextButton(
-          onPressed: () => _apply(allContributions),
-          child: const Text('Clear filters'),
-        ),
-      ];
-    }
-
-    if (_pager.items.isEmpty) {
-      return switch (_pager.phase) {
-        HistoryPhase.initialLoading => [
-          const Center(child: CircularProgressIndicator()),
-          const Text('Loading contributions…', textAlign: TextAlign.center),
-        ],
-        HistoryPhase.firstError => [
-          Text(_pager.failure!.message),
-          TextButton(onPressed: _pager.retry, child: const Text('Try again')),
-        ],
-        HistoryPhase.filteredEmpty => [
-          const Text('No contributions match these filters.'),
-          TextButton(
-            onPressed: () => _apply(allContributions),
-            child: const Text('Clear filters'),
-          ),
-        ],
-        _ => [const Text('No contributions yet.')],
-      };
-    }
-
-    return [
-      if (_pager.refreshFailure != null) ...[
-        Text(_pager.refreshFailure!.message),
-        TextButton(
-          onPressed: _pager.refresh,
-          child: const Text('Retry refresh'),
-        ),
-      ],
-      for (final item in _pager.items)
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.memberName),
-                Text(item.amount.formatRand()),
-                Text('Cycle ${item.cycleNumber}'),
-                ContributionStatusBadge(status: item.status),
-                if (item.paidAtUtc != null)
-                  Text(
-                    formatJohannesburgDate(item.paidAtUtc!, includeTime: true),
-                  ),
-              ],
+                  ));
+                }
+              },
             ),
-          ),
-        ),
-      if (_pager.loading)
-        const Center(child: CircularProgressIndicator())
-      else if (_pager.phase == HistoryPhase.laterError) ...[
-        Text(_pager.failure!.message),
-        TextButton(
-          onPressed: _pager.retry,
-          child: const Text('Try the next page again'),
-        ),
-      ] else if (_pager.phase == HistoryPhase.end)
-        const Text('End of contributions')
-      else
-        TextButton(onPressed: _pager.loadMore, child: const Text('Load more')),
-    ];
+            TextButton(
+              onPressed: () => _apply(allContributions),
+              child: const Text('Clear filters'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
