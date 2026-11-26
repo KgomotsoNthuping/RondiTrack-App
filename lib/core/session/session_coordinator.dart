@@ -8,6 +8,7 @@ import 'package:ronditrack/core/session/auth_api.dart';
 import 'package:ronditrack/core/session/auth_models.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/refresh_token_store.dart';
+import 'package:ronditrack/core/session/session_devices.dart';
 import 'package:ronditrack/core/session/session_persistence.dart';
 import 'package:ronditrack/core/session/sign_out_marker.dart';
 
@@ -19,12 +20,14 @@ final class SessionCoordinator extends ChangeNotifier {
     RefreshTokenStore? refreshTokenStore,
     SignOutMarker? signOutMarker,
     SessionPersistence? persistence,
+    SessionDevices devices = const NoopSessionDevices(),
     DateTime Function()? clock,
     this.refreshMargin = const Duration(seconds: 30),
   }) : _api = api,
        _store = refreshTokenStore,
        _marker = signOutMarker ?? MemorySignOutMarker(),
        _persistence = persistence,
+       _devices = devices,
        _clock = clock ?? DateTime.now {
     if (!api.browserManagedCookies && refreshTokenStore == null) {
       throw ArgumentError('Native sessions require a refresh token store.');
@@ -35,6 +38,7 @@ final class SessionCoordinator extends ChangeNotifier {
   final RefreshTokenStore? _store;
   final SignOutMarker _marker;
   final SessionPersistence? _persistence;
+  final SessionDevices _devices;
   final DateTime Function() _clock;
   final Duration refreshMargin;
 
@@ -487,24 +491,51 @@ final class SessionCoordinator extends ChangeNotifier {
       return pending;
     }
 
+    final previous = _state;
+    final devicesEnabled = _devices.enabled;
     final generation = ++_epoch;
 
     _persistence?.invalidateWrites();
     _api.cancelPending();
     _restoreFlight = null;
     _refreshFlight = null;
-    _publish(AuthSignedOut(failure: reason));
+
+    if (devicesEnabled) {
+      _authenticating = true;
+    } else {
+      _publish(AuthSignedOut(failure: reason));
+    }
 
     late final Future<Result<void>> flight;
 
-    flight = _signOut(generation).whenComplete(() {
-      if (identical(_signOutFlight, flight)) {
-        _signOutFlight = null;
-      }
-    });
+    flight =
+        (devicesEnabled
+                ? _forgetDevicesAndSignOut(previous, generation, reason)
+                : _signOut(generation))
+            .whenComplete(() {
+              if (identical(_signOutFlight, flight)) {
+                _signOutFlight = null;
+              }
+            });
 
     _signOutFlight = flight;
     return flight;
+  }
+
+  Future<Result<void>> _forgetDevicesAndSignOut(
+    AuthState previous,
+    int generation,
+    Failure? reason,
+  ) async {
+    try {
+      await Future<void>.sync(() => _devices.beforeSignOut(previous))
+          .timeout(const Duration(seconds: 3));
+    } on Object {}
+
+    _authenticating = false;
+    _publish(AuthSignedOut(failure: reason));
+
+    return _signOut(generation);
   }
 
   Future<Result<void>> _signOut(int generation) async {
@@ -589,6 +620,14 @@ final class SessionCoordinator extends ChangeNotifier {
     }
 
     _state = value;
+
+    if (_devices.enabled) {
+      unawaited(
+        Future<void>.sync(() => _devices.synchronize(value))
+            .catchError((Object _, StackTrace _) {}),
+      );
+    }
+
     notifyListeners();
   }
 

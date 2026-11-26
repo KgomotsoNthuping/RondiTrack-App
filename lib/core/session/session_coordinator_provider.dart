@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:ronditrack/core/config/app_config_provider.dart';
 import 'package:ronditrack/core/offline/data/offline_database_provider.dart';
 import 'package:ronditrack/core/offline/offline_enabled.dart';
+import 'package:ronditrack/core/push/device_providers.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 import 'package:ronditrack/core/session/data/auth_api_provider.dart';
 import 'package:ronditrack/core/session/data/drift_session_persistence.dart';
@@ -21,6 +22,7 @@ Raw<SessionCoordinator> sessionCoordinator(Ref ref) {
 
   final coordinator = SessionCoordinator(
     api: api,
+    devices: ref.watch(sessionDevicesProvider),
     refreshTokenStore: api.browserManagedCookies
         ? null
         : ref.watch(refreshTokenStoreProvider),
