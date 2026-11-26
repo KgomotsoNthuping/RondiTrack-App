@@ -74,11 +74,9 @@ dart run tool/check_api_drift.dart
 The generation command recreates the generated API directory.
 Ordinary Riverpod, Freezed and Drift generation uses `dart run build_runner build`.
 
-## Assignment 12.1 delivery plan
+## Delivery plan
 
 This README records the plan before new test or reporting code is added.
-The test names below are targets for the assignment, not claims that every
-test already exists or passes.
 
 | Commit | Work |
 | --- | --- |
@@ -239,7 +237,6 @@ Preserve the existing generated-client and contract-copy checks.
 
 ## Privacy
 
-This is the planned outbound-data contract for Assignment 12.1.
 Sentry and an external analytics provider are not configured by this commit.
 
 ### Outbound inventory
@@ -323,9 +320,6 @@ communicate the supported-platform change.
 Use mocktail mocks for repository call/state tests, controlled fakes for the
 Android journey, a scripted adapter for HTTP behaviour, and real Drift
 databases for persistence assertions. No live API below the live test layer.
-
-Keep platform goldens on Windows and text-as-block CI goldens in the fast job.
-Do not claim the unimplemented 11.3 language work as part of this assignment.
 
 The inherited dependency overrides are code_assets 2.1.0, material_ui 1.10.0,
 objective_c 9.6.2 and sqlite3 3.9.1. Their exact constraint reasons still need
