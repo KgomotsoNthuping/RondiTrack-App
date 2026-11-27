@@ -119,10 +119,7 @@ class StokvelWorkflowActions extends StatelessWidget {
           'cycles',
           cycle!.id,
         ],
-        queryParameters: {
-          'view': view,
-          if (contributionId != null) 'contributionId': contributionId,
-        },
+        queryParameters: {'view': view, 'contributionId': ?contributionId},
       ).toString();
     }
 

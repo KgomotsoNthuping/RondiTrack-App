@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
+import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/features/proofs/domain/proof_models.dart';
 
 const testContributionId = '55555555-5555-4555-8555-555555555555';
@@ -17,7 +18,7 @@ final testProofTarget = ProofTarget.parse(
 )!;
 
 PreparedProof preparedTestProof() => PreparedProof(
-  bytes: img.encodeJpg(img.Image(width: 8, height: 8, numChannels: 3)),
+  bytes: img.encodeJpg(img.Image(width: 8, height: 8)),
   width: 8,
   height: 8,
   quality: 85,
@@ -54,7 +55,7 @@ final class TestProofUploader implements ProofUploader {
   int calls = 0;
   int cancellations = 0;
 
-  Object? failure;
+  Failure? failure;
   Completer<String>? wait;
 
   @override

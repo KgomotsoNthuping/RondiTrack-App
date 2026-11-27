@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'release.dart'
-    show liveCommand, requiredEnvironment;
+import 'release.dart' show liveCommand, requiredEnvironment;
 import 'release_policy.dart';
 
 Future<void> main() async {
@@ -11,24 +10,16 @@ Future<void> main() async {
     requiredEnvironment('SENTRY_ORG');
     requiredEnvironment('SENTRY_PROJECT');
 
-    final manifest =
-        jsonDecode(
-              File(
-                'release-output/manifest.json',
-              ).readAsStringSync(),
-            )
-            as Map<String, dynamic>;
+    final manifest = jsonDecode(
+      File('release-output/manifest.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
 
     if (manifest['verified'] != true) {
-      throw const ReleaseFailure(
-        'Upload only a certificate-verified release.',
-      );
+      throw const ReleaseFailure('Upload only a certificate-verified release.');
     }
 
-    for (final value
-        in manifest['releases'] as List<dynamic>) {
-      final release =
-          value as Map<String, dynamic>;
+    for (final value in manifest['releases'] as List<dynamic>) {
+      final release = value as Map<String, dynamic>;
 
       final symbols = release['symbols'] as String;
       final dartMap = release['dartMap'] as String;
@@ -46,10 +37,8 @@ Future<void> main() async {
           '--sentry-define=commits=false',
         ],
         environment: {
-          'SENTRY_RELEASE':
-              release['release'] as String,
-          'SENTRY_DIST':
-              release['buildNumber'].toString(),
+          'SENTRY_RELEASE': release['release'] as String,
+          'SENTRY_DIST': release['buildNumber'].toString(),
           'SENTRY_LOG_LEVEL': 'error',
         },
       );

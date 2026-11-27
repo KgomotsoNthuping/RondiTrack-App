@@ -18,7 +18,7 @@ part 'app_database.g.dart';
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  new(super.executor);
+  new(super.e);
 
   factory persistent({required String name}) {
     return AppDatabase(

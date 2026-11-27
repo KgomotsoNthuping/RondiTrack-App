@@ -151,7 +151,7 @@ void main() {
 }
 
 final class _Harness {
-  _Harness({ProofSettings settings = testProofSettings}) {
+  new({ProofSettings settings = testProofSettings}) {
     controller = ProofUploadController(
       target: testProofTarget,
       settings: settings,

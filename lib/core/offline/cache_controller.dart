@@ -24,7 +24,7 @@ final class CacheController<T> extends ChangeNotifier {
       _accept,
       onError: (Object error, StackTrace stack) {
         reportFailure(
-          error is Failure ? error : ServerFailure(),
+          error is Failure ? error : const ServerFailure(),
           stackTrace: stack,
         );
       },
@@ -133,7 +133,7 @@ final class CacheController<T> extends ChangeNotifier {
         return;
       }
 
-      final failure = error is Failure ? error : ServerFailure();
+      final failure = error is Failure ? error : const ServerFailure();
 
       Reporting.capture(failure, stack);
 

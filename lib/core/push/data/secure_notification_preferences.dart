@@ -2,10 +2,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ronditrack/core/push/notification_ports.dart';
 
 final class SecureNotificationPreferences implements NotificationPreferences {
-  const SecureNotificationPreferences({
-    required this.storage,
-    required this.key,
-  });
+  const new({required this.storage, required this.key});
 
   final FlutterSecureStorage storage;
   final String key;

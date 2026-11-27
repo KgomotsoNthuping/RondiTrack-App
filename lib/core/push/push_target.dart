@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 final class PushTarget {
-  const PushTarget._(this.stokvelId, this.cycleId);
+  const new _(this.stokvelId, this.cycleId);
 
   static const type = 'cycle_updated';
 

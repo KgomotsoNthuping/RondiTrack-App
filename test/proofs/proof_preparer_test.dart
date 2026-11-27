@@ -19,7 +19,7 @@ void main() {
   });
 
   test('real GPS metadata is removed and orientation is baked', () {
-    final image = img.Image(width: 40, height: 20, numChannels: 3);
+    final image = img.Image(width: 40, height: 20);
 
     for (final pixel in image) {
       pixel.setRgb(pixel.y < 10 ? 255 : 0, 0, pixel.y < 10 ? 0 : 255);
@@ -60,9 +60,7 @@ void main() {
   });
 
   test('resizes the longest side without changing the aspect ratio', () {
-    final original = img.encodePng(
-      img.Image(width: 2000, height: 1000, numChannels: 3),
-    );
+    final original = img.encodePng(img.Image(width: 2000, height: 1000));
 
     final result = prepareProofBytes((bytes: original, maxBytes: 1000000));
 
@@ -85,7 +83,7 @@ void main() {
   });
 
   test('tries a lower quality when the first JPEG is too large', () {
-    final image = img.Image(width: 100, height: 100, numChannels: 3);
+    final image = img.Image(width: 100, height: 100);
 
     final random = Random(42);
 

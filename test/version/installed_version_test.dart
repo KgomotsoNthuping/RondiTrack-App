@@ -24,172 +24,103 @@ void main() {
     () async {
       PackageInfo.setMockInitialValues(
         appName: 'RondiTrack Staging',
-        packageName:
-            'za.co.kgomotsonthuping.ronditrack.staging',
+        packageName: 'za.co.kgomotsonthuping.ronditrack.staging',
         version: '1.4.0',
         buildNumber: '37',
         buildSignature: '',
       );
-
-      final version =
-          await const PackageVersionSource().read();
-
+      final version = await const PackageVersionSource().read();
       expect(version.version, '1.4.0');
       expect(version.buildNumber, '37');
     },
   );
 
   for (final flavor in AppFlavor.values) {
-    testWidgets(
-      'installed version label includes ${flavor.name}',
-      (tester) async {
-        final source = _VersionSource();
-
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              versionSourceProvider.overrideWithValue(
-                source,
-              ),
-            ],
-            child: MaterialApp(
-              theme: RondiTrackTheme.light,
-              home: Scaffold(
-                body: AppVersionLabel(
-                  flavor: flavor,
-                ),
-              ),
-            ),
+    testWidgets('installed version label includes ${flavor.name}', (
+      tester,
+    ) async {
+      final source = _VersionSource();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [versionSourceProvider.overrideWithValue(source)],
+          child: MaterialApp(
+            theme: RondiTrackTheme.light,
+            home: Scaffold(body: AppVersionLabel(flavor: flavor)),
           ),
-        );
-
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text(
-            'Version 2.3.4 (51) · ${flavor.name}',
-          ),
-          findsOneWidget,
-        );
-        expect(source.reads, 1);
-        expect(tester.takeException(), isNull);
-      },
-    );
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Version 2.3.4 (51) · ${flavor.name}'), findsOneWidget);
+      expect(source.reads, 1);
+      expect(tester.takeException(), isNull);
+    });
   }
 
-  testWidgets(
-    'version plugin failure leaves a readable fallback',
-    (tester) async {
+  testWidgets('version plugin failure leaves a readable fallback', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          versionSourceProvider.overrideWithValue(_VersionSource(fail: true)),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(body: AppVersionLabel(flavor: AppFlavor.dev)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Version unavailable · dev'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Profile shows the installed version inside the existing theme', (
+    tester,
+  ) async {
+    final session = await TestSession.start();
+    try {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            versionSourceProvider.overrideWithValue(
-              _VersionSource(fail: true),
-            ),
+            useApiRepositoriesProvider.overrideWithValue(true),
+            offlineEnabledProvider.overrideWithValue(false),
+            sessionCoordinatorProvider.overrideWithValue(session.coordinator),
+            versionSourceProvider.overrideWithValue(_VersionSource()),
           ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: AppVersionLabel(
-                flavor: AppFlavor.dev,
-              ),
+          child: AppFlavorScope(
+            flavor: AppFlavor.staging,
+            child: MaterialApp(
+              theme: RondiTrackTheme.light,
+              home: const ProfileScreen(),
             ),
           ),
         ),
       );
-
       await tester.pumpAndSettle();
-
-      expect(
-        find.text('Version unavailable · dev'),
-        findsOneWidget,
-      );
+      expect(find.text('Profile'), findsOneWidget);
+      expect(find.text(testIdentity.email), findsOneWidget);
+      expect(find.text('Version 2.3.4 (51) · staging'), findsOneWidget);
+      expect(find.text('Sign out'), findsOneWidget);
       expect(tester.takeException(), isNull);
-    },
-  );
-
-  testWidgets(
-    'Profile shows the installed version inside the existing theme',
-    (tester) async {
-      final session = await TestSession.start();
-
-      try {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              useApiRepositoriesProvider.overrideWithValue(
-                true,
-              ),
-              offlineEnabledProvider.overrideWithValue(
-                false,
-              ),
-              sessionCoordinatorProvider.overrideWithValue(
-                session.coordinator,
-              ),
-              versionSourceProvider.overrideWithValue(
-                _VersionSource(),
-              ),
-            ],
-            child: AppFlavorScope(
-              flavor: AppFlavor.staging,
-              child: MaterialApp(
-                theme: RondiTrackTheme.light,
-                home: const ProfileScreen(),
-              ),
-            ),
-          ),
-        );
-
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text('Profile'),
-          findsOneWidget,
-        );
-        expect(
-          find.text(testIdentity.email),
-          findsOneWidget,
-        );
-        expect(
-          find.text('Version 2.3.4 (51) · staging'),
-          findsOneWidget,
-        );
-        expect(
-          find.text('Sign out'),
-          findsOneWidget,
-        );
-        expect(tester.takeException(), isNull);
-      } finally {
-        await tester.pumpWidget(
-          const SizedBox.shrink(),
-        );
-        session.dispose();
-      }
-    },
-  );
+    } finally {
+      await tester.pumpWidget(const SizedBox.shrink());
+      session.dispose();
+    }
+  });
 }
 
 final class _VersionSource implements VersionSource {
-  _VersionSource({
-    this.fail = false,
-  });
+  new({this.fail = false});
 
   final bool fail;
-
   int reads = 0;
 
   @override
   Future<InstalledVersion> read() async {
     reads++;
-
     if (fail) {
-      throw StateError(
-        'Package information unavailable',
-      );
+      throw StateError('Package information unavailable');
     }
-
-    return const InstalledVersion(
-      version: '2.3.4',
-      buildNumber: '51',
-    );
+    return const InstalledVersion(version: '2.3.4', buildNumber: '51');
   }
 }

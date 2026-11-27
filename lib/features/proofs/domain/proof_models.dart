@@ -10,13 +10,13 @@ abstract final class ProofPolicy {
 }
 
 final class ProofSettings {
-  const ProofSettings({required this.enabled, required this.maxBytes});
+  const new({required this.enabled, required this.maxBytes});
 
-  factory ProofSettings.fromEnvironment() {
+  factory fromEnvironment() {
     const requested = bool.fromEnvironment('PROOF_UPLOAD_ENABLED');
     const maximum = int.fromEnvironment('PROOF_MAX_BYTES');
 
-    return ProofSettings(
+    return const ProofSettings(
       enabled: requested && maximum > 0,
       maxBytes: maximum > 0 ? maximum : 0,
     );
@@ -27,7 +27,7 @@ final class ProofSettings {
 }
 
 final class ProofTarget {
-  const ProofTarget._(this.stokvelId, this.cycleId, this.contributionId);
+  const new _(this.stokvelId, this.cycleId, this.contributionId);
 
   final String stokvelId;
   final String cycleId;
@@ -65,7 +65,7 @@ final class ProofTarget {
 }
 
 final class PreparedProof {
-  const PreparedProof({
+  const new({
     required this.bytes,
     required this.width,
     required this.height,

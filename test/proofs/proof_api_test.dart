@@ -42,10 +42,9 @@ void main() {
         ),
       );
 
-      when(() => session.tokenForRequest())
-          .thenAnswer((_) async => Ok(oldAccess));
+      when(session.tokenForRequest).thenAnswer((_) async => Ok(oldAccess));
 
-      when(() => session.refresh()).thenAnswer((_) async => Ok(newAccess));
+      when(session.refresh).thenAnswer((_) async => Ok(newAccess));
 
       final adapter = _CaptureAdapter();
 
@@ -95,7 +94,7 @@ void main() {
         expect(_containsBytes(body, photo.bytes), isTrue);
       }
 
-      verify(() => session.refresh()).called(1);
+      verify(session.refresh).called(1);
     },
   );
 
@@ -163,9 +162,7 @@ final class _CaptureAdapter implements HttpClientAdapter {
     final body = BytesBuilder(copy: false);
 
     if (requestStream != null) {
-      await for (final chunk in requestStream) {
-        body.add(chunk);
-      }
+      await requestStream.forEach(body.add);
     }
 
     requests.add(options);

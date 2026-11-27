@@ -1,13 +1,6 @@
 final class FirebaseSettings {
   const new _(this.values);
 
-  static const keys = [
-    'FIREBASE_API_KEY',
-    'FIREBASE_APP_ID',
-    'FIREBASE_MESSAGING_SENDER_ID',
-    'FIREBASE_PROJECT_ID',
-  ];
-
   factory fromEnvironment() => FirebaseSettings.parse({
     'FIREBASE_API_KEY': const String.fromEnvironment('FIREBASE_API_KEY'),
     'FIREBASE_APP_ID': const String.fromEnvironment('FIREBASE_APP_ID'),
@@ -38,6 +31,13 @@ final class FirebaseSettings {
 
     return FirebaseSettings._(Map.unmodifiable(values));
   }
+
+  static const keys = [
+    'FIREBASE_API_KEY',
+    'FIREBASE_APP_ID',
+    'FIREBASE_MESSAGING_SENDER_ID',
+    'FIREBASE_PROJECT_ID',
+  ];
 
   final Map<String, String> values;
 

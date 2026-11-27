@@ -2,7 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:ronditrack/core/push/notification_ports.dart';
 
 final class FirebasePushMessages implements PushMessages {
-  const FirebasePushMessages(this.messaging);
+  const new(this.messaging);
 
   final FirebaseMessaging messaging;
 

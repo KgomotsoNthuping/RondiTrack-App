@@ -141,7 +141,7 @@ final class StokvelWorkflowApi {
       String? token;
       final seen = <String>{};
 
-      do {
+      for (;;) {
         final page = await history(id, (
           cycleId: null,
           status: null,
@@ -160,7 +160,7 @@ final class StokvelWorkflowApi {
         if (!seen.add(token)) {
           throw const FormatException('The API repeated a cursor.');
         }
-      } while (true);
+      }
     }
 
     return Stokvel(

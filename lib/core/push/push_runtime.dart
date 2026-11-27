@@ -5,9 +5,9 @@ import 'package:ronditrack/core/push/push_target.dart';
 import 'package:ronditrack/core/session/auth_state.dart';
 
 final class PushRuntime {
-  PushRuntime({required this.messages, required this.notifications});
+  new({required this.messages, required this.notifications});
 
-  factory PushRuntime.disabled() => PushRuntime(
+  factory disabled() => PushRuntime(
     messages: const NoopPushMessages(),
     notifications: const NoopLocalNotifications(),
   );
@@ -59,8 +59,8 @@ final class PushRuntime {
     } on Object {}
 
     final values = await Future.wait<Object?>([
-      _safe(messages.initial),
-      _safe(notifications.initialPayload),
+      _safe<Map<String, Object?>?>(messages.initial),
+      _safe<String?>(notifications.initialPayload),
     ]);
 
     initialTarget =

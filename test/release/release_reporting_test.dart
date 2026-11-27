@@ -11,74 +11,53 @@ void main() {
       'za.co.kgomotsonthuping.ronditrack.staging'
       '@1.4.0+3702';
 
-  test(
-    'reporting uses the same release and dist as the upload step',
-    () {
-      final options = SentryFlutterOptions();
+  test('reporting uses the same release and dist as the upload step', () {
+    final options = SentryFlutterOptions();
 
-      configureReporting(
-        options,
-        dsn: 'https://public@example.invalid/1',
-        flavor: AppFlavor.staging,
+    configureReporting(
+      options,
+      dsn: 'https://public@example.invalid/1',
+      flavor: AppFlavor.staging,
+      release: release,
+      dist: '3702',
+    );
+
+    expect(options.release, release);
+    expect(options.dist, '3702');
+    expect(options.sendDefaultPii, isFalse);
+    expect(options.attachScreenshot, isFalse);
+    expect(options.enableNativeCrashHandling, isFalse);
+  });
+
+  test('privacy scrubber preserves only valid release/build metadata', () {
+    const scrubber = ReportScrubber(environment: 'staging');
+
+    final event = scrubber.clean(
+      SentryEvent(
         release: release,
         dist: '3702',
-      );
+        tags: const {'failure_code': 'server_failure'},
+      ),
+    )!;
 
-      expect(options.release, release);
-      expect(options.dist, '3702');
-      expect(options.sendDefaultPii, isFalse);
-      expect(options.attachScreenshot, isFalse);
-      expect(
-        options.enableNativeCrashHandling,
-        isFalse,
-      );
-    },
-  );
+    expect(event.release, release);
+    expect(event.dist, '3702');
 
-  test(
-    'privacy scrubber preserves only valid release/build metadata',
-    () {
-      const scrubber = ReportScrubber(
-        environment: 'staging',
-      );
+    final unsafe = scrubber.clean(
+      SentryEvent(release: release, dist: 'member@example.invalid'),
+    )!;
 
-      final event = scrubber.clean(
-        SentryEvent(
-          release: release,
-          dist: '3702',
-          tags: const {
-            'failure_code': 'server_failure',
-          },
-        ),
-      )!;
+    expect(unsafe.dist, isNull);
 
-      expect(event.release, release);
-      expect(event.dist, '3702');
+    expect(
+      jsonEncode(unsafe.toJson()),
+      isNot(contains('member@example.invalid')),
+    );
 
-      final unsafe = scrubber.clean(
-        SentryEvent(
-          release: release,
-          dist: 'member@example.invalid',
-        ),
-      )!;
+    final newline = scrubber.clean(
+      SentryEvent(release: release, dist: '3702\n'),
+    )!;
 
-      expect(unsafe.dist, isNull);
-
-      expect(
-        jsonEncode(unsafe.toJson()),
-        isNot(
-          contains('member@example.invalid'),
-        ),
-      );
-
-      final newline = scrubber.clean(
-        SentryEvent(
-          release: release,
-          dist: '3702\n',
-        ),
-      )!;
-
-      expect(newline.dist, isNull);
-    },
-  );
+    expect(newline.dist, isNull);
+  });
 }

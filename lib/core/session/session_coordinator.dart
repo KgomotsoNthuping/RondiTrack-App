@@ -438,7 +438,7 @@ final class SessionCoordinator extends ChangeNotifier {
       }
 
       if (signIn) {
-        await _marker.write(false);
+        await _marker.write(signedOut: false);
       }
 
       return _current(generation);
@@ -543,7 +543,7 @@ final class SessionCoordinator extends ChangeNotifier {
 
     final stored = await _serial<RefreshToken?>(() async {
       try {
-        await _marker.write(true);
+        await _marker.write(signedOut: true);
       } on Object {
         cleanupFailed = true;
       }

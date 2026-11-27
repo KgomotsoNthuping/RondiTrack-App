@@ -32,7 +32,7 @@ Future<void> main(List<String> arguments) async {
     final manifest = File(_manifestPath);
 
     if (action == 'seed') {
-      if (await manifest.exists()) {
+      if (manifest.existsSync()) {
         throw StateError('A seed manifest exists. Clean up that run first.');
       }
 
@@ -461,7 +461,7 @@ Future<void> _serve() async {
 Map<String, Object?> _page(Uri uri, List<Map<String, Object?>> rows) {
   final requested = int.tryParse(uri.queryParameters['pageSize'] ?? '20') ?? 20;
 
-  final size = requested.clamp(1, 100).toInt();
+  final size = requested.clamp(1, 100);
 
   final start = int.tryParse(uri.queryParameters['pageToken'] ?? '0') ?? 0;
 

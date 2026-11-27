@@ -33,7 +33,7 @@ void main() {
       try {
         await h.pump(tester);
 
-        final target = '/stokvels/$testStokvelId/cycles/$testCycleId';
+        const target = '/stokvels/$testStokvelId/cycles/$testCycleId';
 
         if (mode == 'signed-out') {
           expect(find.text('Welcome back to RondiTrack.'), findsOneWidget);
@@ -202,7 +202,7 @@ final class _CycleRepository implements StokvelCycleRepository {
 }
 
 final class _Harness {
-  _Harness(
+  new(
     this.container,
     this.coordinator,
     this.messages,
@@ -249,7 +249,7 @@ final class _Harness {
                   email: 'other@example.invalid',
                 )
               : testIdentity,
-          refreshToken: RefreshToken('test-refresh-token'),
+          refreshToken: const RefreshToken('test-refresh-token'),
         ),
       ),
     );

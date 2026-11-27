@@ -31,7 +31,7 @@ void main() {
     ];
 
     final leak = leaks.join(' ');
-    final url = 'https://example.invalid/pay?q=Nkosi&token=$_token';
+    const url = 'https://example.invalid/pay?q=Nkosi&token=$_token';
 
     final event = SentryEvent.fromJson({
       'event_id': '12100000000040008000000000000001',
@@ -213,7 +213,6 @@ void main() {
     await startReporting(
       flavor: AppFlavor.dev,
       isTest: false,
-      dsn: '',
       initialize: initialize,
     );
 

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -83,14 +82,14 @@ void main() {
             config.flavor == AppFlavor.dev &&
             const bool.fromEnvironment('SENTRY_SMOKE_TEST')) {
           Reporting.capture(
-            ServerFailure(
+            const ServerFailure(
               correlationId: '12100000-0000-4000-8000-000000000001',
             ),
             StackTrace.current,
           );
         }
       },
-      (Object error, StackTrace stack) {
+      (error, stack) {
         if (kDebugMode) {
           debugPrint('Application startup or async operation failed.');
         }

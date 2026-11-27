@@ -37,7 +37,7 @@ abstract interface class NotificationPreferences {
 }
 
 final class NoopPushMessages implements PushMessages {
-  const NoopPushMessages();
+  const new();
 
   @override
   bool get enabled => false;
@@ -53,7 +53,7 @@ final class NoopPushMessages implements PushMessages {
 }
 
 final class NoopLocalNotifications implements LocalNotifications {
-  const NoopLocalNotifications();
+  const new();
 
   @override
   bool get enabled => false;

@@ -78,11 +78,8 @@ void main() {
     var wipedBeforeRemoteLogout = false;
 
     server.onLogout = () {
-      try {
-        old.read(homeProvider('lerato'));
-      } on StateError {
-        wipedBeforeRemoteLogout = true;
-      }
+      expect(() => old.read(homeProvider('lerato')), throwsStateError);
+      wipedBeforeRemoteLogout = true;
     };
 
     router.go('/stokvels/family-savers');

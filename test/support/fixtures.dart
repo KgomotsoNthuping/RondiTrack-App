@@ -65,13 +65,13 @@ const testStokvel = Stokvel(
   version: 1,
 );
 
-class MockHomeRepository extends Mock implements HomeRepository {}
+class MockHomeRepository extends Mock implements HomeRepository;
 
-class MockStokvelRepository extends Mock implements StokvelRepository {}
+class MockStokvelRepository extends Mock implements StokvelRepository;
 
-class MockAuthApi extends Mock implements AuthApi {}
+class MockAuthApi extends Mock implements AuthApi;
 
-class MockSessionAccess extends Mock implements SessionAccess {}
+class MockSessionAccess extends Mock implements SessionAccess;
 
 AuthTokens testTokens(String value) => AuthTokens(
   accessToken: value,

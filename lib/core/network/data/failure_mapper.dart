@@ -49,7 +49,7 @@ Failure _mapFailure(Object error, {required bool isRead}) {
       firstFailure ??= failure;
     }
 
-    return firstFailure ?? ServerFailure();
+    return firstFailure ?? const ServerFailure();
   }
 
   if (error is TimeoutException) {
@@ -57,7 +57,7 @@ Failure _mapFailure(Object error, {required bool isRead}) {
   }
 
   if (error is! DioException) {
-    return ServerFailure();
+    return const ServerFailure();
   }
 
   final response = error.response;
@@ -105,7 +105,7 @@ Failure _mapFailure(Object error, {required bool isRead}) {
     DioExceptionType.badCertificate ||
     DioExceptionType.badResponse ||
     DioExceptionType.unknown ||
-    DioExceptionType.transformTimeout => ServerFailure(),
+    DioExceptionType.transformTimeout => const ServerFailure(),
   };
 }
 

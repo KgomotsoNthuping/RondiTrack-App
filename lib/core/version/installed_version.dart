@@ -1,8 +1,5 @@
 final class InstalledVersion {
-  const InstalledVersion({
-    required this.version,
-    required this.buildNumber,
-  });
+  const new({required this.version, required this.buildNumber});
 
   final String version;
   final String buildNumber;

@@ -4,26 +4,23 @@ import 'package:ronditrack/core/config/app_config.dart';
 import 'package:ronditrack/core/version/version_providers.dart';
 
 class AppVersionLabel extends ConsumerWidget {
-  const AppVersionLabel({
-    required this.flavor,
-    super.key,
-  });
+  const new({required this.flavor, super.key});
 
   final AppFlavor flavor;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final unavailable =
-        'Version unavailable · ${flavor.name}';
-
-    final label = ref.watch(installedVersionProvider).when(
-      data: (version) => version == null
-          ? unavailable
-          : 'Version ${version.version} '
-              '(${version.buildNumber}) · ${flavor.name}',
-      loading: () => 'Reading version…',
-      error: (_, _) => unavailable,
-    );
+    final unavailable = 'Version unavailable · ${flavor.name}';
+    final label = ref
+        .watch(installedVersionProvider)
+        .when(
+          data: (version) => version == null
+              ? unavailable
+              : 'Version ${version.version} (${version.buildNumber}) '
+                    '· ${flavor.name}',
+          loading: () => 'Reading version…',
+          error: (_, _) => unavailable,
+        );
 
     return SelectableText(
       label,

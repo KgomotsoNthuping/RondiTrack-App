@@ -18,7 +18,7 @@ import 'package:ronditrack/features/stokvels/application/stokvel_workflow_provid
 
 @Dependencies([homeRepository, Home, stokvelDetail])
 class NotificationBinding extends ConsumerStatefulWidget {
-  const NotificationBinding({required this.child, super.key});
+  const new({required this.child, super.key});
 
   final Widget child;
 
@@ -170,6 +170,10 @@ class _NotificationBindingState extends ConsumerState<NotificationBinding> {
               }
             },
           );
+
+      if (!mounted) {
+        return;
+      }
 
       if (outcome == PermissionOutcome.denied && _current(coordinator, state)) {
         final runtime = ref.read(pushRuntimeProvider);

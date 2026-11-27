@@ -146,7 +146,8 @@ void main() {
           listen: false,
         );
 
-        activeWorker = container.read(paymentWorkerProvider(account));
+        final worker = container.read(paymentWorkerProvider(account));
+        activeWorker = worker;
 
         await _tap(tester, find.widgetWithText(FilledButton, 'Pay'));
 
@@ -154,7 +155,7 @@ void main() {
 
         await _show(tester, find.text(paidNotice), scrollStep: 180);
 
-        await activeWorker.drain();
+        await worker.drain();
 
         expect(
           await PaymentOutbox(database).read(JourneyBackend.userId),
@@ -214,9 +215,7 @@ void main() {
         expect(coordinator.state, isA<AuthSignedOut>());
         expect(backend.unexpectedRequests, isEmpty);
       } finally {
-        if (activeWorker != null) {
-          await activeWorker.drain();
-        }
+        await activeWorker?.drain();
 
         await tester.pumpWidget(const SizedBox.shrink());
         coordinator.dispose();

@@ -11,7 +11,7 @@ enum PermissionOutcome {
 }
 
 final class NotificationPermission {
-  NotificationPermission({
+  new({
     required this.enabled,
     required this.notifications,
     required this.preferences,

@@ -6,7 +6,7 @@ import 'package:ronditrack/features/proofs/domain/proof_models.dart';
 enum ProofStage { idle, picking, preparing, ready, uploading, uploaded, failed }
 
 final class ProofUploadController extends ChangeNotifier {
-  ProofUploadController({
+  new({
     required this.target,
     required this.settings,
     required this.picker,
@@ -116,7 +116,7 @@ final class ProofUploadController extends ChangeNotifier {
         selected,
         onProgress: (sent, total) {
           if (_current(generation) && total > 0) {
-            progress = (sent / total).clamp(0.0, 1.0).toDouble();
+            progress = (sent / total).clamp(0.0, 1.0);
 
             notifyListeners();
           }

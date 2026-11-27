@@ -4,7 +4,7 @@ import 'package:ronditrack/core/network/data/failure_mapper.dart';
 import 'package:ronditrack/features/proofs/domain/proof_models.dart';
 
 final class DioProofUploader implements ProofUploader {
-  DioProofUploader(this._readDio, this.settings);
+  new(this._readDio, this.settings);
 
   final Dio Function() _readDio;
   final ProofSettings settings;

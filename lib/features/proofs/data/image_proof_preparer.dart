@@ -1,12 +1,10 @@
-import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:ronditrack/core/errors/failure.dart';
 import 'package:ronditrack/features/proofs/domain/proof_models.dart';
 
 final class ImageProofPreparer implements ProofPreparer {
-  const ImageProofPreparer();
+  const new();
 
   @override
   Future<PreparedProof> prepare(Uint8List bytes, int maxBytes) {
@@ -29,7 +27,7 @@ PreparedProof prepareProofBytes(({Uint8List bytes, int maxBytes}) request) {
 
     final png = img.PngDecoder(maxPixels: ProofPolicy.maxPixels);
 
-    final img.Decoder? decoder = jpeg.isValidFile(request.bytes)
+    final decoder = jpeg.isValidFile(request.bytes)
         ? jpeg
         : png.isValidFile(request.bytes)
         ? png
@@ -60,11 +58,7 @@ PreparedProof prepareProofBytes(({Uint8List bytes, int maxBytes}) request) {
     image.textData = null;
 
     if (image.hasAlpha) {
-      final background = img.Image(
-        width: image.width,
-        height: image.height,
-        numChannels: 3,
-      );
+      final background = img.Image(width: image.width, height: image.height);
 
       img.fill(background, color: img.ColorRgb8(255, 255, 255));
 

@@ -1,7 +1,7 @@
 abstract interface class SignOutMarker {
   Future<bool> read();
 
-  Future<void> write(bool signedOut);
+  Future<void> write({required bool signedOut});
 }
 
 final class MemorySignOutMarker implements SignOutMarker {
@@ -13,7 +13,7 @@ final class MemorySignOutMarker implements SignOutMarker {
   Future<bool> read() async => _signedOut;
 
   @override
-  Future<void> write(bool signedOut) async {
+  Future<void> write({required bool signedOut}) async {
     _signedOut = signedOut;
   }
 }

@@ -183,7 +183,6 @@ class _HistoryBodyState extends State<_HistoryBody> {
                 initialValue: selected.cycleId ?? '',
                 isExpanded: true,
                 isDense: scale <= 1,
-                itemHeight: null,
                 decoration: const InputDecoration(labelText: 'Cycle'),
                 items: [
                   const DropdownMenuItem(value: '', child: Text('All cycles')),
@@ -214,7 +213,6 @@ class _HistoryBodyState extends State<_HistoryBody> {
                 initialValue: selected.status?.name ?? '',
                 isExpanded: true,
                 isDense: scale <= 1,
-                itemHeight: null,
                 decoration: const InputDecoration(labelText: 'Status'),
                 items: [
                   const DropdownMenuItem(
@@ -244,7 +242,6 @@ class _HistoryBodyState extends State<_HistoryBody> {
                 initialValue: selected.memberId ?? '',
                 isExpanded: true,
                 isDense: scale <= 1,
-                itemHeight: null,
                 decoration: const InputDecoration(labelText: 'Member'),
                 items: [
                   const DropdownMenuItem(value: '', child: Text('All members')),

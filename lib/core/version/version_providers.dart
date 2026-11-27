@@ -6,22 +6,18 @@ final versionSourceProvider = Provider<VersionSource>(
   (ref) => const PackageVersionSource(),
 );
 
-final installedVersionProvider =
-    FutureProvider<InstalledVersion?>((ref) async {
-      final source = ref.watch(versionSourceProvider);
+final installedVersionProvider = FutureProvider<InstalledVersion?>((ref) async {
+  final source = ref.watch(versionSourceProvider);
 
-      try {
-        final version = await source.read().timeout(
-          const Duration(seconds: 3),
-        );
+  try {
+    final version = await source.read().timeout(const Duration(seconds: 3));
 
-        if (version.version.trim().isEmpty ||
-            version.buildNumber.trim().isEmpty) {
-          return null;
-        }
+    if (version.version.trim().isEmpty || version.buildNumber.trim().isEmpty) {
+      return null;
+    }
 
-        return version;
-      } on Object {
-        return null;
-      }
-    });
+    return version;
+  } on Object {
+    return null;
+  }
+});

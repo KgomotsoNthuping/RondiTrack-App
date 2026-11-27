@@ -48,7 +48,7 @@ void main() {
     when(() => session.state).thenReturn(
       AuthSignedIn(identity: testIdentity, accessToken: access, sessionId: 7),
     );
-    when(() => session.tokenForRequest()).thenAnswer((_) async => Ok(access));
+    when(session.tokenForRequest).thenAnswer((_) async => Ok(access));
 
     return session;
   }
@@ -60,7 +60,7 @@ void main() {
       expiresAtUtc: testNow.add(const Duration(minutes: 20)),
       userId: testUserId,
     );
-    when(() => session.refresh()).thenAnswer((_) async => Ok(replacement));
+    when(session.refresh).thenAnswer((_) async => Ok(replacement));
 
     final dio = client(session, (request) {
       return jsonResponse(
@@ -90,8 +90,8 @@ void main() {
           .any((key) => key.toLowerCase() == 'cookie'),
       isFalse,
     );
-    verify(() => session.tokenForRequest()).called(1);
-    verify(() => session.refresh()).called(1);
+    verify(session.tokenForRequest).called(1);
+    verify(session.refresh).called(1);
   });
 
   test('403 never attempts a refresh', () async {
@@ -109,7 +109,7 @@ void main() {
       ),
     );
 
-    verifyNever(() => session.refresh());
+    verifyNever(session.refresh);
     expect(session.state, isA<AuthSignedIn>());
   });
 
@@ -127,7 +127,7 @@ void main() {
       throwsA(isA<DioException>()),
     );
 
-    verifyNever(() => session.refresh());
+    verifyNever(session.refresh);
     expect(session.state, isA<AuthSignedIn>());
   });
 

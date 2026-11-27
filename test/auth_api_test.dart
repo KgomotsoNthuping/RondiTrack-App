@@ -236,8 +236,7 @@ Map<String, Object?> _authBody() {
 Map<String, List<String>> _cookie(String value) {
   return {
     'set-cookie': [
-      '${_authConfig.refreshCookieName}=$value; '
-          'Path=${_authConfig.refreshCookiePath}; HttpOnly; Secure',
+      '${_authConfig.refreshCookieName}=$value; Path=${_authConfig.refreshCookiePath}; HttpOnly; Secure',
     ],
   };
 }

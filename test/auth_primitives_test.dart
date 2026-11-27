@@ -20,9 +20,7 @@ void main() {
     final token = readRefreshCookie([
       'other=value; Path=/',
       '${config.refreshCookieName}_other=ignored; Path=/',
-      '${config.refreshCookieName}=private-refresh; '
-          'Path=${config.refreshCookiePath}; '
-          'Expires=Wed, 25 Nov 2026 12:00:00 GMT; HttpOnly; Secure',
+      '${config.refreshCookieName}=private-refresh; Path=${config.refreshCookiePath}; Expires=Wed, 25 Nov 2026 12:00:00 GMT; HttpOnly; Secure',
     ], config);
 
     expect(token.value, 'private-refresh');

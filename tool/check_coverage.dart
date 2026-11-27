@@ -66,7 +66,7 @@ final class LineCoverage {
 }
 
 String? _applicationPath(String source) {
-  var path = source.trim().replaceAll('\\', '/');
+  var path = source.trim().replaceAll(r'\', '/');
 
   if (!path.startsWith('lib/')) {
     final position = path.indexOf('/lib/');
@@ -126,7 +126,7 @@ Future<void> main(List<String> arguments) async {
         throw StateError('CI must check an existing floor.');
       }
 
-      if (await floorFile.exists()) {
+      if (floorFile.existsSync()) {
         throw StateError(
           'A floor already exists. Run the normal coverage check.',
         );
@@ -176,7 +176,7 @@ Future<void> main(List<String> arguments) async {
       );
     }
 
-    if (!await floorFile.exists()) {
+    if (!floorFile.existsSync()) {
       throw StateError(
         'No coverage floor. Run flutter test --coverage, then '
         'dart run tool/check_coverage.dart --record-baseline locally.',

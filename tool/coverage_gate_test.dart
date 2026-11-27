@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import '../tool/check_coverage.dart';
+import 'check_coverage.dart';
 
 void main() {
   test('merges duplicate records and normalises Windows paths', () {

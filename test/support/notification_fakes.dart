@@ -10,7 +10,7 @@ const pushData = <String, Object?>{
 };
 
 final class TestPushMessages implements PushMessages {
-  TestPushMessages({this.first});
+  new({this.first});
 
   final Map<String, Object?>? first;
 

@@ -26,7 +26,7 @@ final class _BrowserSignOutMarker implements SignOutMarker {
   Future<bool> read() async => _storage.getItem(key) == '1';
 
   @override
-  Future<void> write(bool signedOut) async {
+  Future<void> write({required bool signedOut}) async {
     if (signedOut) {
       _storage.setItem(key, '1');
     } else {

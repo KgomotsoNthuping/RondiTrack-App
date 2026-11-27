@@ -12,7 +12,7 @@ import 'package:ronditrack/features/proofs/application/proof_upload_controller.d
 import 'package:ronditrack/features/proofs/domain/proof_models.dart';
 
 class ProofUploadScreen extends ConsumerWidget {
-  const ProofUploadScreen({required this.target, super.key});
+  const new({required this.target, super.key});
 
   final ProofTarget target;
 
