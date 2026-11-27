@@ -3,7 +3,9 @@ import 'package:ronditrack/core/observability/error_reporter.dart';
 import 'package:ronditrack/core/observability/report_scrubber.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-typedef EventSink = Future<void> Function(SentryEvent event);
+typedef EventSink = Future<void> Function(
+  SentryEvent event,
+);
 
 typedef SentryInitializer = Future<void> Function(
   void Function(SentryFlutterOptions options) configure,
@@ -13,8 +15,14 @@ void configureReporting(
   SentryFlutterOptions options, {
   required String dsn,
   required AppFlavor flavor,
+  String release =
+      const String.fromEnvironment('SENTRY_RELEASE'),
+  String dist =
+      const String.fromEnvironment('SENTRY_DIST'),
 }) {
-  final scrubber = ReportScrubber(environment: flavor.name);
+  final scrubber = ReportScrubber(
+    environment: flavor.name,
+  );
 
   options
     ..dsn = dsn
@@ -49,25 +57,28 @@ void configureReporting(
     ..maxBreadcrumbs = 0
     ..captureFailedRequests = false
     ..captureNativeFailedRequests = false
-    ..beforeBreadcrumb = (_, _) =>
-        null
-          ..beforeSendLog = (_, _) =>
-              null
-                ..beforeSendMetric = (_, _) =>
-                    null
-                      ..beforeSendTransaction = (_, _) =>
-                          null
-                            ..beforeSendFeedback = (_, _) =>
-                                null
-                                  ..beforeSend = (event, hint) {
-                                    hint.attachments.clear();
-                                    hint.screenshot = null;
-                                    hint.viewHierarchy = null;
-                                    hint.response = null;
-                                    hint.clear();
+    ..beforeBreadcrumb = (_, _) => null
+    ..beforeSendLog = (_, _) => null
+    ..beforeSendMetric = (_, _) => null
+    ..beforeSendTransaction = (_, _) => null
+    ..beforeSendFeedback = (_, _) => null
+    ..beforeSend = (event, hint) {
+      hint.attachments.clear();
+      hint.screenshot = null;
+      hint.viewHierarchy = null;
+      hint.response = null;
+      hint.clear();
 
-                                    return scrubber.clean(event);
-                                  };
+      return scrubber.clean(event);
+    };
+
+  if (release.isNotEmpty) {
+    options.release = release;
+  }
+
+  if (dist.isNotEmpty) {
+    options.dist = dist;
+  }
 
   options.replay
     ..sessionSampleRate = 0
@@ -77,7 +88,8 @@ void configureReporting(
 Future<void> startReporting({
   required AppFlavor flavor,
   required bool isTest,
-  String dsn = const String.fromEnvironment('SENTRY_DSN'),
+  String dsn =
+      const String.fromEnvironment('SENTRY_DSN'),
   SentryInitializer initialize = _initialize,
   EventSink send = _send,
 }) async {
@@ -88,24 +100,34 @@ Future<void> startReporting({
   }
 
   await initialize((options) {
-    configureReporting(options, dsn: dsn, flavor: flavor);
+    configureReporting(
+      options,
+      dsn: dsn,
+      flavor: flavor,
+    );
   });
 
   Reporting.reporter = SentryErrorReporter(
-    scrubber: ReportScrubber(environment: flavor.name),
+    scrubber: ReportScrubber(
+      environment: flavor.name,
+    ),
     send: send,
   );
 }
 
-Future<void> _initialize(void Function(SentryFlutterOptions) configure) =>
-    SentryFlutter.init(configure);
+Future<void> _initialize(
+  void Function(SentryFlutterOptions) configure,
+) => SentryFlutter.init(configure);
 
 Future<void> _send(SentryEvent event) async {
   await Sentry.captureEvent(event);
 }
 
 final class SentryErrorReporter implements ErrorReporter {
-  const new({required this.scrubber, required this.send});
+  const SentryErrorReporter({
+    required this.scrubber,
+    required this.send,
+  });
 
   final ReportScrubber scrubber;
   final EventSink send;
@@ -113,8 +135,11 @@ final class SentryErrorReporter implements ErrorReporter {
   @override
   Future<void> report(ErrorReport report) async {
     final matches = RegExp(
-      r'(package:ronditrack/[A-Za-z0-9_/]+\.dart):(\d+):(\d+)',
-    ).allMatches(report.stackTrace.toString());
+      r'(package:ronditrack/[A-Za-z0-9_/]+\.dart):'
+      r'(\d+):(\d+)',
+    ).allMatches(
+      report.stackTrace.toString(),
+    );
 
     final event = SentryEvent(
       message: SentryMessage(report.kind.code),
@@ -142,7 +167,10 @@ final class SentryErrorReporter implements ErrorReporter {
       ],
     );
 
-    final cleaned = scrubber.clean(event, memberNames: report.memberNames);
+    final cleaned = scrubber.clean(
+      event,
+      memberNames: report.memberNames,
+    );
 
     if (cleaned != null) {
       await send(cleaned);

@@ -1,4 +1,5 @@
 import java.util.Base64
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -10,7 +11,10 @@ val appDefines = (project.findProperty("dart-defines") as? String)
     .split(",")
     .filter { it.isNotBlank() }
     .associate { encoded ->
-        val entry = String(Base64.getDecoder().decode(encoded), Charsets.UTF_8)
+        val entry = String(
+            Base64.getDecoder().decode(encoded),
+            Charsets.UTF_8
+        )
         val parts = entry.split("=", limit = 2)
         parts[0] to parts.getOrElse(1) { "" }
     }
@@ -26,8 +30,48 @@ val firebaseConfigured = firebaseResources.keys.count {
     !appDefines[it].isNullOrBlank()
 }
 
-require(firebaseConfigured == 0 || firebaseConfigured == firebaseResources.size) {
+require(
+    firebaseConfigured == 0 ||
+        firebaseConfigured == firebaseResources.size
+) {
     "Supply all four Firebase defines, or omit all four."
+}
+
+val signingFile = System.getenv("ANDROID_KEY_PROPERTIES")
+    ?.let { rootProject.file(it) }
+    ?: rootProject.file("key.properties")
+
+val signingValues = Properties()
+
+if (signingFile.isFile) {
+    signingFile.reader(Charsets.UTF_8).use {
+        signingValues.load(it)
+    }
+}
+
+val uploadStore = signingValues
+    .getProperty("storeFile")
+    ?.let { java.io.File(it) }
+
+val uploadAlias = signingValues.getProperty("keyAlias")
+val uploadStorePassword = System.getenv("ANDROID_STORE_PASSWORD")
+val uploadKeyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+
+val signingReady = signingFile.isFile &&
+    uploadStore?.isFile == true &&
+    uploadStore?.isAbsolute == true &&
+    !uploadAlias.isNullOrBlank() &&
+    !uploadStorePassword.isNullOrBlank() &&
+    !uploadKeyPassword.isNullOrBlank()
+
+val releaseRequested = gradle.startParameter.taskNames.any {
+    it.endsWith("Release", ignoreCase = true)
+}
+
+if (releaseRequested) {
+    check(signingReady) {
+        "Release signing is missing. Configure private key.properties and signing passwords."
+    }
 }
 
 android {
@@ -54,7 +98,11 @@ android {
 
         if (firebaseConfigured == firebaseResources.size) {
             firebaseResources.forEach { (key, resource) ->
-                resValue("string", resource, appDefines.getValue(key).trim())
+                resValue(
+                    "string",
+                    resource,
+                    appDefines.getValue(key).trim()
+                )
             }
         }
     }
@@ -83,21 +131,40 @@ android {
         }
     }
 
+    signingConfigs {
+        if (signingReady) {
+            create("upload") {
+                storeFile = uploadStore
+                storePassword = uploadStorePassword
+                keyAlias = uploadAlias
+                keyPassword = uploadKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("upload")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt")
+            )
         }
     }
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+        jvmTarget =
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    coreLibraryDesugaring(
+        "com.android.tools:desugar_jdk_libs:2.1.4"
+    )
 }
 
 flutter {

@@ -1,0 +1,217 @@
+name: Android Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    env:
+      ANDROID_UPLOAD_SHA256: ${{ vars.ANDROID_UPLOAD_SHA256 }}
+      FIREBASE_TESTERS_GROUPS: ${{ vars.FIREBASE_TESTERS_GROUPS }}
+
+    steps:
+      - name: Checkout the tagged app
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          channel: stable
+          flutter-version: '3.47.9'
+          cache: true
+
+      - name: Set up Node for Firebase CLI
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+
+      - name: Install release tools
+        run: |
+          set -euo pipefail
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37" "build-tools;37.0.0"
+          npm install --prefix "$RUNNER_TEMP/firebase-tools" firebase-tools@15.36.0 --no-audit --no-fund
+
+      - name: Restore the committed dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Check package ages
+        run: dart run tool/check_dependency_age.dart
+
+      - name: Generate application parts
+        run: dart run build_runner build
+
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed lib test integration_test tool
+
+      - name: Analyze
+        run: dart analyze --fatal-infos
+
+      - name: Run tests
+        run: flutter test --no-pub --exclude-tags live
+
+      - name: Audit private filenames before loading credentials
+        run: |
+          set -euo pipefail
+          result="$(git log --all --format=%H -- '*.jks' '*.keystore' '*key.properties' '*service-account*' '*service_account*' '*firebase-adminsdk*')"
+          if [ -n "$result" ]; then
+            echo "Private signing or service-account filenames exist in Git history."
+            exit 1
+          fi
+
+      - name: Prepare temporary release inputs
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ vars.ANDROID_KEY_ALIAS }}
+          STAGING_CONFIG: ${{ vars.STAGING_CONFIG_JSON }}
+          PROD_CONFIG: ${{ vars.PROD_CONFIG_JSON }}
+          STAGING_FIREBASE: ${{ secrets.FIREBASE_STAGING_JSON }}
+          PROD_FIREBASE: ${{ secrets.FIREBASE_PROD_JSON }}
+          DISTRIBUTION_ACCOUNT: ${{ secrets.FIREBASE_DISTRIBUTION_SERVICE_ACCOUNT_JSON }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import base64
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          os.umask(0o077)
+          directory = Path(os.environ["RUNNER_TEMP"]) / "ronditrack-release"
+          directory.mkdir(mode=0o700)
+
+          alias = os.environ["KEY_ALIAS"].strip()
+          if not re.fullmatch(r"[A-Za-z0-9_-]+", alias):
+              raise SystemExit("Set ANDROID_KEY_ALIAS.")
+
+          keystore = directory / "upload.jks"
+          encoded = "".join(os.environ["KEYSTORE_BASE64"].split())
+          keystore.write_bytes(base64.b64decode(encoded, validate=True))
+
+          signing = directory / "android-key.properties"
+          signing.write_text(
+              f"storeFile={keystore.as_posix()}\nkeyAlias={alias}\n",
+              encoding="utf-8",
+          )
+
+          files = {
+              "RT_STAGING_CONFIG": ("staging.json", "STAGING_CONFIG"),
+              "RT_PROD_CONFIG": ("prod.json", "PROD_CONFIG"),
+              "RT_STAGING_FIREBASE_CONFIG": ("firebase.staging.json", "STAGING_FIREBASE"),
+              "RT_PROD_FIREBASE_CONFIG": ("firebase.prod.json", "PROD_FIREBASE"),
+              "GOOGLE_APPLICATION_CREDENTIALS": ("distribution-service-account.json", "DISTRIBUTION_ACCOUNT"),
+          }
+
+          values = {"ANDROID_KEY_PROPERTIES": str(signing)}
+
+          for variable, (name, source) in files.items():
+              try:
+                  data = json.loads(os.environ[source])
+              except (ValueError, KeyError):
+                  raise SystemExit(f"Configure valid JSON for {source}.") from None
+
+              if not isinstance(data, dict):
+                  raise SystemExit(f"{source} must be a JSON object.")
+
+              path = directory / name
+              path.write_text(json.dumps(data), encoding="utf-8")
+              values[variable] = str(path)
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as output:
+              for variable, value in values.items():
+                  output.write(f"{variable}={value}\n")
+          PY
+
+      - name: Build and verify both releases
+        id: build
+        env:
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: dart run tool/release.dart
+
+      - name: Upload the matching Dart symbols to Sentry
+        id: symbols
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: dart run tool/upload_release_symbols.dart
+
+      - name: Retain verified builds and symbols
+        if: always() && steps.build.outcome == 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: android-release-${{ github.run_number }}-${{ github.run_attempt }}
+          path: release-output/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Distribute the staging APK
+        run: |
+          set -euo pipefail
+          test -n "$FIREBASE_TESTERS_GROUPS"
+
+          apk="$(python - <<'PY'
+          import json
+
+          with open("release-output/manifest.json", encoding="utf-8") as source:
+              manifest = json.load(source)
+
+          if manifest.get("verified") is not True:
+              raise SystemExit("No verified release.")
+
+          print(next(
+              item["artifact"]
+              for item in manifest["releases"]
+              if item["flavor"] == "staging"
+          ))
+          PY
+          )"
+
+          app="$(python - <<'PY'
+          import json
+          import os
+
+          with open(os.environ["RT_STAGING_FIREBASE_CONFIG"], encoding="utf-8") as source:
+              print(json.load(source)["FIREBASE_APP_ID"])
+          PY
+          )"
+
+          "$RUNNER_TEMP/firebase-tools/node_modules/.bin/firebase" appdistribution:distribute "$apk" --app "$app" --groups "$FIREBASE_TESTERS_GROUPS" --release-notes "RondiTrack $GITHUB_REF_NAME · CI $GITHUB_RUN_NUMBER attempt $GITHUB_RUN_ATTEMPT"
+
+      - name: Remove temporary credentials
+        if: always()
+        run: |
+          python - <<'PY'
+          import os
+          import shutil
+          from pathlib import Path
+
+          shutil.rmtree(
+              Path(os.environ["RUNNER_TEMP"]) / "ronditrack-release",
+              ignore_errors=True,
+          )
+          PY

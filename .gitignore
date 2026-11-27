@@ -63,3 +63,9 @@ app.*.map.json
 /release-output/
 /release-artifacts/
 /symbols/
+
+/config/proof.*.json
+!/config/proof.example.json
+/config/release.*.json
+!/config/release.example.json
+/android/.gradle/
